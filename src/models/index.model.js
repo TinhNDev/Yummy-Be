@@ -21,6 +21,7 @@ db.sequelize = sequelize;
 db.User = require("./Users/user.model")(sequelize, Sequelize);
 db.Roles = require("./Users/roles.model")(sequelize, Sequelize);
 db.KeyToken = require("./Users/keyToken.model")(sequelize, Sequelize);
+db.ApiKey = require("./Users/apiKey.model")(sequelize,Sequelize);
 
 //user roles
 db.User.belongsToMany(db.Roles, {

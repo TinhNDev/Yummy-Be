@@ -12,6 +12,27 @@ class AccessController {
       },
     }).send(res);
   };
+
+  //handle signin
+  login = async (req, res, next) => {
+    new SuccessResponse({
+      metadata: await AccessService.login(req.body),
+    }).send(res);
+  };
+
+  //handle refresh token
+  refreshToken = async (req, res, next) => {
+    new SuccessResponse({
+      metadata: await AccessService.handleRefreshToken(req.body),
+    }).send(res);
+  };
+
+  //handle Logout
+  logOut = async (req, res, next) => {
+    new SuccessResponse({
+      metadata: await AccessService.logOut(req.body),
+    }).send(res);
+  };
 }
 
 module.exports = new AccessController();
