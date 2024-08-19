@@ -14,7 +14,7 @@ const { createTokenPair } = require("../../auth/authUtils");
 const getInforData = require("../../utils/index");
 const { findByEmail } = require("./user.service");
 class AccessService {
-  static singUp = async ({ username, password, email }) => {
+  static singUp = async ({ password, email }) => {
     const holderUser = await user.findOne({
       where: {
         email,
@@ -27,7 +27,6 @@ class AccessService {
     const hashPassword = await bcrypt.hash(password, 10);
 
     const newUser = await user.create({
-      username,
       password: hashPassword,
       email,
     });
@@ -105,7 +104,7 @@ class AccessService {
     });
     return {
       user: getInforData({
-        fileds: ["id", "username", "email"],
+        fileds: ["id", "email"],
         object: foundUser,
       }),
       tokens,
