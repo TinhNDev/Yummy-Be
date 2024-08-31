@@ -21,7 +21,113 @@ db.sequelize = sequelize;
 db.User = require("./Users/user.model")(sequelize, Sequelize);
 db.Roles = require("./Users/roles.model")(sequelize, Sequelize);
 db.KeyToken = require("./Users/keyToken.model")(sequelize, Sequelize);
-db.ApiKey = require("./Users/apiKey.model")(sequelize,Sequelize);
+db.ApiKey = require("./Users/apiKey.model")(sequelize, Sequelize);
+db.Profile = require("./Users/profile.model")(sequelize, Sequelize);
+db.Customer = require("./Users/Customers/customer.model")(sequelize, Sequelize);
+db.Driver = require("./Users/Drivers/driver.model")(sequelize, Sequelize);
+db.Address = require("./Users/address.model")(sequelize, Sequelize);
+db.RestaurantType = require("./Users/restaurantType.model");
+db.Order = require("./Users/order.model")(sequelize, Sequelize);
+db.Notification = require("./Users/notification.model")(sequelize, Sequelize);
+db.Categories = require("./Users/categories.model")(sequelize, Sequelize);
+db.BlackList = require("./Users/blacklitst.model")(sequelize, Sequelize);
+db.Cupon = require("./Users/cupon.model")(sequelize, Sequelize);
+db.Product = require("./Users/products.model")(sequelize, Sequelize);
+db.Restaurant = require("./Users/restaurants.model")(sequelize, Sequelize);
+
+//user profile
+db.User.hasOne(db.Profile, {
+  foreignKey: "user_id",
+  as: "Profile",
+});
+db.Profile.belongsTo(db.User, {
+  foreignKey: "user_id",
+  as: "User",
+});
+
+//customer profile
+db.Profile.hasOne(db.Customer, {
+  foreignKey: "profile_id",
+  as: "Customer",
+});
+db.Customer.belongsTo(db.Profile, {
+  foreignKey: "profile_id",
+  as: "Profile",
+});
+
+//driver profile
+db.Profile.hasOne(db.Driver, {
+  foreignKey: "profile_id",
+  as: "Driver",
+});
+db.Driver.belongsTo(db.Profile, {
+  foreignKey: "profile_id",
+  as: "Profile",
+});
+
+//profile address
+db.Profile.belongsToMany(db.Address, {
+  through: "Address Profile",
+});
+db.Address.belongsToMany(db.Profile, {
+  through: "Address Profile",
+});
+
+//Address Restaurant
+db.Address.hasOne(db.Restaurant, {
+  foreignKey: "address_id",
+});
+db.Restaurant.belongsTo(db.Address, {
+  foreignKey: "address_id",
+});
+
+//Product Restaurant
+db.Restaurant.hasMany(db.Product, {
+  foreignKey: "restaurant_id",
+});
+db.Product.belongsTo(db.Restaurant, {
+  foreignKey: "restaurant_id",
+});
+
+//Categories Product
+db.Categories.hasOne(db.Product, {
+  foreignKey: "categories_id",
+});
+db.Product.belongsTo(db.Categories, {
+  foreignKey: "categories_id",
+});
+
+//Order Product
+db.Product.belongsToMany(db.Order, {
+  through: "Order Item",
+});
+db.Order.belongsToMany(db.Product, {
+  through: "Order Item",
+});
+
+// Cupon Product
+db.Product.belongsToMany(db.Cupon, {
+  through: "Cupon Product",
+});
+db.Cupon.belongsToMany(db.Product, {
+  through: "Cupon Product",
+});
+
+//Cupon Order
+db.Cupon.hasMany(db.Order, {
+  foreignKey: "cupon_id",
+});
+db.Order.belongsTo(db.Cupon, {
+  foreignKey: "cupon_id",
+});
+
+//customer order
+db.Customer.hasMany(db.Order, {
+  foreignKey: "customer_id",
+});
+db.Order.belongsTo(db.Customer, {
+  foreignKey: "customer_id",
+});
 
 //user roles
 db.User.belongsToMany(db.Roles, {
@@ -32,10 +138,10 @@ db.Roles.belongsToMany(db.User, {
 });
 //keyToken user
 db.KeyToken.belongsTo(db.User, {
-  foreignKey: "userId",
+  foreignKey: "user_id",
 });
 db.User.hasMany(db.KeyToken, {
-  foreignKey: "userId",
+  foreignKey: "user_id",
 });
 
 module.exports = db;
