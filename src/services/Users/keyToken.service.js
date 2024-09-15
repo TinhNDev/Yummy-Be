@@ -4,7 +4,7 @@ const keyTokenModel = db.KeyToken;
 
 class KeyTokenService {
   static createKeyToken = async ({
-    userId,
+    user_id,
     publicKey,
     privateKey,
     refreshToken,
@@ -24,7 +24,7 @@ class KeyTokenService {
       //   option
       // );
       const tokensRecord = await keyTokenModel.findOne({
-        where: { userId: userId },
+        where: { user_id: user_id },
       });
       let tokens;
       if (tokensRecord) {
@@ -36,12 +36,12 @@ class KeyTokenService {
             refreshToken: refreshToken,
           },
           {
-            where: { userId: userId },
+            where: { user_id: user_id },
           }
         );
       } else {
         tokens = await keyTokenModel.create({
-          userId: userId,
+          user_id: user_id,
           privateKey: privateKey,
           publicKey: publicKey,
           refreshToken: refreshToken || "",
@@ -52,16 +52,16 @@ class KeyTokenService {
       return error;
     }
   };
-  static findByUserId = async (userId) => {
+  static findByUserId = async (user_id) => {
     return await keyTokenModel.findOne({
       where: {
-        userId: userId,
+        user_id: user_id,
       },
     });
   };
 
-  static removeKeyById = async (userId) => {
-    const uI = await keyTokenModel.findOne({ userId: userId });
+  static removeKeyById = async (user_id) => {
+    const uI = await keyTokenModel.findOne({ user_id: user_id });
     const deleteTokens = await keyTokenModel.destroy({
       where: { id: uI.id },
     });

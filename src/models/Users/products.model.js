@@ -12,15 +12,16 @@ module.exports = (sequelize, Sequelize) => {
     id_restaurant: {
       type: Sequelize.INTEGER,
     },
-    id_categories: {
-      type: Sequelize.INTEGER,
-    },
-    id_toping: {
-      type: Sequelize.INTEGER,
-    },
     price: {
       type: Sequelize.INTEGER,
     },
+    quantity: {
+      type: Sequelize.INTEGER,
+    },
+    is_available: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: true,
+    }
   });
 
   return Products;

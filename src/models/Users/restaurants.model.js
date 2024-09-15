@@ -9,6 +9,10 @@ module.exports = (sequelize, Sequelize) => {
     address: {
       type: Sequelize.INTEGER,
     },
+    status: {
+      type: Sequelize.ENUM,
+      values: ["pending","active","unactive"]
+    }
   });
   return Restaurants;
 };

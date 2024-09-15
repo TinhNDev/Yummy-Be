@@ -44,10 +44,10 @@ const authorization = asyncHandle(async (req, res, next) => {
     6 - OK all => return next() 
     */
   //1
-  const userId = req.headers[HEADER.CLIENT_ID];
-  if (!userId) throw new AuthFailError(" Invalid request");
+  const user_id = req.headers[HEADER.CLIENT_ID];
+  if (!user_id) throw new AuthFailError(" Invalid request");
   //2
-  const keyStore = await findByUserId(userId);
+  const keyStore = await findByUserId(user_id);
   if (!keyStore) throw new NotFoundError("not found key in dbs");
 
   //3
@@ -55,7 +55,7 @@ const authorization = asyncHandle(async (req, res, next) => {
     try {
       const refreshToken = req.headers[HEADER.REFRESHTOKEN];
       const decodeUser = JWT.verify(refreshToken, keyStore.privateKey);
-      if (userId != decodeUser.userId)
+      if (user_id != decodeUser.user_id)
         throw new AuthFailError("invalid UserId");
       req.keyStore = keyStore;
       req.user = decodeUser;
@@ -69,7 +69,7 @@ const authorization = asyncHandle(async (req, res, next) => {
   if (!accessToken) throw new AuthFailError("Invalid request");
   try {
     const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
-    if (userId != decodeUser.userId) throw new AuthFailError("Invalid User");
+    if (user_id != decodeUser.user_id) throw new AuthFailError("Invalid User");
     req.keyStore = keyStore;
     req.user = decodeUser;
     return next();

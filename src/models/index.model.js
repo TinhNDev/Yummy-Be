@@ -26,7 +26,7 @@ db.Profile = require("./Users/profile.model")(sequelize, Sequelize);
 db.Customer = require("./Users/Customers/customer.model")(sequelize, Sequelize);
 db.Driver = require("./Users/Drivers/driver.model")(sequelize, Sequelize);
 db.Address = require("./Users/address.model")(sequelize, Sequelize);
-db.RestaurantType = require("./Users/restaurantType.model");
+db.RestaurantType = require("./Users/restaurantType.model")(sequelize, Sequelize);
 db.Order = require("./Users/order.model")(sequelize, Sequelize);
 db.Notification = require("./Users/notification.model")(sequelize, Sequelize);
 db.Categories = require("./Users/categories.model")(sequelize, Sequelize);
@@ -34,7 +34,7 @@ db.BlackList = require("./Users/blacklitst.model")(sequelize, Sequelize);
 db.Cupon = require("./Users/cupon.model")(sequelize, Sequelize);
 db.Product = require("./Users/products.model")(sequelize, Sequelize);
 db.Restaurant = require("./Users/restaurants.model")(sequelize, Sequelize);
-
+db.Topping = require("./Users/topping.model")(sequelize,Sequelize);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -90,11 +90,11 @@ db.Product.belongsTo(db.Restaurant, {
 });
 
 //Categories Product
-db.Categories.hasOne(db.Product, {
-  foreignKey: "categories_id",
+db.Categories.belongsToMany(db.Product, {
+  through: "Product Categories",
 });
-db.Product.belongsTo(db.Categories, {
-  foreignKey: "categories_id",
+db.Product.belongsToMany(db.Categories, {
+  through: "Product Categories",
 });
 
 //Order Product
@@ -143,5 +143,11 @@ db.KeyToken.belongsTo(db.User, {
 db.User.hasMany(db.KeyToken, {
   foreignKey: "user_id",
 });
-
+//topping product
+db.Product.belongsToMany(db.Topping,{
+  through:"Product Topping"
+})
+db.Topping.belongsToMany(db.Product,{
+  through:"Product Topping"
+})
 module.exports = db;

@@ -36,7 +36,7 @@ class AccessService {
       const privateKey = await crypto.randomBytes(64).toString("hex");
       console.log(publicKey, privateKey);
       const keyStore = await KeyTokenService.createKeyToken({
-        userId: newUser.id,
+        user_id: newUser.id,
         publicKey,
         privateKey,
       });
@@ -45,7 +45,7 @@ class AccessService {
       }
       const tokens = await createTokenPair(
         {
-          userId: newUser._id,
+          userId: newUser.id,
           email,
         },
         publicKey,
@@ -91,13 +91,13 @@ class AccessService {
 
     //grenerate tokens
     const tokens = await createTokenPair(
-      { userId: foundUser.id, email },
+      { user_id: foundUser.id, email },
       publicKey,
       privateKey
     );
 
     await KeyTokenService.createKeyToken({
-      userId: foundUser.id,
+      user_id: foundUser.id,
       publicKey,
       privateKey,
       refreshToken: tokens.refreshToken,
@@ -111,16 +111,16 @@ class AccessService {
     };
   };
   static handleRefreshToken = async ({ keyStore, user, refreshToken }) => {
-    const { userId, email } = user;
+    const { user_id, email } = user;
     if (keyStore.refreshTokenUsed.hasOwnProperty(refreshToken)) {
-      await KeyTokenService.removeKeyById(userId);
+      await KeyTokenService.removeKeyById(user_id);
       throw new ForbiddenError("Something wrong happend!! please relogin");
     }
     if (keyStore.refreshToken !== refreshToken) {
       throw new AuthFailError("user not registered");
     }
     const tokens = await createTokenPair(
-      { userId, email },
+      { user_id, email },
       keyStore.publicKey,
       keyStore.privateKey
     );
