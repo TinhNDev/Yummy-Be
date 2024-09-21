@@ -6,8 +6,8 @@ class ProductController {
   CreateProduct = async (req, res, next) => {
     try {
       const { categoriId, toppingId, ...productData } = req.body;
-      const user_id = req.user.id;
-
+      const user_id = req.user.user_id;
+      console.log(req.user)
       const newProduct = await ProductService.createProduct(
         categoriId,
         toppingId,
@@ -30,9 +30,8 @@ class ProductController {
   UpdateProduct = async (req, res, next) => {
     try {
       const { ...productData } = req.body;
-      const user_id = req.user.id;
+      const user_id = req.user.user_id;
       const product_id = req.params.id;
-
       const updatedProduct = await ProductService.updateProduct(product_id, {
         ...productData,
         user_id,
@@ -50,12 +49,9 @@ class ProductController {
   // Tìm kiếm sản phẩm theo điều kiện
   GetListSearchProduct = async (req, res, next) => {
     try {
-      const { query } = req;
-      const listProduct = await ProductService.searchProducts(query);
-
       new SuccessResponse({
         message: "List of products",
-        metadata: listProduct,
+        metadata: await ProductService.getListSearchProduct(req.params),
       }).send(res);
     } catch (error) {
       next(error);
@@ -65,17 +61,12 @@ class ProductController {
   // Công khai sản phẩm
   PublicProductByShop = async (req, res, next) => {
     try {
-      const product_id = req.params.id;
-      const user_id = req.user.id;
-
-      const publishedProduct = await ProductService.publishProductByShop({
-        user_id,
-        product_id,
-      });
-
       new SuccessResponse({
         message: "Publish product by shop success",
-        metadata: publishedProduct,
+        metadata: await ProductService.publishedProductByRestaurant({
+          product_id: req.params.id,
+          product_restaurant: req.user.user_id,
+        }),
       }).send(res);
     } catch (error) {
       next(error);
@@ -83,19 +74,14 @@ class ProductController {
   };
 
   // Gỡ bỏ công khai sản phẩm
-  UnPublishProductByShop = async (req, res, next) => {
+  DraftProductByRestaurant = async (req, res, next) => {
     try {
-      const product_id = req.params.id;
-      const user_id = req.user.id;
-
-      const unpublishedProduct = await ProductService.unPublishProductByShop({
-        user_id,
-        product_id,
-      });
-
       new SuccessResponse({
         message: "Unpublish product by shop success",
-        metadata: unpublishedProduct,
+        metadata: await ProductService.draftProductByRestaurant({
+          product_id: req.params.id,
+          product_restaurant: req.user.user_id,
+        }),
       }).send(res);
     } catch (error) {
       next(error);
@@ -105,27 +91,25 @@ class ProductController {
   // Lấy danh sách sản phẩm nháp của cửa hàng
   GetAllDraftsForShop = async (req, res, next) => {
     try {
-      const user_id = req.user.id;
-      const drafts = await ProductService.findAllDraftsForShop(user_id);
-
       new SuccessResponse({
         message: "Get list drafts for shop",
-        metadata: drafts,
+        metadata: await ProductService.findAllDraftsForRestaurant({
+          product_restaurant: req.user.user_id,
+        }),
       }).send(res);
     } catch (error) {
       next(error);
     }
   };
 
-  // Lấy danh sách sản phẩm đã công khai của cửa hàng
-  GetAllPublishForShop = async (req, res, next) => {
+  // Lấy danh sách sản phẩm public
+  GetAllPublicForShop = async (req, res, next) => {
     try {
-      const user_id = req.user.id;
-      const publishedProducts = await ProductService.findAllPublishForShop(user_id);
-
       new SuccessResponse({
-        message: "Get list published for shop",
-        metadata: publishedProducts,
+        message: "Get list public products for shop",
+        metadata: await ProductService.findAllPublicForRestaurant({
+          product_restaurant: req.user.user_id,
+        }),
       }).send(res);
     } catch (error) {
       next(error);
@@ -135,12 +119,9 @@ class ProductController {
   // Lấy tất cả sản phẩm với điều kiện tìm kiếm
   FindAllProducts = async (req, res, next) => {
     try {
-      const query = req.query;
-      const products = await ProductService.findAllProducts(query);
-
       new SuccessResponse({
         message: "List of products",
-        metadata: products,
+        metadata: await ProductService.findAllProduct(req.query),
       }).send(res);
     } catch (error) {
       next(error);
@@ -150,12 +131,11 @@ class ProductController {
   // Lấy chi tiết của một sản phẩm
   FindProduct = async (req, res, next) => {
     try {
-      const product_id = req.params.product_id;
-      const product = await ProductService.findProduct(product_id);
-
       new SuccessResponse({
         message: "Product detail",
-        metadata: product,
+        metadata: await ProductService.findProduct({
+          product_id: req.params.product_id,
+        }),
       }).send(res);
     } catch (error) {
       next(error);

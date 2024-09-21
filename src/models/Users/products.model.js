@@ -9,9 +9,6 @@ module.exports = (sequelize, Sequelize) => {
     descriptions: {
       type: Sequelize.STRING,
     },
-    id_restaurant: {
-      type: Sequelize.INTEGER,
-    },
     price: {
       type: Sequelize.INTEGER,
     },
@@ -21,6 +18,12 @@ module.exports = (sequelize, Sequelize) => {
     is_available: {
       type: Sequelize.BOOLEAN,
       defaultValue: true,
+    },
+    is_public:{
+      type: Sequelize.BOOLEAN
+    },
+    is_draft:{
+      type: Sequelize.BOOLEAN
     }
   });
 

@@ -84,6 +84,8 @@ db.Restaurant.belongsTo(db.Address, {
 //Product Restaurant
 db.Restaurant.hasMany(db.Product, {
   foreignKey: "restaurant_id",
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
 });
 db.Product.belongsTo(db.Restaurant, {
   foreignKey: "restaurant_id",
@@ -151,3 +153,12 @@ db.Topping.belongsToMany(db.Product,{
   through:"Product Topping"
 })
 module.exports = db;
+//user restaurant
+db.User.hasOne(db.Restaurant,{
+  foreignKey:"user_id",
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+})
+db.Restaurant.belongsTo(db.User,{
+  foreignKey:"user_id"
+})

@@ -13,22 +13,24 @@ const HEADER = {
 
 const createTokenPair = async (payload, publickey, privatekey) => {
   try {
-    const accessToken = await JWT.sign(payload, publickey, {
-      expiresIn: "2 days",
+    const accessToken = await JWT.sign(payload, privatekey, {
+      algorithm: 'RS256', // Use RS256 for RSA
+      expiresIn: '2 days',
     });
 
     const refreshToken = await JWT.sign(payload, privatekey, {
-      expiresIn: "7 days",
+      algorithm: 'RS256', // Use RS256 for RSA
+      expiresIn: '7 days',
     });
 
-    JWT.verify(accessToken, publickey, (err, decode) => {
+    JWT.verify(accessToken, publickey, { algorithms: ['RS256'] }, (err, decode) => {
       if (err) {
-        console.log(`error verify:: `, err);
+        console.log('error verify::', err);
       } else {
-        console.log(`verify success:: `, decode);
+        console.log('verify success::', decode);
       }
     });
-
+    
     return { refreshToken, accessToken };
   } catch (error) {
     console.log(error);
@@ -36,47 +38,43 @@ const createTokenPair = async (payload, publickey, privatekey) => {
 };
 
 const authorization = asyncHandle(async (req, res, next) => {
-  /*
-    1 - check userID missing
-    2 - get accessToken 
-    3 - verify Token
-    4 - check keyStore with this userId
-    6 - OK all => return next() 
-    */
-  //1
   const user_id = req.headers[HEADER.CLIENT_ID];
-  if (!user_id) throw new AuthFailError(" Invalid request");
-  //2
-  const keyStore = await findByUserId(user_id);
-  if (!keyStore) throw new NotFoundError("not found key in dbs");
+  if (!user_id) throw new AuthFailError("Invalid request");
 
-  //3
+  const keyStore = await findByUserId(user_id);
+  if (!keyStore || !keyStore.publicKey || !keyStore.privateKey) {
+    throw new NotFoundError("Key not found in DB.");
+  }
+
+  // Check for refresh token
   if (req.headers[HEADER.REFRESHTOKEN]) {
+    const refreshToken = req.headers[HEADER.REFRESHTOKEN];
     try {
-      const refreshToken = req.headers[HEADER.REFRESHTOKEN];
-      const decodeUser = JWT.verify(refreshToken, keyStore.privateKey);
-      if (user_id != decodeUser.user_id)
-        throw new AuthFailError("invalid UserId");
+      const decodeUser = JWT.verify(refreshToken, keyStore.privateKey, { algorithms: ['RS256'] });
+      if (user_id != decodeUser.user_id) throw new AuthFailError("Invalid UserId");
       req.keyStore = keyStore;
       req.user = decodeUser;
       req.refreshToken = refreshToken;
       return next();
     } catch (error) {
-      throw error;
+      throw error; // Log or handle error as needed
     }
   }
+
   const accessToken = req.headers[HEADER.AUTHORIZATION];
   if (!accessToken) throw new AuthFailError("Invalid request");
+
   try {
-    const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
+    const decodeUser = JWT.verify(accessToken, keyStore.publicKey, { algorithms: ['RS256'] });
     if (user_id != decodeUser.user_id) throw new AuthFailError("Invalid User");
     req.keyStore = keyStore;
     req.user = decodeUser;
     return next();
   } catch (error) {
-    throw error;
+    throw error; // Log or handle error as needed
   }
 });
+
 const verifyJWT = async (token, keySecret) => {
   return await JWT.verify(token, keySecret);
 };

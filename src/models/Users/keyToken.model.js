@@ -1,16 +1,16 @@
 module.exports = (sequelize, Sequelize) => {
   const KeyToken = sequelize.define("Key Token", {
     publicKey: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
     },
     privateKey: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
     },
     refreshTokenUsed: {
       type: Sequelize.JSON,
     },
     refreshToken: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
     },
   });
   return KeyToken;

@@ -55,7 +55,7 @@ class KeyTokenService {
   static findByUserId = async (user_id) => {
     return await keyTokenModel.findOne({
       where: {
-        user_id: user_id,
+        user_id: user_id,  
       },
     });
   };

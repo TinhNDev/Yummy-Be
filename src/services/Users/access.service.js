@@ -32,8 +32,18 @@ class AccessService {
     });
 
     if (newUser) {
-      const publicKey = await crypto.randomBytes(64).toString("hex");
-      const privateKey = await crypto.randomBytes(64).toString("hex");
+       // Tạo cặp khóa RSA
+       const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+        modulusLength: 2048, // Độ dài khóa trong bits
+        publicKeyEncoding: {
+          type: 'spki',
+          format: 'pem',
+        },
+        privateKeyEncoding: {
+          type: 'pkcs8',
+          format: 'pem',
+        },
+      });
       console.log(publicKey, privateKey);
       const keyStore = await KeyTokenService.createKeyToken({
         user_id: newUser.id,
@@ -45,7 +55,7 @@ class AccessService {
       }
       const tokens = await createTokenPair(
         {
-          userId: newUser.id,
+          user_id: newUser.id,
           email,
         },
         publicKey,
@@ -86,8 +96,17 @@ class AccessService {
 
     if (!matchPassword) throw new AuthFailError("password incorrect");
     //create AT and RT and save
-    const publicKey = await crypto.randomBytes(64).toString("hex");
-    const privateKey = await crypto.randomBytes(64).toString("hex");
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+      modulusLength: 2048, // Độ dài khóa trong bits
+      publicKeyEncoding: {
+        type: 'spki',
+        format: 'pem',
+      },
+      privateKeyEncoding: {
+        type: 'pkcs8',
+        format: 'pem',
+      },
+    });
 
     //grenerate tokens
     const tokens = await createTokenPair(
@@ -95,7 +114,7 @@ class AccessService {
       publicKey,
       privateKey
     );
-
+    console.log("day la token",tokens)
     await KeyTokenService.createKeyToken({
       user_id: foundUser.id,
       publicKey,
