@@ -2,7 +2,6 @@
 
 const HEADER = {
   API_KEY: "x-api-key",
-  AUTHORIZATION: "authorization",
 };
 
 const {findById}=require("../services/Users/apiKey.service")

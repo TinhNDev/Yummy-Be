@@ -1,6 +1,4 @@
 const db = require("../../../models/index.model");
-const { Op } = require("sequelize");
-const sequelize = db.sequelize;
 const Product = db.Product;
 const Restaurant = db.Restaurant;
 

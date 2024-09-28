@@ -18,6 +18,9 @@ module.exports = (sequelize, Sequelize) => {
     mail: {
       type: Sequelize.STRING,
     },
+    cic:{
+      type: Sequelize.STRING,
+    }
   });
   return Profile;
 };

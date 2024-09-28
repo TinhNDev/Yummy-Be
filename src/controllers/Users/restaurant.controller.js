@@ -6,9 +6,10 @@ class RestaurantController{
     createRestaurant = async(req,res,next)=>{
         new SuccessResponse({
             message:"create restaurant success",
-            metadata: await restaurantService.createRestaurant(
-
-            )
+            metadata: await restaurantService.createRestaurant({
+                restaurant_id: req.user.user_id,
+                restaurant:req.body
+            })
         }).send(res);
     }
     
@@ -16,7 +17,7 @@ class RestaurantController{
         new SuccessResponse({
             message:"update restaurant succsess",
             metadata: await restaurantService.updateRestaurant(
-
+                
             )
         }).send(res)
     }

@@ -11,14 +11,11 @@ router.post("/user/signup", asyncHandle(accessController.singUp));
 //singin
 router.post("/user/login", asyncHandle(accessController.login));
 
-//authorization
-router.use(authorization);
-
 //logout
-router.post("/user/logout", asyncHandle(accessController.logout));
+router.post("/user/logout",authorization, asyncHandle(accessController.logout));
 
 router.post(
-  "/user/handelRefeshToken",
+  "/user/handelRefeshToken",authorization,
   asyncHandle(accessController.refreshToken)
 );
 module.exports = router;

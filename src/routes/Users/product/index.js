@@ -9,14 +9,12 @@ const router = express.Router();
 router.get("/products/search/:keySearch",asyncHandle(productController.GetListSearchProduct))
 router.get("/products",asyncHandle(productController.FindAllProducts))
 router.get("/products/:product_id",asyncHandle(productController.FindProduct))
-//authorization
-router.use(authorization);
-//
-router.post("/products", asyncHandle(productController.CreateProduct));
-router.put("/products/:id", asyncHandle(productController.UpdateProduct));
-router.post("/products/public/:id", asyncHandle(productController.PublicProductByShop))
-router.post("/products/unpublic/:id",asyncHandle(productController.DraftProductByRestaurant))
 
-router.get("/products/draft/all",asyncHandle(productController.GetAllDraftsForShop))
-router.get("/products/public/all",asyncHandle(productController.GetAllPublicForShop))
+router.post("/products",authorization, asyncHandle(productController.CreateProduct));
+router.put("/products/:id",authorization, asyncHandle(productController.UpdateProduct));
+router.post("/products/public/:id", asyncHandle(productController.PublicProductByShop))
+router.post("/products/unpublic/:id",authorization,asyncHandle(productController.DraftProductByRestaurant))
+
+router.get("/products/draft/all",authorization,asyncHandle(productController.GetAllDraftsForShop))
+router.get("/products/public/all",authorization,asyncHandle(productController.GetAllPublicForShop))
 module.exports = router;
