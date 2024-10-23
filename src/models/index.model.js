@@ -26,7 +26,6 @@ db.Profile = require("./Users/profile.model")(sequelize, Sequelize);
 db.Customer = require("./Users/Customers/customer.model")(sequelize, Sequelize);
 db.Driver = require("./Users/Drivers/driver.model")(sequelize, Sequelize);
 db.Address = require("./Users/address.model")(sequelize, Sequelize);
-db.RestaurantType = require("./Users/restaurantType.model")(sequelize, Sequelize);
 db.Order = require("./Users/order.model")(sequelize, Sequelize);
 db.Notification = require("./Users/notification.model")(sequelize, Sequelize);
 db.Categories = require("./Users/categories.model")(sequelize, Sequelize);

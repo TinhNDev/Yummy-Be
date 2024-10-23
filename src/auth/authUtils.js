@@ -9,17 +9,18 @@ const HEADER = {
   CLIENT_ID: "x-client-id",
   AUTHORIZATION: "authorization",
   REFRESHTOKEN: "x-rftokens-id",
+  ADMIM_KEY: "x-admin-key"
 };
 
 const createTokenPair = async (payload, publickey, privatekey) => {
   try {
     const accessToken = await JWT.sign(payload, privatekey, {
-      algorithm: 'RS256', // Use RS256 for RSA
+      algorithm: 'RS256', 
       expiresIn: '2 days',
     });
 
     const refreshToken = await JWT.sign(payload, privatekey, {
-      algorithm: 'RS256', // Use RS256 for RSA
+      algorithm: 'RS256', 
       expiresIn: '7 days',
     });
 
@@ -46,7 +47,6 @@ const authorization = asyncHandle(async (req, res, next) => {
     throw new NotFoundError("Key not found in DB.");
   }
 
-  // Check for refresh token
   if (req.headers[HEADER.REFRESHTOKEN]) {
     const refreshToken = req.headers[HEADER.REFRESHTOKEN];
     try {
@@ -57,7 +57,7 @@ const authorization = asyncHandle(async (req, res, next) => {
       req.refreshToken = refreshToken;
       return next();
     } catch (error) {
-      throw error; // Log or handle error as needed
+      throw error;
     }
   }
 
@@ -71,7 +71,7 @@ const authorization = asyncHandle(async (req, res, next) => {
     req.user = decodeUser;
     return next();
   } catch (error) {
-    throw error; // Log or handle error as needed
+    throw error;
   }
 });
 

@@ -1,4 +1,5 @@
-const db = requrie("../../models/index.model.js");
+const db = require("../../models/index.model.js");
+const { findRestauranByKeyWord } = require("./repositories/restaurant.repo.js");
 const Restaurants = db.Restaurant;
 const Profile = db.Profile;
 class RestaurantService {
@@ -24,6 +25,11 @@ class RestaurantService {
   };
 
   static updateRestaurant = async ({ restaurant_id, restaurant }) => {
+    const Restaurant = Restaurants.findOne({
+      where: { id: restaurant_id },
+    });
+    if (!Restaurant?.status === "active")
+      throw new Error("the requiment don't accepted");
     return await Restaurants.update({
       name: restaurant.name,
       image: restaurant.image,
@@ -33,6 +39,27 @@ class RestaurantService {
     });
   };
 
+  static activeRestaurant = async ({ restaurant_id }) => {
+    return await Restaurants.update({
+      status: "active",
+      where: { id: restaurant_id },
+    });
+  };
+
+  static getRestaurantPending = async () => {
+    return await Restaurants.findAll({
+      where: { status: "pending" },
+    });
+  };
+
+  static getAllRestaurant = async () => {
+    return await Restaurants.findAll();
+  };
+
+  static searchRestaurantByKeyWord = async (keySearch) =>{
+    return await findRestauranByKeyWord(keySearch)
+  };
+
   static deleteRestaurant = async ({ restaurant_id }) => {
     return await Restaurants.update({
       status: "unactive",
@@ -40,4 +67,5 @@ class RestaurantService {
     });
   };
 }
+
 module.exports = RestaurantService;

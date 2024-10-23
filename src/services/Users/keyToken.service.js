@@ -10,19 +10,6 @@ class KeyTokenService {
     refreshToken,
   }) => {
     try {
-      // const filter = { userId: userId },
-      //   update = {
-      //     publicKey,
-      //     privateKey,
-      //     refreshTokenUsed: [],
-      //     refreshToken,
-      //   },
-      //   option = { upsert: true, new: true };
-      // const tokens = await keyTokenModel.findOrCreate(
-      //   filter,
-      //   update,
-      //   option
-      // );
       const tokensRecord = await keyTokenModel.findOne({
         where: { user_id: user_id },
       });

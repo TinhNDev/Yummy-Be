@@ -18,12 +18,10 @@ const findProductByUser = async (keySearch) => {
     ORDER BY createdAt DESC;
   `;
 
-  const result = await db.sequelize.query(query, {
-    replacements: [`${keySearch.keySearch}%`],
+  return await db.sequelize.query(query, {
+    replacements: [`${keySearch}%`],
     type: db.Sequelize.QueryTypes.SELECT,
   });
-
-  return result;
 };
 
 //chuyển trạng thái sản phẩm

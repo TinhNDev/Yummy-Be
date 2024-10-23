@@ -137,8 +137,8 @@ class ProductService extends Product {
     };
     return await findAllPublicForShop({query, limit, skip});
   }
-  static async getListSearchProduct({ keySearch }) {
-    return await findProductByUser({ keySearch });
+  static async getListSearchProduct(keySearch) {
+    return await findProductByUser(keySearch);
   }
   static async findAllProduct({
     limit = 30,
