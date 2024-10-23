@@ -105,6 +105,16 @@ class ProductController {
       }),
     }).send(res);
   };
+
+  // Lấy danh sách sản phẩm theo nhà hàng
+  FindProductByIdRestaurant = async (req, res, next) =>{
+    new SuccessResponse({
+      message: "List Product of Restaurants",
+      metadata: await ProductService.FindProductByIdRestaurant({
+        restaurant_id: req.user.user_id,
+      })
+    }).send(res)
+  }
 }
 
 module.exports = new ProductController();

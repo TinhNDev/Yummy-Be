@@ -32,9 +32,8 @@ class AccessService {
     });
 
     if (newUser) {
-       // Tạo cặp khóa RSA
        const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-        modulusLength: 2048, // Độ dài khóa trong bits
+        modulusLength: 2048,
         publicKeyEncoding: {
           type: 'spki',
           format: 'pem',

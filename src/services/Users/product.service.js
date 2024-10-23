@@ -12,6 +12,7 @@ const {
   findProduct,
   findProductByUser,
   findAllPublicForShop,
+  getProductByRestaurantId
 } = require("./repositories/product.repo");
 
 class Product {
@@ -156,6 +157,9 @@ class ProductService extends Product {
   }
   static async findProduct({ product_id }) {
     return await findProduct({ product_id, unSelect: ["__v"] });
+  }
+  static async FindProductByIdRestaurant({ restaurant_id }){
+    return await getProductByRestaurantId({restaurant_id});
   }
 }
 
