@@ -7,7 +7,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
     },
     address: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
     },
     status: {
       type: Sequelize.ENUM,

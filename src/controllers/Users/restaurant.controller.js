@@ -3,32 +3,46 @@ const restaurantService = require("../../services/Users/restaurant.service")
 
 //select location
 class RestaurantController{
-    createRestaurant = async(req,res,next)=>{
+    updateRestaurant = async(req,res,next)=>{
         new SuccessResponse({
             message:"create restaurant success",
-            metadata: await restaurantService.createRestaurant({
+            metadata: await restaurantService.updateRestaurant({
                 restaurant_id: req.user.user_id,
                 restaurant:req.body
             })
         }).send(res);
     }
-    
-    updateRestaurant = async(req,res,next)=>{
+
+    activeRestaurant = async(req, res, next) =>{
         new SuccessResponse({
-            message:"update restaurant succsess",
-            metadata: await restaurantService.updateRestaurant(
-                
-            )
+            message:"active restaurant success",
+            metadata: await restaurantService.activeRestaurant({
+                restaurant_id:req.body.restaurant_id
+            })
+        }).send(res);
+    }
+
+    getRestaurantPending = async(req, res, next) =>{
+        new SuccessResponse({
+            message:" list pending res",
+            metadata: await restaurantService.getRestaurantPending()
         }).send(res)
     }
 
-    findRestaurantById = async(req,res,next)=>{
+    getAllRestaurant = async(req, res, next) =>{
         new SuccessResponse({
-            message:"",
-            metadata: await restaurantService.findRestaurantById
-        })
+            message:"list restaurant",
+            metadata: await restaurantService.getAllRestaurant()
+        }).send(res)
     }
 
-
+    deleteRestaurant = async(req, res, next) =>{
+        new SuccessResponse({
+            message: "delete success",
+            metadata: await restaurantService.deleteRestaurant({
+                restaurant_id: req.body.restaurant_id
+            })
+        })
+    }
 }
-module.exports = RestaurantController();
+module.exports =new RestaurantController();

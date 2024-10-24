@@ -1,7 +1,5 @@
 const db = require("../../models/index.model");
 const Address = db.Address;
-const Profile = db.Profile;
-const User = db.User;
 class AddressService {
   static CreateAddress = async (body) => {
     return await Address.create({

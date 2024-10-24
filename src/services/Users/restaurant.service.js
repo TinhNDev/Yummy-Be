@@ -3,40 +3,32 @@ const { findRestauranByKeyWord } = require("./repositories/restaurant.repo.js");
 const Restaurants = db.Restaurant;
 const Profile = db.Profile;
 class RestaurantService {
-  static createRestaurant = async ({ restaurant_id, restaurant }) => {
+  static updateRestaurant = async ({ restaurant_id, restaurant }) => {
     if (!restaurant?.name && !restaurant.image && !restaurant.address) {
       throw new Error("the restaurant is not valid");
-    } else {
-      const cccd = Profile.findOne({
-        where: { id: restaurant_id },
-      });
-      if (!cccd?.email) {
-        throw new Error("You need verify email!");
-      } else if (!cccd.cic) {
-        throw new Error("You need verify cic");
-      }
     }
-    return await Restaurants.create({
-      id: restaurant_id,
-      name: restaurant.name,
-      image: restaurant.image,
-      address: restaurant.address,
+    const existingRestaurant = await Restaurants.findOne({
+      where: { id: restaurant_id },
     });
-  };
 
-  static updateRestaurant = async ({ restaurant_id, restaurant }) => {
-    const Restaurant = Restaurants.findOne({
-      where: { id: restaurant_id },
-    });
-    if (!Restaurant?.status === "active")
-      throw new Error("the requiment don't accepted");
-    return await Restaurants.update({
-      name: restaurant.name,
-      image: restaurant.image,
-      address: restaurant.address,
-      status: restaurant.status,
-      where: { id: restaurant_id },
-    });
+    if (existingRestaurant) {
+      await existingRestaurant.update({
+        name: restaurant.name,
+        image: restaurant.image,
+        address: restaurant.address,
+        user_id: restaurant_id,
+      });
+      return existingRestaurant;
+    } else {
+      const newRestaurant = await Restaurants.create({
+        id: restaurant_id,
+        name: restaurant.name,
+        image: restaurant.image,
+        address: restaurant.address,
+        user_id: restaurant_id,
+      });
+      return newRestaurant;
+    }
   };
 
   static activeRestaurant = async ({ restaurant_id }) => {
@@ -56,8 +48,8 @@ class RestaurantService {
     return await Restaurants.findAll();
   };
 
-  static searchRestaurantByKeyWord = async (keySearch) =>{
-    return await findRestauranByKeyWord(keySearch)
+  static searchRestaurantByKeyWord = async (keySearch) => {
+    return await findRestauranByKeyWord(keySearch);
   };
 
   static deleteRestaurant = async ({ restaurant_id }) => {

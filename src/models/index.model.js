@@ -72,14 +72,6 @@ db.Address.belongsToMany(db.Profile, {
   through: "Address Profile",
 });
 
-//Address Restaurant
-db.Address.hasOne(db.Restaurant, {
-  foreignKey: "address_id",
-});
-db.Restaurant.belongsTo(db.Address, {
-  foreignKey: "address_id",
-});
-
 //Product Restaurant
 db.Restaurant.hasMany(db.Product, {
   foreignKey: "restaurant_id",
