@@ -7,7 +7,7 @@ class AddressService {
     return await Address.create({
       address_x: body.address_x,
       address_y: body.address_y,
-      is_default: "1",
+      is_default: "0",
     });
   };
 
