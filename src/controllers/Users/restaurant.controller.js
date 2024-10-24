@@ -1,7 +1,5 @@
 const { SuccessResponse } = require("../../core/success.response")
 const restaurantService = require("../../services/Users/restaurant.service")
-
-//select location
 class RestaurantController{
     updateRestaurant = async(req,res,next)=>{
         new SuccessResponse({
