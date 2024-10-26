@@ -58,6 +58,10 @@ class RestaurantService {
       where: { id: restaurant_id },
     });
   };
+
+  static getDetailProRes = async ({restaurant_id}) =>{
+    return await Restaurants.findOne({where:{id: restaurant_id}})
+  }
 }
 
 module.exports = RestaurantService;
