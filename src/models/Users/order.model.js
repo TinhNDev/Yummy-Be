@@ -6,9 +6,6 @@ module.exports = (sequelize, Sequelize) => {
     address_id: {
       type: Sequelize.INTEGER,
     },
-    item: {
-      type: Sequelize.JSON,
-    },
     order_status: {
       type: Sequelize.ENUM,
       values: ["pending", "confirmed", "delivered"],

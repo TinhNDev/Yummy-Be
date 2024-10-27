@@ -14,4 +14,8 @@ router.get(
   authorization,
   asyncHandle(restaurantController.getDetailProRes)
 );
+router.get(
+  "/restaurant/all",
+  asyncHandle(restaurantController.getAllRestaurant)
+);
 module.exports = router;
