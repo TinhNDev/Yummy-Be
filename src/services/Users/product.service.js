@@ -48,8 +48,8 @@ class Product {
 }
 
 class ProductService extends Product {
-  static createProduct = async (categoriesId, toppingId, payload) => {
-    if (!payload) {
+  static createProduct = async (categoriesId, toppingData, productData) => {
+    if (!productData) {
       throw new Error("Payload is required to create a product");
     }
     
@@ -60,8 +60,7 @@ class ProductService extends Product {
       price,
       quantity,
       is_available,
-    } = payload;
-    console.log(payload)
+    } = productData.productData;
     const newProductInstance = new Product({
       name,
       image,
@@ -69,7 +68,7 @@ class ProductService extends Product {
       price,
       quantity,
       is_available,
-      restaurant_id:payload.user_id,
+      restaurant_id:productData.user_id,
     });
 
     const newProduct = await newProductInstance.createProduct();
@@ -81,10 +80,10 @@ class ProductService extends Product {
       await newProduct.addCategories(categories);
     }
 
-    if (toppingId && toppingId.length > 0) {
-      const toppings = await Topping.findAll({
-        where: { id: toppingId },
-      });
+    if (toppingData && toppingData.length > 0) {
+      const toppings = await Promise.all(
+        toppingData.map(async (data) => await Topping.create(data))
+      )
       await newProduct.addToppings(toppings);
     }
 
