@@ -101,23 +101,47 @@ db.Cart.belongsTo(db.Customer, {
   foreignKey: "cus_id",
   as: "Customer",
 });
-//Order Product
-db.Product.belongsToMany(db.Order, {
-  through: db.OrderItem, 
+
+
+//Cart CartItem
+db.Cart.hasOne(db.CartItem, {
+  foreignKey: "cart_id",
+  as: "CartItem",
+});
+db.CartItem.belongsTo(db.Cart, {
+  foreignKey: "cart_id",
+  as: "Cart",
+});
+//Product CartItem
+db.Product.hasOne(db.CartItem, {
+  foreignKey: "prod_id",
+  as: "CartItem",
+});
+db.CartItem.belongsTo(db.Product, {
+  foreignKey: "prod_id",
+  as: "Product",
 });
 
-//Cart Product
-db.Cart.belongsToMany(db.Product, {
-  through: db.CartItem, 
+
+//Oder OderItem
+db.Order.hasOne(db.OrderItem, {
+  foreignKey: "order_id",
+  as: "OrderItem",
+});
+db.OrderItem.belongsTo(db.Order, {
+  foreignKey: "order_id",
+  as: "Order",
+});
+//Product Order
+db.Product.hasOne(db.OrderItem, {
+  foreignKey: "prod_id",
+  as: "OrderItem",
+});
+db.OrderItem.belongsTo(db.Product, {
+  foreignKey: "prod_id",
+  as: "Product",
 });
 
-db.Product.belongsToMany(db.Cart, {
-  through: db.CartItem,
-});
-
-db.Order.belongsToMany(db.Product, {
-  through: db.OrderItem,
-});
 
 // Cupon Product
 db.Product.belongsToMany(db.Cupon, {
