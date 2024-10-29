@@ -49,6 +49,10 @@ class CatergoriesService {
     await this.getListProduct();
     return await listProduct[category_id] || [];   
   };
+
+  static getAllCategories = async () =>{
+    return await db.Categories.findAll();
+  }
 }
 
 module.exports = CatergoriesService;
