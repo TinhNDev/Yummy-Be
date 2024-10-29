@@ -12,15 +12,15 @@ module.exports = (sequelize, Sequelize) => {
     status: {
       type: Sequelize.ENUM,
       defaultValue: "pending",
-      values: ["pending","active","unactive"]
+      values: ["pending", "active", "unactive"]
     },
-    opening_hours:{
+    opening_hours: {
+      type: Sequelize.TEXT,
+    },
+    phone_number: {
       type: Sequelize.STRING,
     },
-    phone_number:{
-      type: Sequelize.STRING,
-    },
-    description:{
+    description: {
       type: Sequelize.TEXT,
     }
   });
