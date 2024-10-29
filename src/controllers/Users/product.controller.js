@@ -4,11 +4,11 @@ const ProductService = require("../../services/Users/product.service");
 class ProductController {
   // Tạo sản phẩm mới
   CreateProduct = async (req, res, next) => {
-    const { categoriId, toppingData,productData } = req.body;
+    const { categoriData, toppingData,productData } = req.body;
     const user_id = req.user.user_id;
     console.log(req.user);
     const newProduct = await ProductService.createProduct(
-      categoriId,
+      categoriData,
       toppingData,
       {
         productData,
