@@ -15,12 +15,15 @@ class ToppingService {
   };
 
   static getToppingByProduct = async (product_id) =>{
-    return await db.Product.findOne({
-      where:{id:product_id},
-      include:{
-        model: Topping,
-        through: {attribute: []},
-      }
+    return await db.Topping.findAll({
+      include: [
+        {
+          model: db.Product,
+          where: { id: product_id },
+          attributes: [],
+          through: { attributes: [] }
+        }
+      ]
     })
   }
 }
