@@ -53,6 +53,18 @@ class CatergoriesService {
   static getAllCategories = async () =>{
     return await db.Categories.findAll();
   }
+  static getCategoriesByProduct = async (product_id) =>{
+    return await db.Categories.findAll({
+      include: [
+        {
+          model: db.Product,
+          where: { id: product_id },
+          attributes: [],
+          through: { attributes: [] }
+        }
+      ]
+    })
+  }
 }
 
 module.exports = CatergoriesService;
