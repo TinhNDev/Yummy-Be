@@ -1,12 +1,13 @@
 const { SuccessResponse } = require("../../core/success.response")
-const ToppingService= require("../../services/Users/topping.service")
+const ToppingService = require("../../services/Users/topping.service")
+
 class ToppingController{
-    CreateTopping = async (req, res, next) =>{
+    getToppingByProduct = async (req,res,next) =>{
         new SuccessResponse({
-            metadata: await ToppingService.createTopping({
-                user_id: req.user.user_id,
-                topping: req.body.topping
-            })
-        })
+            message: "list topping",
+            metadata: await ToppingService.getToppingByProduct(req.params.id)
+        }).send(res)
     }
 }
+
+module.exports = new ToppingController();
