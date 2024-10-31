@@ -29,5 +29,12 @@ class CatergoriesController {
       metadata: await CatergoriesService.getAllCategories()
     }).send(res)
   }
+
+  getCategoriesByProduct = async (req,res) =>{
+    new SuccessResponse({
+      message: "the categories",
+      metadata: await CatergoriesService.getCategoriesByProduct(req.params.id),
+    }).send(res)
+  }
 }
 module.exports = new CatergoriesController();
