@@ -93,7 +93,7 @@ class ProductService extends Product {
   };
 
   static updateProduct = async (product_id, categoriesId, toppingData, payload) => {
-    const { name, image, descriptions, price, quantity, is_available } = payload;
+    const { name, image, descriptions, price, quantity, is_available } = payload.productData;
     const updateProductInstance = new Product({
       name,
       image,
