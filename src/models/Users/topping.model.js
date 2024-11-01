@@ -6,7 +6,7 @@ module.exports = (sequelize, Sequelize) => {
     price: {
       type: Sequelize.DECIMAL,
     },
-    is_availble: {
+    is_available: {
       type: Sequelize.BOOLEAN,
     },
   });

@@ -120,17 +120,32 @@ class ProductService extends Product {
       const product = await Products.findByPk(product_id);
       await product.setCategories(categories);
     }
-  
-    if (toppingData) {
-      const product = await Products.findByPk(product_id);
+    if (toppingData && toppingData.length > 0) {
+      const product = await Products.findByPk(product_id, {
+        include: [{
+          model: Topping,
+          attributes: ['id']
+        }]
+      });
       
-      await product.setToppings([]);
-  
-      const toppings = await Promise.all(
-        toppingData.map(async (data) => await Topping.create(data))
+      const currentToppings = product.Toppings;
+      await Promise.all(
+        toppingData.map(async (data, index) => {
+          const currentTopping = currentToppings[index];
+          if (currentTopping) {
+            await Topping.update(
+              {
+                topping_name: data.topping_name,
+                price: data.price,
+                is_available: data.is_available
+              },
+              {
+                where: { id: currentTopping.dataValues.id }
+              }
+            );
+          }
+        })
       );
-      
-      await product.addToppings(toppings);
     }
   
     return await Products.findByPk(product_id)
