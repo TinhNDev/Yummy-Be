@@ -75,7 +75,7 @@ class ProductService extends Product {
 
     if (categoriesData) {
       const categories = await Promise.all(
-        categoriesData.map(async (data) => await Categories.create(data))
+        categoriesData.map(async (data) => await Categories.findAll(data.id))
       )
       await newProduct.addCategories(categories);
     }
