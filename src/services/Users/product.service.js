@@ -92,9 +92,8 @@ class ProductService extends Product {
     return newProduct;
   };
 
-  static updateProduct = async (product_id, payload) => {
-    const { name, image, descriptions, price, quantity, is_available } =
-      payload;
+  static updateProduct = async (product_id, categoriesId, toppingData, payload) => {
+    const { name, image, descriptions, price, quantity, is_available } = payload;
     const updateProductInstance = new Product({
       name,
       image,
@@ -103,8 +102,40 @@ class ProductService extends Product {
       quantity,
       is_available,
     });
-    return await updateProductInstance.updateProduct(product_id);
+    await updateProductInstance.updateProduct(product_id, {
+      name,
+      image,
+      descriptions,
+      price,
+      quantity,
+      is_available,
+    });
+
+    if (categoriesId) {
+      const categories = await Categories.findAll({
+        where: {
+          id: categoriesId
+        }
+      });
+      const product = await Products.findByPk(product_id);
+      await product.setCategories(categories);
+    }
+  
+    if (toppingData) {
+      const product = await Products.findByPk(product_id);
+      
+      await product.setToppings([]);
+  
+      const toppings = await Promise.all(
+        toppingData.map(async (data) => await Topping.create(data))
+      );
+      
+      await product.addToppings(toppings);
+    }
+  
+    return await Products.findByPk(product_id)
   };
+  
 
   static async publishedProductByRestaurant({
     product_id,
