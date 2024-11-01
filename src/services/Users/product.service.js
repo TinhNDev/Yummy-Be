@@ -48,7 +48,7 @@ class Product {
 }
 
 class ProductService extends Product {
-  static createProduct = async (categoriesData, toppingData, productData) => {
+  static createProduct = async (categoriesId, toppingData, productData) => {
     if (!productData) {
       throw new Error("Payload is required to create a product");
     }
@@ -73,10 +73,12 @@ class ProductService extends Product {
 
     const newProduct = await newProductInstance.createProduct();
 
-    if (categoriesData) {
-      const categories = await Promise.all(
-        categoriesData.map(async (data) => await Categories.findAll(data.id))
-      )
+    if (categoriesId) {
+      const categories = await Categories.findAll({
+        where: {
+          id: categoriesId
+        }
+      });
       await newProduct.addCategories(categories);
     }
 
