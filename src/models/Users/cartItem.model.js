@@ -3,7 +3,7 @@ module.exports = (sequelize, Sequelize) => {
         product:{
             type: Sequelize.JSON
         },
-        quanlity: {
+        quantity: {
             type: Sequelize.INTEGER,
         },
         price:{

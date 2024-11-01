@@ -1,9 +1,9 @@
 module.exports = (sequelize, Sequelize) =>{
-    const OrderItem = sequelize.define("Oder Item", {
+    const OrderItem = sequelize.define("Order Item", {
         product:{
             type: Sequelize.JSON
         },
-        quanlity: {
+        quantity: {
             type: Sequelize.INTEGER,
         },
         price:{

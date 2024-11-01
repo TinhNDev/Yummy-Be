@@ -35,8 +35,6 @@ db.Product = require("./Users/products.model")(sequelize, Sequelize);
 db.Restaurant = require("./Users/restaurants.model")(sequelize, Sequelize);
 db.Topping = require("./Users/topping.model")(sequelize,Sequelize);
 db.OrderItem = require("./Users/orderItem.model")(sequelize,Sequelize);
-db.Cart = require("./Users/cart.model")(sequelize,Sequelize);
-db.CartItem = require("./Users/cartItem.model")(sequelize,Sequelize);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -93,34 +91,6 @@ db.Product.belongsToMany(db.Categories, {
   through: "Product Categories",
 });
 
-db.Customer.hasOne(db.Cart, {
-  foreignKey: "cus_id",
-  as: "Cart",
-});
-db.Cart.belongsTo(db.Customer, {
-  foreignKey: "cus_id",
-  as: "Customer",
-});
-
-
-//Cart CartItem
-db.Cart.hasOne(db.CartItem, {
-  foreignKey: "cart_id",
-  as: "CartItem",
-});
-db.CartItem.belongsTo(db.Cart, {
-  foreignKey: "cart_id",
-  as: "Cart",
-});
-//Product CartItem
-db.Product.hasOne(db.CartItem, {
-  foreignKey: "prod_id",
-  as: "CartItem",
-});
-db.CartItem.belongsTo(db.Product, {
-  foreignKey: "prod_id",
-  as: "Product",
-});
 
 
 //Oder OderItem

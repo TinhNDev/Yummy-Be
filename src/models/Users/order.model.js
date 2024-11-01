@@ -1,5 +1,8 @@
 module.exports = (sequelize, Sequelize) => {
-  const Order = sequelize.define("Order", {    
+  const Order = sequelize.define("Order", {
+    listCartItem:{
+      type: Sequelize.JSON
+    },    
     receiver_name: {
       type: Sequelize.STRING,
     },
