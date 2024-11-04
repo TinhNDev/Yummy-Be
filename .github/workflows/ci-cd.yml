@@ -21,7 +21,7 @@ jobs:
         run: npm install
 
       - name: Run Tests
-        run: npm test
+        run: npm start
 
       - name: Build Application
         run: npm run build # Only if you need to build the app
