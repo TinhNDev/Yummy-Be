@@ -56,10 +56,16 @@ jobs:
 
       - name: Setup SSH
         run: |
-          mkdir -p $HOME/.ssh  # Sử dụng $HOME để đảm bảo đường dẫn đúng
+          mkdir -p $HOME/.ssh  # Tạo thư mục .ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_rsa  # Lưu SSH key vào đúng vị trí
           chmod 600 $HOME/.ssh/id_rsa  # Thiết lập quyền truy cập cho file key
           ssh-keyscan -H 172.24.150.195 >> $HOME/.ssh/known_hosts  # Thêm host vào known_hosts
+          
+      - name: List Home Directory
+        run: ls -la $HOME
+
+      - name: List SSH Directory
+        run: ls -la $HOME/.ssh
 
       - name: Check SSH Connectivity
         run: |
