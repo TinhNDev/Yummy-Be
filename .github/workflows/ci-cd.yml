@@ -54,9 +54,10 @@ jobs:
       - name: Run Tests
         run: npm test
 
-      # Bỏ hoặc comment dòng này nếu không cần thiết
-      # - name: Build Application
-      #   run: npm run build 
+      - name: Check SSH Connectivity
+        run: |
+          echo "Checking SSH connectivity..."
+          timeout 5 bash -c "until ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa your_username@172.24.150.195 'exit'; do echo 'Waiting for SSH...'; sleep 5; done"
 
       - name: Deploy
         env:
