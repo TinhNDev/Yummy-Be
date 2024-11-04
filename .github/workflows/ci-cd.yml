@@ -1,0 +1,36 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - Test
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18.19.0' # Change this to the version you need
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Build Application
+        run: npm run build # Only if you need to build the app
+
+      - name: Deploy
+        env:
+          SSH_PRIVATE_KEY: ${{ env.SSH_PRIVATE_KEY }} # Ensure SSH key is correctly set in secrets
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh -o StrictHostKeyChecking=no thanhtinh@ThanhTinh "cd /home/Backend/src && git pull origin main && npm install && pm2 restart your-app"
