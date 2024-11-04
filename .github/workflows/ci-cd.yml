@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18.19.0'
+          node-version: '18.19.0' # Change this to the version you need
 
       - name: Install Dependencies
         run: npm install
@@ -51,26 +51,17 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: thanhtinh
 
-      # - name: Run Tests
-      #   run: npm test
+      - name: Run Tests
+        run: npm start
 
-      - name: Setup SSH
-        run: |
-          mkdir -p $HOME/.ssh  # Tạo thư mục .ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_rsa  # Lưu SSH key vào đúng vị trí
-          chmod 600 $HOME/.ssh/id_rsa  # Thiết lập quyền truy cập cho file key
-          ssh-keyscan -H 172.24.150.195 >> $HOME/.ssh/known_hosts  # Thêm host vào known_hosts
-
-      - name: Check SSH Directory
-        run: |
-          echo "Listing $HOME/.ssh"
-          ls -la $HOME/.ssh || echo "Directory does not exist."
-
-      - name: Check SSH Connectivity
-        run: |
-          echo "Checking SSH connectivity..."
-          timeout 5 bash -c "until ssh -o StrictHostKeyChecking=no -i $HOME/.ssh/id_rsa ThanhTinh@172.24.150.195 'exit'; do echo 'Waiting for SSH...'; sleep 5; done"
+      - name: Build Application
+        run: npm run build # Only if you need to build the app
 
       - name: Deploy
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }} # Ensure SSH key is correctly set in secrets
         run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           ssh -o StrictHostKeyChecking=no ThanhTinh@172.24.150.195 "cd /home/Backend/src && git pull origin main && npm install && pm2 restart your-app"
