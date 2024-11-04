@@ -54,6 +54,13 @@ jobs:
       - name: Run Tests
         run: npm test
 
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          # Copy SSH key from your specified path to the SSH directory
+          cp /home/Backend/src/ssh_key ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 172.24.150.195 >> ~/.ssh/known_hosts
       - name: Check SSH Connectivity
         run: |
           echo "Checking SSH connectivity..."
