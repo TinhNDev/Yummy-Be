@@ -34,6 +34,7 @@ db.Cupon = require("./Users/cupon.model")(sequelize, Sequelize);
 db.Product = require("./Users/products.model")(sequelize, Sequelize);
 db.Restaurant = require("./Users/restaurants.model")(sequelize, Sequelize);
 db.Topping = require("./Users/topping.model")(sequelize,Sequelize);
+db.OrderItem = require("./Users/orderItem.model")(sequelize,Sequelize);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -72,14 +73,6 @@ db.Address.belongsToMany(db.Profile, {
   through: "Address Profile",
 });
 
-//Address Restaurant
-db.Address.hasOne(db.Restaurant, {
-  foreignKey: "address_id",
-});
-db.Restaurant.belongsTo(db.Address, {
-  foreignKey: "address_id",
-});
-
 //Product Restaurant
 db.Restaurant.hasMany(db.Product, {
   foreignKey: "restaurant_id",
@@ -98,13 +91,27 @@ db.Product.belongsToMany(db.Categories, {
   through: "Product Categories",
 });
 
-//Order Product
-db.Product.belongsToMany(db.Order, {
-  through: "Order Item",
+
+
+//Oder OderItem
+db.Order.hasOne(db.OrderItem, {
+  foreignKey: "order_id",
+  as: "OrderItem",
 });
-db.Order.belongsToMany(db.Product, {
-  through: "Order Item",
+db.OrderItem.belongsTo(db.Order, {
+  foreignKey: "order_id",
+  as: "Order",
 });
+//Product Order
+db.Product.hasOne(db.OrderItem, {
+  foreignKey: "prod_id",
+  as: "OrderItem",
+});
+db.OrderItem.belongsTo(db.Product, {
+  foreignKey: "prod_id",
+  as: "Product",
+});
+
 
 // Cupon Product
 db.Product.belongsToMany(db.Cupon, {

@@ -7,12 +7,21 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
     },
     address: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
     },
     status: {
       type: Sequelize.ENUM,
       defaultValue: "pending",
-      values: ["pending","active","unactive"]
+      values: ["pending", "active", "unactive"]
+    },
+    opening_hours: {
+      type: Sequelize.TEXT,
+    },
+    phone_number: {
+      type: Sequelize.STRING,
+    },
+    description: {
+      type: Sequelize.TEXT,
     }
   });
   return Restaurants;

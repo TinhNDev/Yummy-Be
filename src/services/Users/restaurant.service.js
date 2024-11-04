@@ -3,40 +3,32 @@ const { findRestauranByKeyWord } = require("./repositories/restaurant.repo.js");
 const Restaurants = db.Restaurant;
 const Profile = db.Profile;
 class RestaurantService {
-  static createRestaurant = async ({ restaurant_id, restaurant }) => {
-    if (!restaurant?.name && !restaurant.image && !restaurant.address) {
-      throw new Error("the restaurant is not valid");
-    } else {
-      const cccd = Profile.findOne({
-        where: { id: restaurant_id },
-      });
-      if (!cccd?.email) {
-        throw new Error("You need verify email!");
-      } else if (!cccd.cic) {
-        throw new Error("You need verify cic");
-      }
-    }
-    return await Restaurants.create({
-      id: restaurant_id,
-      name: restaurant.name,
-      image: restaurant.image,
-      address: restaurant.address,
-    });
-  };
-
   static updateRestaurant = async ({ restaurant_id, restaurant }) => {
-    const Restaurant = Restaurants.findOne({
+    if (!restaurant?.name || !restaurant.image || !restaurant.address || !restaurant.opening_hours || !restaurant.phone_number || !restaurant.description) {
+      throw new Error("The restaurant object contains null or invalid fields");
+    }
+
+    const existingRestaurant = await Restaurants.findOne({
       where: { id: restaurant_id },
     });
-    if (!Restaurant?.status === "active")
-      throw new Error("the requiment don't accepted");
-    return await Restaurants.update({
+
+    const updateData = {
       name: restaurant.name,
       image: restaurant.image,
       address: restaurant.address,
-      status: restaurant.status,
-      where: { id: restaurant_id },
-    });
+      user_id: restaurant_id,
+      opening_hours: restaurant.opening_hours,
+      phone_number: restaurant.phone_number,
+      description: restaurant.description,
+    };
+
+    if (existingRestaurant) {
+      await existingRestaurant.update(updateData);
+      return existingRestaurant;
+    } else {
+      const newRestaurant = await Restaurants.create(updateData);
+      return newRestaurant;
+    }
   };
 
   static activeRestaurant = async ({ restaurant_id }) => {
@@ -56,8 +48,8 @@ class RestaurantService {
     return await Restaurants.findAll();
   };
 
-  static searchRestaurantByKeyWord = async (keySearch) =>{
-    return await findRestauranByKeyWord(keySearch)
+  static searchRestaurantByKeyWord = async (keySearch) => {
+    return await findRestauranByKeyWord(keySearch);
   };
 
   static deleteRestaurant = async ({ restaurant_id }) => {
@@ -66,6 +58,10 @@ class RestaurantService {
       where: { id: restaurant_id },
     });
   };
+
+  static getDetailProRes = async ({ restaurant_id }) => {
+    return await Restaurants.findOne({ where: { user_id: restaurant_id } })
+  }
 }
 
 module.exports = RestaurantService;
