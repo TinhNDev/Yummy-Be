@@ -56,21 +56,16 @@ jobs:
 
       - name: Setup SSH
         run: |
-          mkdir -p ~/.ssh
-          # Copy SSH key from your specified path to the SSH directory
-          cp /home/Backend/src ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 172.24.150.195 >> ~/.ssh/known_hosts
+          mkdir -p $HOME/.ssh  # Sử dụng $HOME để đảm bảo đường dẫn đúng
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_rsa  # Lưu SSH key vào đúng vị trí
+          chmod 600 $HOME/.ssh/id_rsa  # Thiết lập quyền truy cập cho file key
+          ssh-keyscan -H 172.24.150.195 >> $HOME/.ssh/known_hosts  # Thêm host vào known_hosts
+
       - name: Check SSH Connectivity
         run: |
           echo "Checking SSH connectivity..."
-          timeout 5 bash -c "until ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ThanhTinh@172.24.150.195 'exit'; do echo 'Waiting for SSH...'; sleep 5; done"
+          timeout 5 bash -c "until ssh -o StrictHostKeyChecking=no -i $HOME/.ssh/id_rsa ThanhTinh@172.24.150.195 'exit'; do echo 'Waiting for SSH...'; sleep 5; done"
 
       - name: Deploy
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
           ssh -o StrictHostKeyChecking=no ThanhTinh@172.24.150.195 "cd /home/Backend/src && git pull origin main && npm install && pm2 restart your-app"
