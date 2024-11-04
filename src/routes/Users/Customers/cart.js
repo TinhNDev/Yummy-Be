@@ -6,4 +6,4 @@ const router = express.Router();
 
 router.post("/cart", authorization, asyncHandle(cartController.AddToCart));
 
-module.exports = router
+module.exports = router;
