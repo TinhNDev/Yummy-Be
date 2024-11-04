@@ -114,6 +114,12 @@ const getProductById = async (productId) => {
   });
   return products ? products.get({ plain: true }) : null;
 };
+
+const getProductByRestaurantId = async ({restaurant_id}) =>{
+  return Product.findAll({
+    where:{restaurant_id: restaurant_id}
+  })
+}
 module.exports = {
   updateProductById,
   getProductById,
@@ -124,4 +130,5 @@ module.exports = {
   findAllDraftsForShop,
   findAllPublicForShop,
   findProductByUser,
+  getProductByRestaurantId,
 };

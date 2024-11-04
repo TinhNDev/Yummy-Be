@@ -4,14 +4,14 @@ const ProductService = require("../../services/Users/product.service");
 class ProductController {
   // Tạo sản phẩm mới
   CreateProduct = async (req, res, next) => {
-    const { categoriId, toppingId, ...productData } = req.body;
+    const { categoriId, toppingData, productData } = req.body;
     const user_id = req.user.user_id;
     console.log(req.user);
     const newProduct = await ProductService.createProduct(
       categoriId,
-      toppingId,
+      toppingData,
       {
-        ...productData,
+        productData,
         user_id,
       }
     );
@@ -24,13 +24,18 @@ class ProductController {
 
   // Cập nhật sản phẩm
   UpdateProduct = async (req, res, next) => {
-    const { ...productData } = req.body;
+    const { categoriId, toppingData, productData } = req.body;
     const user_id = req.user.user_id;
     const product_id = req.params.id;
-    const updatedProduct = await ProductService.updateProduct(product_id, {
-      ...productData,
-      user_id,
-    });
+    const updatedProduct = await ProductService.updateProduct(
+      product_id,
+      categoriId,
+      toppingData,
+      {
+        productData,
+        user_id,
+      }
+    );
 
     new SuccessResponse({
       message: "Update product success",
@@ -102,6 +107,16 @@ class ProductController {
       message: "Product detail",
       metadata: await ProductService.findProduct({
         product_id: req.params.product_id,
+      }),
+    }).send(res);
+  };
+
+  // Lấy danh sách sản phẩm theo nhà hàng
+  FindProductByIdRestaurant = async (req, res, next) => {
+    new SuccessResponse({
+      message: "List Product of Restaurants",
+      metadata: await ProductService.FindProductByIdRestaurant({
+        restaurant_id: req.user.user_id,
       }),
     }).send(res);
   };
