@@ -15,6 +15,7 @@ jobs:
         ports:
           - 3306:3306
         env:
+          MYSQL_ROOT_PASSWORD: thanhtinh
           MYSQL_DATABASE: foody
           MYSQL_USER: thanhtinh
           MYSQL_PASSWORD: new_password
