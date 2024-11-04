@@ -54,12 +54,14 @@ jobs:
       - name: Run Tests
         run: npm test
 
-      - name: Deploy
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }} # Ensure SSH key is correctly set in secrets
+      - name: Start LocalTunnel
         run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          # Connect via Serveo tunnel using alias 'myalias' and port 2222
-          ssh -v -o StrictHostKeyChecking=no -p 2222 ThanhTinh@myalias.serveo.net "cd /home/Backend/src && git pull origin main && npm install && pm2 restart your-app"
+          lt --port 8080 --subdomain mycustomsubdomain > tunnel_url.txt &
+          sleep 5 # Wait a moment for LocalTunnel to start
+          echo "LocalTunnel URL:"
+          cat tunnel_url.txt
+
+      - name: Deploy
+        run: |
+          # Here you would put your deployment steps if needed
+          echo "Deployment step can be added here."
