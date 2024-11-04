@@ -61,6 +61,5 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh -v -o StrictHostKeyChecking=no ThanhTinh@172.24.150.195 "cd /home/Backend/src && git pull origin main && npm install && pm2 restart your-app"
-
-
+          # Connect via Serveo tunnel using alias 'myalias' and port 2222
+          ssh -v -o StrictHostKeyChecking=no -p 2222 ThanhTinh@myalias.serveo.net "cd /home/Backend/src && git pull origin main && npm install && pm2 restart your-app"
