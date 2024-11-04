@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+     "build": "webpack"
   },
   "keywords": [],
   "author": "",

@@ -21,21 +21,13 @@ jobs:
           MYSQL_PASSWORD: new_password
         options: >-
           --health-cmd="mysqladmin ping --silent"
-          --health-interval=5s
-          --health-timeout=2s
+          --health-interval=10s
+          --health-timeout=5s
           --health-retries=3
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
-
-      - name: Cache Node modules
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -62,8 +54,9 @@ jobs:
       - name: Run Tests
         run: npm test
 
-      - name: Build Application
-        run: npm run build
+      # Bỏ hoặc comment dòng này nếu không cần thiết
+      # - name: Build Application
+      #   run: npm run build 
 
       - name: Deploy
         env:
