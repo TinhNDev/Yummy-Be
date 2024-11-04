@@ -3,8 +3,8 @@ const config = require("../configs/config.mysql");
 const Sequelize = require("sequelize");
 
 const sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
-  host: config.HOST,
-  dialect: config.dialect,
+  host: "127.0.0.1",
+  dialect: 'mysql',
   pool: {
     max: config.pool.max,
     min: config.pool.min,
