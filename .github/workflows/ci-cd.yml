@@ -65,4 +65,4 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh -o StrictHostKeyChecking=no thanhtinh@ThanhTinh "cd /home/Backend/src && git pull origin main && npm install && pm2 restart your-app"
+          ssh -o StrictHostKeyChecking=no 172.24.150.195@ThanhTinh "cd /home/Backend/src && git pull origin main && npm install && pm2 restart your-app"
