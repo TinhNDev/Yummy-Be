@@ -44,6 +44,13 @@ jobs:
             sleep 5
           done
 
+      - name: Create MySQL User
+        run: |
+          mysql -u root -p$MYSQL_ROOT_PASSWORD -h 127.0.0.1 -e "CREATE USER 'runner'@'%' IDENTIFIED BY 'your_runner_password';"
+          mysql -u root -p$MYSQL_ROOT_PASSWORD -h 127.0.0.1 -e "GRANT ALL PRIVILEGES ON foody.* TO 'runner'@'%'; FLUSH PRIVILEGES;"
+        env:
+          MYSQL_ROOT_PASSWORD: thanhtinh
+
       - name: Run Tests
         run: npm start
 
