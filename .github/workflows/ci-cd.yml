@@ -54,7 +54,12 @@ jobs:
       - name: Run Tests
         run: npm test
 
-      - name: Start LocalTunnel
+      - name: Install LocalTunnel
+        run: npm install -g localtunnel
+
+      - name: Deploy
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }} # Ensure SSH key is correctly set in secrets
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -68,7 +73,5 @@ jobs:
           LOCAL_TUNNEL_URL=$(cat tunnel_url.txt)
           echo "LocalTunnel URL: $LOCAL_TUNNEL_URL"
 
-      - name: Deploy
-        run: |
-          # Here you would put your deployment steps if needed
-          echo "Deployment step can be added here."
+          # Connect via SSH (tùy chỉnh lệnh SSH của bạn nếu cần)
+          ssh -v -o StrictHostKeyChecking=no -p 2222 ThanhTinh@myalias.serveo.net "cd /home/Backend/src && git pull origin main && npm install && pm2 restart your-app"
