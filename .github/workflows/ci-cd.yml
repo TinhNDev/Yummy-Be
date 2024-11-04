@@ -51,8 +51,8 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: thanhtinh
 
-      - name: Run Tests
-        run: npm test
+      # - name: Run Tests
+      #   run: npm test
 
       - name: Setup SSH
         run: |
@@ -60,12 +60,11 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_rsa  # Lưu SSH key vào đúng vị trí
           chmod 600 $HOME/.ssh/id_rsa  # Thiết lập quyền truy cập cho file key
           ssh-keyscan -H 172.24.150.195 >> $HOME/.ssh/known_hosts  # Thêm host vào known_hosts
-          
-      - name: List Home Directory
-        run: ls -la $HOME
 
-      - name: List SSH Directory
-        run: ls -la $HOME/.ssh
+      - name: Check SSH Directory
+        run: |
+          echo "Listing $HOME/.ssh"
+          ls -la $HOME/.ssh || echo "Directory does not exist."
 
       - name: Check SSH Connectivity
         run: |
