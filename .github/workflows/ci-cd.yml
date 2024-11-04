@@ -56,10 +56,17 @@ jobs:
 
       - name: Start LocalTunnel
         run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          # Start LocalTunnel
           lt --port 8080 --subdomain mycustomsubdomain > tunnel_url.txt &
           sleep 5 # Wait a moment for LocalTunnel to start
-          echo "LocalTunnel URL:"
-          cat tunnel_url.txt
+
+          # Read the LocalTunnel URL
+          LOCAL_TUNNEL_URL=$(cat tunnel_url.txt)
+          echo "LocalTunnel URL: $LOCAL_TUNNEL_URL"
 
       - name: Deploy
         run: |
