@@ -8,6 +8,23 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: thanhtinh
+          MYSQL_DATABASE: foody
+          MYSQL_USER: thanhtinh
+          MYSQL_PASSWORD: new_password
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -20,6 +37,13 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Wait for MySQL
+        run: |
+          while ! mysqladmin ping -h "127.0.0.1" --silent; do
+            echo "Waiting for MySQL..."
+            sleep 5
+          done
+
       - name: Run Tests
         run: npm start
 
@@ -28,7 +52,7 @@ jobs:
 
       - name: Deploy
         env:
-          SSH_PRIVATE_KEY: ${{ env.SSH_PRIVATE_KEY }} # Ensure SSH key is correctly set in secrets
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }} # Ensure SSH key is correctly set in secrets
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
