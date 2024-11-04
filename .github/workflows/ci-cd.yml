@@ -52,10 +52,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: thanhtinh
 
       - name: Run Tests
-        run: npm start
-
-      - name: Build Application
-        run: npm run build # Only if you need to build the app
+        run: npm test
 
       - name: Deploy
         env:
