@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18.19.0' # Change this to the version you need
+          node-version: '18.19.0' # Thay đổi phiên bản nếu cần
 
       - name: Install Dependencies
         run: npm install
@@ -57,21 +57,19 @@ jobs:
       - name: Install LocalTunnel
         run: npm install -g localtunnel
 
-      - name: Deploy
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }} # Ensure SSH key is correctly set in secrets
+      - name: Start LocalTunnel
         run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-          # Start LocalTunnel
+          # Khởi động LocalTunnel
           lt --port 8080 --subdomain mycustomsubdomain > tunnel_url.txt &
-          sleep 5 # Wait a moment for LocalTunnel to start
+          sleep 5 # Chờ một chút cho LocalTunnel khởi động
 
-          # Read the LocalTunnel URL
+          # Đọc URL của LocalTunnel
           LOCAL_TUNNEL_URL=$(cat tunnel_url.txt)
           echo "LocalTunnel URL: $LOCAL_TUNNEL_URL"
 
-          # Connect via SSH (tùy chỉnh lệnh SSH của bạn nếu cần)
-          ssh -v -o StrictHostKeyChecking=no -p 2222 ThanhTinh@myalias.serveo.net "cd /home/Backend/src && git pull origin main && npm install && pm2 restart your-app"
+      - name: Deploy Application
+        run: |
+          # Ở đây bạn có thể thực hiện các bước deploy cần thiết như 
+          # git pull, npm install, hoặc các lệnh khác mà bạn cần
+          echo "Deploying application..."
+          # Lệnh deploy cụ thể của bạn ở đây
