@@ -2,7 +2,7 @@ const db = require("../../models/index.model");
 const Products = db.Product;
 const Categories = db.Categories;
 const Topping = db.Topping;
-
+const RedisHelper = require("../../caches/redis");
 const {
   updateProductById,
   publishedProductByRestaurant,
@@ -12,7 +12,7 @@ const {
   findProduct,
   findProductByUser,
   findAllPublicForShop,
-  getProductByRestaurantId
+  getProductByRestaurantId,
 } = require("./repositories/product.repo");
 
 class Product {
@@ -48,19 +48,18 @@ class Product {
 }
 
 class ProductService extends Product {
+  static async initRedis() {
+    const redis = new RedisHelper({ keyPrefix: 'product:' });
+    await redis.connect();
+    return redis;
+  }
   static createProduct = async (categoriesId, toppingData, productData) => {
     if (!productData) {
       throw new Error("Payload is required to create a product");
     }
-    
-    const {
-      name,
-      image,
-      descriptions,
-      price,
-      quantity,
-      is_available,
-    } = productData.productData;
+
+    const { name, image, descriptions, price, quantity, is_available } =
+      productData.productData;
     const newProductInstance = new Product({
       name,
       image,
@@ -68,7 +67,7 @@ class ProductService extends Product {
       price,
       quantity,
       is_available,
-      restaurant_id:productData.user_id,
+      restaurant_id: productData.user_id,
     });
 
     const newProduct = await newProductInstance.createProduct();
@@ -76,8 +75,8 @@ class ProductService extends Product {
     if (categoriesId) {
       const categories = await Categories.findAll({
         where: {
-          id: categoriesId
-        }
+          id: categoriesId,
+        },
       });
       await newProduct.addCategories(categories);
     }
@@ -85,15 +84,21 @@ class ProductService extends Product {
     if (toppingData) {
       const toppings = await Promise.all(
         toppingData.map(async (data) => await Topping.create(data))
-      )
+      );
       await newProduct.addToppings(toppings);
     }
 
     return newProduct;
   };
 
-  static updateProduct = async (product_id, categoriesId, toppingData, payload) => {
-    const { name, image, descriptions, price, quantity, is_available } = payload.productData;
+  static updateProduct = async (
+    product_id,
+    categoriesId,
+    toppingData,
+    payload
+  ) => {
+    const { name, image, descriptions, price, quantity, is_available } =
+      payload.productData;
     const updateProductInstance = new Product({
       name,
       image,
@@ -114,20 +119,22 @@ class ProductService extends Product {
     if (categoriesId) {
       const categories = await Categories.findAll({
         where: {
-          id: categoriesId
-        }
+          id: categoriesId,
+        },
       });
       const product = await Products.findByPk(product_id);
       await product.setCategories(categories);
     }
     if (toppingData && toppingData.length > 0) {
       const product = await Products.findByPk(product_id, {
-        include: [{
-          model: Topping,
-          attributes: ['id']
-        }]
+        include: [
+          {
+            model: Topping,
+            attributes: ["id"],
+          },
+        ],
       });
-      
+
       const currentToppings = product.Toppings;
       await Promise.all(
         toppingData.map(async (data, index) => {
@@ -137,20 +144,19 @@ class ProductService extends Product {
               {
                 topping_name: data.topping_name,
                 price: data.price,
-                is_available: data.is_available
+                is_available: data.is_available,
               },
               {
-                where: { id: currentTopping.dataValues.id }
+                where: { id: currentTopping.dataValues.id },
               }
             );
           }
         })
       );
     }
-  
-    return await Products.findByPk(product_id)
+
+    return await Products.findByPk(product_id);
   };
-  
 
   static async publishedProductByRestaurant({
     product_id,
@@ -165,25 +171,25 @@ class ProductService extends Product {
   static async findAllDraftsForRestaurant({
     product_restaurant,
     limit = 60,
-    skip = 0
+    skip = 0,
   }) {
     const query = {
       restaurant_id: product_restaurant,
       is_draft: true,
     };
-    return await findAllDraftsForShop({query, limit, skip});
+    return await findAllDraftsForShop({ query, limit, skip });
   }
 
   static async findAllPublicForRestaurant({
     product_restaurant,
     limit = 60,
-    skip = 0
+    skip = 0,
   }) {
     const query = {
       restaurant_id: product_restaurant,
       is_public: true,
     };
-    return await findAllPublicForShop({query, limit, skip});
+    return await findAllPublicForShop({ query, limit, skip });
   }
   static async getListSearchProduct(keySearch) {
     return await findProductByUser(keySearch);
@@ -192,7 +198,7 @@ class ProductService extends Product {
     limit = 30,
     sort = "ctime",
     page = 1,
-    filter = { is_public:true },
+    filter = { is_public: true },
   }) {
     return await findAllProduct({
       limit,
@@ -205,9 +211,25 @@ class ProductService extends Product {
   static async findProduct({ product_id }) {
     return await findProduct({ product_id, unSelect: ["__v"] });
   }
-  static async FindProductByIdRestaurant({ restaurant_id }){
-    return await getProductByRestaurantId({restaurant_id});
+  static async getListProductForRes({ restaurant_id }) {
+    return await getProductByRestaurantId({ restaurant_id });
   }
+  static async getListProductForUser({ restaurant_id }) {
+    const redisKey = `restaurant_id:${restaurant_id}:products`;
+    const redis = await ProductService.initRedis();
+  
+    const cacheData = await redis.get(redisKey);
+    if (cacheData) {
+      return JSON.parse(cacheData); 
+    } else {
+      const result = await getProductByRestaurantId({ restaurant_id });
+      
+      await redis.set(redisKey, JSON.stringify(result), this.redisKeyTTL);
+      
+      return result;
+    }
+  }
+  
 }
 
 module.exports = ProductService;
