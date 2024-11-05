@@ -205,7 +205,10 @@ class ProductService extends Product {
   static async findProduct({ product_id }) {
     return await findProduct({ product_id, unSelect: ["__v"] });
   }
-  static async FindProductByIdRestaurant({ restaurant_id }){
+  static async getListProductForRes({ restaurant_id }){
+    return await getProductByRestaurantId({restaurant_id});
+  }
+  static async getListProductForUser({ restaurant_id }){
     return await getProductByRestaurantId({restaurant_id});
   }
 }
