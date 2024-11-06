@@ -49,7 +49,7 @@ class Product {
 
 class ProductService extends Product {
   static async initRedis() {
-    const redis = new RedisHelper({ keyPrefix: 'product:' });
+    const redis = new RedisHelper({ keyPrefix: "product:" });
     await redis.connect();
     return redis;
   }
@@ -217,17 +217,82 @@ class ProductService extends Product {
   static async getListProductForUser({ restaurant_id }) {
     const redisKey = `restaurant_id:${restaurant_id}:products`;
     const redis = await ProductService.initRedis();
-  
+
     const cacheData = await redis.get(redisKey);
     if (cacheData) {
-      return JSON.parse(cacheData); 
+      return JSON.parse(cacheData);
     } else {
       const result = await getProductByRestaurantId({ restaurant_id });
-      
+
       await redis.set(redisKey, JSON.stringify(result), this.redisKeyTTL);
-      
+
       return result;
     }
+  }
+  static async getProductDetails({ product_id, userLatitude, userLongitude }) {
+    const redis = new RedisHelper({ keyPrefix: "restaurant:" });
+    await redis.connect();
+  
+    const product = await Products.findByPk(product_id, {
+      include: [{ model: db.Restaurant, attributes: ["id", "address"] }],
+    });
+  
+    if (!product) {
+      throw new Error("Product not found");
+    }
+  
+    const restaurant = product.Restaurant;
+    const redisKey = `restaurant_address:${restaurant.id}`;
+    const cachedAddress = await redis.get(redisKey);
+    if (cachedAddress) {
+      if (cachedAddress === restaurant.address) {
+        const addressPattern = /lat:\s*([0-9.-]+),\s*long:\s*([0-9.-]+)/;
+        const matches = cachedAddress.match(addressPattern);
+  
+        if (matches) {
+          const restaurantLatitude = parseFloat(matches[1]);
+          const restaurantLongitude = parseFloat(matches[2]);
+  
+          const distance = calculateDistance(
+            userLatitude,
+            userLongitude,
+            restaurantLatitude,
+            restaurantLongitude
+          );
+  
+          if (distance <= 10) {
+            const redisProductKey = `product:${product_id}`;
+            const cachedProduct = await redis.get(redisProductKey);
+            if (cachedProduct) {
+              return JSON.parse(cachedProduct);
+            }
+          }
+        }
+      }
+    }
+    
+    const addressPattern = /lat:\s*([0-9.-]+),\s*long:\s*([0-9.-]+)/;
+    const matches = restaurant.address.match(addressPattern);
+  
+    if (matches) {
+      const restaurantLatitude = parseFloat(matches[1]);
+      const restaurantLongitude = parseFloat(matches[2]);
+  
+      const distance = calculateDistance(
+        userLatitude,
+        userLongitude,
+        restaurantLatitude,
+        restaurantLongitude
+      );
+  
+      if (distance <= maxDistance) {
+        const redisProductKey = `product:${product_id}`;
+        await redis.set(redisProductKey, JSON.stringify(product), 3600);
+        await redis.set(redisKey, restaurant.address, 3600);
+      }
+    }
+  
+    return product;
   }
   
 }
