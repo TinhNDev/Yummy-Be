@@ -1,3 +1,4 @@
+const { where } = require("underscore");
 const db = require("../../models/index.model");
 const { CreateAddress } = require("./address.service");
 const Profile = db.Profile;
@@ -32,6 +33,9 @@ class ProfileService {
       return await profile.addAddress(addr);
     }
   };
+  static getProfie = async (user_id) =>{
+    return await Profile.findOne({where:{id: user_id}})
+  }
 }
 
 module.exports = ProfileService;
