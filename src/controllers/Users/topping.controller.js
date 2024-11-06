@@ -14,6 +14,7 @@ class ToppingController{
             metadata: await ToppingService.changeStatusTopping({
                 user_id: req.user.user_id,
                 product_id: req.params.id,
+                topping_id: req.body.topping_id,
             })
         })
     }
