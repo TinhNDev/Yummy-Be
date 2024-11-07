@@ -65,13 +65,19 @@ db.Driver.belongsTo(db.Profile, {
   as: "Profile",
 });
 
-//profile address
-db.Profile.belongsToMany(db.Address, {
-  through: "Address Profile",
+// In Profile model
+db.Profile.hasMany(db.Address, {
+  as: "Address",  
+  foreignKey: "profileId",
 });
-db.Address.belongsToMany(db.Profile, {
-  through: "Address Profile",
+
+// In Address model
+db.Address.belongsTo(db.Profile, {
+  as: "Profile",
+  foreignKey: "profileId",
 });
+
+
 
 //Product Restaurant
 db.Restaurant.hasMany(db.Product, {
