@@ -6,7 +6,7 @@ class AddressService {
       address_name: body.address_name,
       address_x: body.address_x,
       address_y: body.address_y,
-      is_default: "0",
+      is_default: body.is_default,
       profileId: profileId
     });
   };
