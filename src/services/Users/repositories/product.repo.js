@@ -76,7 +76,7 @@ const findAllProduct = async ({ limit, sort, page, filter, select }) => {
 
   const products = await Product.findAll({
     where: filter, //loc theo điều kiện nào
-    limit: limit, // số phần tử trong 1 trang
+    limit: parseInt(limit), // số phần tử trong 1 trang
     offset: offset, // bỏ qua số lượng sản phẩm đã được lấy
     attributes: select ? select : undefined, // chọn các trường cần thiết
     order: orderBy, // sắp sếp sản phẩm
