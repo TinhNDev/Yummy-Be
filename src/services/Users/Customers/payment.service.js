@@ -17,7 +17,6 @@ const createOrder = async ({ order, user_id }) => {
   };
 
   const configOrder = {
-    merchant_name: order.receiver_name,
     app_id: config.app_id,
     app_trans_id: `${moment().format("YYMMDD")}_${transID}`,
     app_user: order.receiver_name,
@@ -25,7 +24,7 @@ const createOrder = async ({ order, user_id }) => {
     item: JSON.stringify(order.listCartItem),
     embed_data: JSON.stringify(embed_data),
     amount: order.price,
-    callback_url: `${process.env.URL_SYSTEM}/callback`,
+    callback_url: `${process.env.URL_SYSTEM}/v1/api/callback`,
     description: `
 Thanh toán cho đơn hàng #${order.listCartItem
       .map(
@@ -46,13 +45,17 @@ Thanh toán cho đơn hàng #${order.listCartItem
     const result = await axios.post(config.endpoint, null, {
       params: configOrder,
     });
-    return result.data;
+    return {
+      cofig:result.data,
+      data: data,
+      mac: configOrder.mac
+    };
   } catch (error) {
     throw new Error(`Failed to create order: ${error.message}`);
   }
 };
 
-const verifyCallback = (dataStr, reqMac) => {
+const verifyCallback = ({dataStr, reqMac}) => {
   const mac = CryptoJS.HmacSHA256(dataStr, config.key2).toString();
 
   if (reqMac !== mac) {
