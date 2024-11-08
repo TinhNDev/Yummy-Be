@@ -2,7 +2,7 @@ const db = require("../../models/index.model");
 const Products = db.Product;
 const Categories = db.Categories;
 const Topping = db.Topping;
-const RedisHelper = require("../../caches/redis");
+const RedisHelper = require("../../cache/redis");
 const {
   updateProductById,
   publishedProductByRestaurant,
