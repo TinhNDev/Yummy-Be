@@ -35,6 +35,7 @@ db.Product = require("./Users/products.model")(sequelize, Sequelize);
 db.Restaurant = require("./Users/restaurants.model")(sequelize, Sequelize);
 db.Topping = require("./Users/topping.model")(sequelize,Sequelize);
 db.OrderItem = require("./Users/orderItem.model")(sequelize,Sequelize);
+db.Payment = require("../models/Users/Customers/payment.model")(sequelize, Sequelize);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -96,8 +97,6 @@ db.Categories.belongsToMany(db.Product, {
 db.Product.belongsToMany(db.Categories, {
   through: "Product Categories",
 });
-
-
 
 //Oder OderItem
 db.Order.hasOne(db.OrderItem, {
@@ -174,3 +173,11 @@ db.User.hasOne(db.Restaurant,{
 db.Restaurant.belongsTo(db.User,{
   foreignKey:"user_id"
 })
+
+//Order payment
+db.Order.belongsTo(db.Payment, {
+  foreignKey: "order_id",
+});
+db.Payment.hasMany(db.Order, {
+  foreignKey: "order_id",
+});

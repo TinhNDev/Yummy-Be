@@ -18,4 +18,5 @@ router.use("/v1/api", require("./Users/address"));
 router.use("/v1/api", require("./Users/restaurants"))
 router.use("/v1/api", require("./Users/topping"))
 router.use("/v1/api", require("./Users/Customers/cart"))
+router.use("/v1/api", require("./Users/Customers/payment"))
 module.exports = router;
