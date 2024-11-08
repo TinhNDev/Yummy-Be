@@ -1,8 +1,13 @@
 const db = require("../../models/index.model.js");
-const { findRestauranByKeyWord } = require("./repositories/restaurant.repo.js");
+const { findRestauranByKeyWord,sortRestaurantsByDistance } = require("./repositories/restaurant.repo.js");
 const Restaurants = db.Restaurant;
 const Profile = db.Profile;
 class RestaurantService {
+  static async initRedis() {
+    const redis = new RedisHelper({ keyPrefix: "restaurant:" });
+    await redis.connect();
+    return redis;
+  }
   static updateRestaurant = async ({ restaurant_id, restaurant }) => {
     if (!restaurant?.name || !restaurant.image || !restaurant.address || !restaurant.opening_hours || !restaurant.phone_number || !restaurant.description) {
       throw new Error("The restaurant object contains null or invalid fields");
@@ -44,8 +49,18 @@ class RestaurantService {
     });
   };
 
-  static getAllRestaurant = async () => {
-    return await Restaurants.findAll();
+  static getAllRestaurant = async (userLatitude, userLongitude) => {
+    const redisKey = `restaurants:all`;
+    const redis = await RestaurantService.initRedis();
+    const cachedData = await redis.get(redisKey);
+    if (cachedData) {
+      const restaurants = JSON.parse(cachedData);
+      return sortRestaurantsByDistance(restaurants, userLatitude, userLongitude);
+    } else {
+      const restaurants = await Restaurants.findAll();
+      await redis.set(redisKey, JSON.stringify(restaurants), 3600);
+      return sortRestaurantsByDistance(restaurants, userLatitude, userLongitude);
+    }
   };
 
   static searchRestaurantByKeyWord = async (keySearch) => {

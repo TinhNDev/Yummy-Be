@@ -1,4 +1,4 @@
-const calculateDistan = (lat1, lon1, lat2, lon2) => {
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180); // Đổi từ độ sang radian
   const dLon = (lon2 - lon1) * (Math.PI / 180); // Đổi từ độ sang radian
@@ -16,4 +16,4 @@ const calculateDistan = (lat1, lon1, lat2, lon2) => {
   return distance;
 };
 
-module.exports = {calculateDistan};
+module.exports = {calculateDistance};

@@ -22,7 +22,13 @@ module.exports = (sequelize, Sequelize) => {
     },
     description: {
       type: Sequelize.TEXT,
-    }
+    },
+    address_x: {
+      type: Sequelize.STRING,
+    },
+    address_y: {
+      type: Sequelize.STRING,
+    },
   });
   return Restaurants;
 };
