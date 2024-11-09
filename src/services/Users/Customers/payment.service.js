@@ -24,7 +24,7 @@ const createOrder = async ({ order, user_id }) => {
     item: JSON.stringify(order.listCartItem),
     embed_data: JSON.stringify(embed_data),
     amount: order.price,
-    callback_url: `${process.env.URL_SYSTEM}/v1/api/callback`,
+    callback_url: `${process.env.URL}/callback`,
     description: `
 Thanh toán cho đơn hàng #${order.listCartItem
       .map(
@@ -46,16 +46,16 @@ Thanh toán cho đơn hàng #${order.listCartItem
       params: configOrder,
     });
     return {
-      cofig:result.data,
+      cofig: result.data,
       data: data,
-      mac: configOrder.mac
+      mac: configOrder.mac,
     };
   } catch (error) {
     throw new Error(`Failed to create order: ${error.message}`);
   }
 };
 
-const verifyCallback = ({dataStr, reqMac}) => {
+const verifyCallback = ({ dataStr, reqMac }) => {
   const mac = CryptoJS.HmacSHA256(dataStr, config.key2).toString();
 
   if (reqMac !== mac) {
