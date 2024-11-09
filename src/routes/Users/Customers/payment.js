@@ -5,4 +5,5 @@ const paymentController = require('../../../controllers/Users/Customers/payment.
 const router = express.Router();
 
 router.post("/payment", authorization, asyncHandle(paymentController.createOrder));
+router.post("/checkstatus",authorization,asyncHandle(paymentController.checkStatus))
 module.exports = router;
