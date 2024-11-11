@@ -1,9 +1,10 @@
-// services/paymentService.js
 const axios = require("axios");
 const CryptoJS = require("crypto-js");
 const moment = require("moment");
 const qs = require('qs');
 const db = require("../../../models/index.model")
+const calculateDistance = require('../../../helper/calculateDistance')
+const { getRestaurantById } = require('../restaurant.service')
 const config = {
   app_id: "2553",
   key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
@@ -11,13 +12,55 @@ const config = {
   endpoint: "https://sb-openapi.zalopay.vn/v2/create",
 };
 
+const getTotalPrice = async (userLatitude, userLongitude, restaurant_id, listCartItem) => {
+  let totalFoodPrice = 0;
+
+  for (const item of listCartItem) {
+    let itemTotalPrice = item.price * item.quantity;
+
+    if (item.toppings && item.toppings.length > 0) {
+      item.toppings.forEach(topping => {
+        itemTotalPrice += topping.price;
+      });
+    }
+
+    totalFoodPrice += itemTotalPrice;
+  }
+
+  const restaurant = await getRestaurantById(restaurant_id);
+  const { distance } = await calculateDistance(userLatitude, userLongitude, restaurant.address_x, restaurant.address_y);
+  const shippingCost = calculateShippingCost(distance);
+
+  const totalPrice = totalFoodPrice + shippingCost;
+
+  return {
+    totalFoodPrice,
+    shippingCost,
+    totalPrice,
+  };
+};
+
+const calculateShippingCost = (distanceInKm) => {
+  const minimumFare = 15000;
+  const maxDistanceForMinimumFare = 3;
+  const extraKmFare = 5000;
+
+  if (distanceInKm <= maxDistanceForMinimumFare) {
+    return minimumFare;
+  } else {
+    const extraKm = parseFloat(distanceInKm) - maxDistanceForMinimumFare;
+    return minimumFare + extraKm * extraKmFare;
+  }
+};
+
 const createOrder = async ({ order, user_id }) => {
   const transID = Math.floor(Math.random() * 1000000);
-
-  const embed_data = {
-    redirecturl: "yourapp://payment-callback",
-  };
-
+  const { totalFoodPrice, shippingCost, totalPrice } = await getTotalPrice(
+    order.userLatitude,
+    order.userLongitude,
+    order.restaurant_id,
+    order.listCartItem
+  );
   const configOrder = {
     app_id: config.app_id,
     app_trans_id: `${moment().format("YYMMDD")}_${transID}`,
@@ -25,13 +68,13 @@ const createOrder = async ({ order, user_id }) => {
     app_time: Date.now(),
     item: JSON.stringify(order.listCartItem),
     embed_data: JSON.stringify(order),
-    amount: order.price,
+    amount: totalPrice,
     callback_url: `${process.env.URL}/callback`,
     description: `
 Thanh toán cho đơn hàng #${order.listCartItem
       .map(
         (item) => `
-        Sản phẩm: ${item.product_name} 
+        Sản phẩm: ${item.name} 
         Số lượng: ${item.quantity} 
         Đơn giá: ${item.price.toLocaleString()} VND
 `
@@ -78,7 +121,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       note: orderData.note,
     });
     return {
-      app_trans_id:dataJson["app_trans_id"],
+      app_trans_id: dataJson["app_trans_id"],
       Order: newOrder
     }
   }
@@ -110,4 +153,5 @@ const checkStatusOrder = async ({ app_trans_id }) => {
     console.log(error);
   }
 };
-module.exports = { createOrder, verifyCallback,checkStatusOrder };
+
+module.exports = { createOrder, verifyCallback, checkStatusOrder };

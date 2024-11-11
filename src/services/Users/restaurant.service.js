@@ -108,6 +108,9 @@ class RestaurantService {
   static getDetailProRes = async ({ restaurant_id }) => {
     return await Restaurants.findOne({ where: { user_id: restaurant_id } });
   };
+  static getRestaurantById = async(id) =>{
+    return await Restaurants.findByPk(id)
+  }
 }
 
 module.exports = RestaurantService;
