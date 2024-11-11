@@ -1,16 +1,13 @@
 const db = require("../../models/index.model.js");
 const { findRestauranByKeyWord,sortRestaurantsByDistance } = require("./repositories/restaurant.repo.js");
 const Restaurants = db.Restaurant;
-const RedisHelper = require("../../cache/redis");
 const Profile = db.Profile;
+const RedisHelper = require("../../cache/redis");
 class RestaurantService {
-  constructor() {
-    this.redis = new RedisHelper({ keyPrefix: 'shop:' });
-    this.redisKeyTTL = 3600;
-  }
-
-  async initRedis() {
-    await this.redis.connect();
+  static async initRedis() {
+    const redis = new RedisHelper({ keyPrefix: "restaurant:" });
+    await redis.connect();
+    return redis;
   }
   static updateRestaurant = async ({ restaurant_id, restaurant }) => {
     if (!restaurant?.name || !restaurant.image || !restaurant.address || !restaurant.opening_hours || !restaurant.phone_number || !restaurant.description) {
