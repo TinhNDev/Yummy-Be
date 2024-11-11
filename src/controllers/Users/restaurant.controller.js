@@ -38,7 +38,7 @@ class RestaurantController {
   getAllRestaurant = async (req, res, next) => {
     new SuccessResponse({
       message: "list restaurant",
-      metadata: await restaurantService.getAllRestaurant(userLatitude, userLongitude),
+      metadata: await restaurantService.getAllRestaurant(req.body.userLatitude, req.body.userLongitude),
     }).send(res);
   };
 

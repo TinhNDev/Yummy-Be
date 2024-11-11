@@ -14,7 +14,7 @@ router.get(
   authorization,
   asyncHandle(restaurantController.getDetailProRes)
 );
-router.get(
+router.post(
   "/restaurant/all",
   asyncHandle(restaurantController.getAllRestaurant)
 );
