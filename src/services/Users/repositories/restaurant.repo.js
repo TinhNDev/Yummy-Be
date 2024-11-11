@@ -1,5 +1,5 @@
 const db = require("../../../models/index.model")
-const {calculateDistance} = require("../../../helper/distance")
+const geolib = require("geolib");
 const findRestauranByKeyWord = async(keySearch)=>{
     const query = `
     SELECT * FROM Restaurant
@@ -12,14 +12,32 @@ const findRestauranByKeyWord = async(keySearch)=>{
         type: db.Sequelize.QueryTypes.SELECT,
     })
 }
-const sortRestaurantsByDistance = async (restaurants, userLatitude, userLongitude) => {
-    return await restaurants
-      .map(restaurant => {
-        const [address_x, address_y] = restaurant.address.split(",");
-        const distance = calculateDistance(userLatitude, userLongitude, parseFloat(address_x), parseFloat(address_y));
-        return { ...restaurant, distance };
+const getNearbyRestaurantDetails = (
+  restaurants,
+  userLatitude,
+  userLongitude,
+  radius
+) => {
+  return (
+    restaurants
+      .map((restaurant) => {
+        const distance = geolib.getDistance(
+          { latitude: userLatitude, longitude: userLongitude },
+          { latitude: restaurant.address_x, longitude: restaurant.address_y }
+        );
+        return {
+          id: restaurant.id,
+          name: restaurant.name,
+          latitude: restaurant.address_x,
+          longitude: restaurant.address_y,
+          distance: distance,
+          inRadius: distance <= radius,
+        };
       })
-      .sort((a, b) => a.distance - b.distance);
-  }
+      .filter((restaurant) => restaurant.inRadius)
+      .sort((a, b) => a.distance - b.distance)
+  );
+};
 
-module.exports = {findRestauranByKeyWord,sortRestaurantsByDistance}
+module.exports = {findRestauranByKeyWord,getNearbyRestaurantDetails}
+

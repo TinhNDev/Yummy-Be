@@ -1,8 +1,11 @@
 const db = require("../../models/index.model.js");
-const { findRestauranByKeyWord,sortRestaurantsByDistance } = require("./repositories/restaurant.repo.js");
+const {
+  findRestauranByKeyWord,
+  getNearbyRestaurantDetails,
+} = require("./repositories/restaurant.repo.js");
 const Restaurants = db.Restaurant;
-const Profile = db.Profile;
 const RedisHelper = require("../../cache/redis");
+const { Op } = require("sequelize");
 class RestaurantService {
   static async initRedis() {
     const redis = new RedisHelper({ keyPrefix: "restaurant:" });
@@ -10,7 +13,14 @@ class RestaurantService {
     return redis;
   }
   static updateRestaurant = async ({ restaurant_id, restaurant }) => {
-    if (!restaurant?.name || !restaurant.image || !restaurant.address || !restaurant.opening_hours || !restaurant.phone_number || !restaurant.description) {
+    if (
+      !restaurant?.name ||
+      !restaurant.image ||
+      !restaurant.address ||
+      !restaurant.opening_hours ||
+      !restaurant.phone_number ||
+      !restaurant.description
+    ) {
       throw new Error("The restaurant object contains null or invalid fields");
     }
 
@@ -50,17 +60,37 @@ class RestaurantService {
     });
   };
 
-  static getAllRestaurant = async (userLatitude, userLongitude) => {
-    const redisKey = `restaurants:all`;
+  static getAllRestaurant = async (
+    userLatitude,
+    userLongitude,
+  ) => {
+    const redisKey = `restaurants:nearby:${userLatitude}:${userLongitude}:${process.env.RADIUS}`;
     const redis = await RestaurantService.initRedis();
+  
     const cachedData = await redis.get(redisKey);
     if (cachedData) {
-      const restaurants = JSON.parse(cachedData);
-      return sortRestaurantsByDistance(restaurants, userLatitude, userLongitude);
+      return JSON.parse(cachedData);
     } else {
-      const restaurants = await Restaurants.findAll();
-      await redis.set(redisKey, JSON.stringify(restaurants), 3600);
-      return sortRestaurantsByDistance(restaurants, userLatitude, userLongitude);
+      const restaurants = await Restaurants.findAll({
+        where: {
+          address_x: {
+            [Op.between]: [userLatitude - (process.env.RADIUS / 111.32), userLatitude + (process.env.RADIUS / 111.32)],
+          },
+          address_y: {
+            [Op.between]: [userLongitude - (process.env.RADIUS / (111.32 * Math.cos((userLatitude * Math.PI) / 180))), userLongitude + (process.env.RADIUS / (111.32 * Math.cos((userLatitude * Math.PI) / 180)))],
+          },
+        },
+      });
+  
+      const nearbyRestaurants = getNearbyRestaurantDetails(
+        restaurants,
+        userLatitude,
+        userLongitude,
+        process.env.RADIUS
+      );
+  
+      await redis.set(redisKey, JSON.stringify(nearbyRestaurants));
+      return nearbyRestaurants;
     }
   };
 
@@ -76,8 +106,8 @@ class RestaurantService {
   };
 
   static getDetailProRes = async ({ restaurant_id }) => {
-    return await Restaurants.findOne({ where: { user_id: restaurant_id } })
-  }
+    return await Restaurants.findOne({ where: { user_id: restaurant_id } });
+  };
 }
 
 module.exports = RestaurantService;
