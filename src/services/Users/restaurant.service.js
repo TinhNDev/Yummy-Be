@@ -72,8 +72,8 @@ class RestaurantService {
     if (cachedData) {
       return JSON.parse(cachedData);
     } else {
-      const limit = 20; // Number of restaurants per page
-      const offset = (page - 1) * limit; // Calculate offset based on page number
+      const limit = 20;
+      const offset = (page - 1) * limit;
   
       const restaurants = await Restaurants.findAll({
         where: {
