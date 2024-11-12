@@ -63,14 +63,18 @@ class RestaurantService {
   static getAllRestaurant = async (
     userLatitude,
     userLongitude,
+    page = 1,
   ) => {
-    const redisKey = `restaurants:nearby:${userLatitude}:${userLongitude}:${process.env.RADIUS}`;
+    const redisKey = `restaurants:nearby:${userLatitude}:${userLongitude}:${process.env.RADIUS}:page:${page}`;
     const redis = await RestaurantService.initRedis();
-  
+    
     const cachedData = await redis.get(redisKey);
     if (cachedData) {
       return JSON.parse(cachedData);
     } else {
+      const limit = 20; // Number of restaurants per page
+      const offset = (page - 1) * limit; // Calculate offset based on page number
+  
       const restaurants = await Restaurants.findAll({
         where: {
           address_x: {
@@ -80,6 +84,8 @@ class RestaurantService {
             [Op.between]: [userLongitude - (process.env.RADIUS / (111.32 * Math.cos((userLatitude * Math.PI) / 180))), userLongitude + (process.env.RADIUS / (111.32 * Math.cos((userLatitude * Math.PI) / 180)))],
           },
         },
+        limit,
+        offset,
       });
   
       const nearbyRestaurants = getNearbyRestaurantDetails(
@@ -93,6 +99,7 @@ class RestaurantService {
       return nearbyRestaurants;
     }
   };
+  
 
   static searchRestaurantByKeyWord = async (keySearch) => {
     return await findRestauranByKeyWord(keySearch);
