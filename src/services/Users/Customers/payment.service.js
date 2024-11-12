@@ -58,7 +58,7 @@ const createOrder = async ({ order, user_id }) => {
   const { totalFoodPrice, shippingCost, totalPrice } = await getTotalPrice(
     order.userLatitude,
     order.userLongitude,
-    order.restaurant_id,
+    order.listCartItem[0].restaurant_id,
     order.listCartItem
   );
   const configOrder = {
@@ -107,7 +107,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
 
     const newOrder = await db.Order.create({
       listCartItem: orderData.listCartItem,
-      receiver_name: orderData.address,
+      receiver_name: orderData.name,
       address_receiver: orderData.address,
       order_status: orderData.order_status,
       driver_id: orderData.driver_id,
