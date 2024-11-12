@@ -36,6 +36,7 @@ db.Product = require("./Users/products.model")(sequelize, Sequelize);
 db.Restaurant = require("./Users/restaurants.model")(sequelize, Sequelize);
 db.Topping = require("./Users/topping.model")(sequelize,Sequelize);
 db.OrderItem = require("./Users/orderItem.model")(sequelize,Sequelize);
+db.Payment = require("../models/Users/Customers/payment.model")(sequelize, Sequelize);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -66,13 +67,19 @@ db.Driver.belongsTo(db.Profile, {
   as: "Profile",
 });
 
-//profile address
-db.Profile.belongsToMany(db.Address, {
-  through: "Address Profile",
+// In Profile model
+db.Profile.hasMany(db.Address, {
+  as: "Address",  
+  foreignKey: "profileId",
 });
-db.Address.belongsToMany(db.Profile, {
-  through: "Address Profile",
+
+// In Address model
+db.Address.belongsTo(db.Profile, {
+  as: "Profile",
+  foreignKey: "profileId",
 });
+
+
 
 //Product Restaurant
 db.Restaurant.hasMany(db.Product, {
@@ -91,8 +98,6 @@ db.Categories.belongsToMany(db.Product, {
 db.Product.belongsToMany(db.Categories, {
   through: "Product Categories",
 });
-
-
 
 //Oder OderItem
 db.Order.hasOne(db.OrderItem, {
@@ -169,3 +174,11 @@ db.User.hasOne(db.Restaurant,{
 db.Restaurant.belongsTo(db.User,{
   foreignKey:"user_id"
 })
+
+//Order payment
+db.Order.belongsTo(db.Payment, {
+  foreignKey: "order_id",
+});
+db.Payment.hasMany(db.Order, {
+  foreignKey: "order_id",
+});

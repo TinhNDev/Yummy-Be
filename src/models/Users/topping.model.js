@@ -4,7 +4,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
     },
     price: {
-      type: Sequelize.DECIMAL,
+      type: Sequelize.INTEGER,
     },
     is_available: {
       type: Sequelize.BOOLEAN,

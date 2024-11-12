@@ -15,7 +15,7 @@ router.get(
   asyncHandle(restaurantController.getDetailProRes)
 );
 router.get(
-  "/restaurant/all",
+  "/restaurants/:userLatitude/:userLongitude",
   asyncHandle(restaurantController.getAllRestaurant)
 );
 module.exports = router;
