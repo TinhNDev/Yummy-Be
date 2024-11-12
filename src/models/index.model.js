@@ -98,15 +98,15 @@ db.Product.belongsToMany(db.Categories, {
   through: "Product Categories",
 });
 
-//Oder OderItem
-db.Order.hasOne(db.OrderItem, {
-  foreignKey: "order_id",
-  as: "OrderItem",
-});
-db.OrderItem.belongsTo(db.Order, {
-  foreignKey: "order_id",
-  as: "Order",
-});
+// //Oder OderItem
+// db.Order.hasOne(db.OrderItem, {
+//   foreignKey: "order_id",
+//   as: "OrderItem",
+// });
+// db.OrderItem.belongsTo(db.Order, {
+//   foreignKey: "order_id",
+//   as: "Order",
+// });
 //Product Order
 db.Product.hasOne(db.OrderItem, {
   foreignKey: "prod_id",

@@ -6,8 +6,10 @@ class OrderRestaunrantController{
         new SuccessResponse({
             message:"all order",
             metadata: await OrderRestaunrantService.getOrder({
-                restaurant_id: req.params.restaurant_id
+                restaurant_id: req.user.user_id
             })
-        })
+        }).send(res)
     }
 }
+
+module.exports =new OrderRestaunrantController();
