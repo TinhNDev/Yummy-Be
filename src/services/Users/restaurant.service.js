@@ -72,22 +72,23 @@ class RestaurantService {
     if (cachedData) {
       return JSON.parse(cachedData);
     } else {
+      const radiusInDegrees = process.env.RADIUS / 111.32;
       const limit = 20;
       const offset = (page - 1) * limit;
   
       const restaurants = await Restaurants.findAll({
         where: {
           address_x: {
-            [Op.between]: [userLatitude - (process.env.RADIUS / 111.32), userLatitude + (process.env.RADIUS / 111.32)],
+            [Op.between]: [userLatitude - radiusInDegrees, userLatitude + radiusInDegrees],
           },
           address_y: {
-            [Op.between]: [userLongitude - (process.env.RADIUS / (111.32 * Math.cos((userLatitude * Math.PI) / 180))), userLongitude + (process.env.RADIUS / (111.32 * Math.cos((userLatitude * Math.PI) / 180)))],
+            [Op.between]: [userLongitude - (process.env.RADIUS / (111.32 * Math.cos((userLatitude * Math.PI) / 180))),
+                           userLongitude + (process.env.RADIUS / (111.32 * Math.cos((userLatitude * Math.PI) / 180)))],
           },
         },
-        limit,
-        offset,
       });
   
+
       const nearbyRestaurants = getNearbyRestaurantDetails(
         restaurants,
         userLatitude,
@@ -95,8 +96,11 @@ class RestaurantService {
         process.env.RADIUS
       );
   
-      await redis.set(redisKey, JSON.stringify(nearbyRestaurants));
-      return nearbyRestaurants;
+      nearbyRestaurants.sort((a, b) => a.distance - b.distance);
+      const paginatedRestaurants = nearbyRestaurants.slice(offset, offset + limit);
+  
+      await redis.set(redisKey, JSON.stringify(paginatedRestaurants));
+      return paginatedRestaurants;
     }
   };
   
