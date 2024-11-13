@@ -9,4 +9,8 @@ router.get(
   authorization,
   asyncHandle(restaurantController.getOrder)
 );
+router.post("/restaurant/order/status",
+  authorization,
+  asyncHandle(restaurantController.changeStatusOrder)
+)
 module.exports = router;
