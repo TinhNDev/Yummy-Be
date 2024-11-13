@@ -160,7 +160,7 @@ const checkStatusOrder = async ({ app_trans_id }) => {
 
   try {
     const result = await axios(postConfig);
-    return result.data;
+    return result.data.return_message;
   } catch (error) {
     console.log("lỗi");
     console.log(error);
