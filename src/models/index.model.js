@@ -134,6 +134,16 @@ db.Order.belongsTo(db.Cupon, {
   foreignKey: "cupon_id",
 });
 
+
+//Cupon Order
+db.Restaurant.hasMany(db.Order, {
+  foreignKey: "restaurant_id",
+});
+db.Order.belongsTo(db.Restaurant, {
+  foreignKey: "restaurant_id",
+});
+
+
 //customer order
 db.Customer.hasMany(db.Order, {
   foreignKey: "customer_id",

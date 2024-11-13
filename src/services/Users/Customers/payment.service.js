@@ -1,10 +1,10 @@
 const axios = require("axios");
 const CryptoJS = require("crypto-js");
 const moment = require("moment");
-const qs = require('qs');
-const db = require("../../../models/index.model")
-const calculateDistance = require('../../../helper/calculateDistance')
-const { getRestaurantById } = require('../restaurant.service')
+const qs = require("qs");
+const db = require("../../../models/index.model");
+const calculateDistance = require("../../../helper/calculateDistance");
+const { getRestaurantById } = require("../restaurant.service");
 const config = {
   app_id: "2553",
   key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
@@ -12,14 +12,19 @@ const config = {
   endpoint: "https://sb-openapi.zalopay.vn/v2/create",
 };
 
-const getTotalPrice = async (userLatitude, userLongitude, restaurant_id, listCartItem) => {
+const getTotalPrice = async (
+  userLatitude,
+  userLongitude,
+  restaurant_id,
+  listCartItem
+) => {
   let totalFoodPrice = 0;
 
   for (const item of listCartItem) {
     let itemTotalPrice = item.price * item.quantity;
 
     if (item.toppings && item.toppings.length > 0) {
-      item.toppings.forEach(topping => {
+      item.toppings.forEach((topping) => {
         itemTotalPrice += topping.price;
       });
     }
@@ -28,7 +33,12 @@ const getTotalPrice = async (userLatitude, userLongitude, restaurant_id, listCar
   }
 
   const restaurant = await getRestaurantById(restaurant_id);
-  const { distance } = await calculateDistance(userLatitude, userLongitude, restaurant.address_x, restaurant.address_y);
+  const { distance } = await calculateDistance(
+    userLatitude,
+    userLongitude,
+    restaurant.address_x,
+    restaurant.address_y
+  );
   const shippingCost = calculateShippingCost(distance);
 
   const totalPrice = totalFoodPrice + shippingCost;
@@ -90,7 +100,10 @@ Thanh toán cho đơn hàng #${order.listCartItem
     const result = await axios.post(config.endpoint, null, {
       params: configOrder,
     });
-    return result.data.order_url;
+    return {
+      url: result.data.order_url,
+      app_trans_id: configOrder.app_trans_id,
+    };
   } catch (error) {
     throw new Error(`Failed to create order: ${error.message}`);
   }
@@ -119,11 +132,11 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       order_pay: orderData.order_pay,
       customer_id: dataJson["app_user"],
       note: orderData.note,
+      restaurant_id: orderData.listCartItem[0].restaurant_id,
     });
     return {
-      app_trans_id: dataJson["app_trans_id"],
-      Order: newOrder
-    }
+      Order: newOrder,
+    };
   }
 };
 
@@ -147,7 +160,7 @@ const checkStatusOrder = async ({ app_trans_id }) => {
 
   try {
     const result = await axios(postConfig);
-    return result.data
+    return result.data;
   } catch (error) {
     console.log("lỗi");
     console.log(error);
