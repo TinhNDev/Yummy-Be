@@ -5,6 +5,8 @@ const qs = require("qs");
 const db = require("../../../models/index.model");
 const calculateDistance = require("../../../helper/calculateDistance");
 const { getRestaurantById } = require("../restaurant.service");
+const { io } = require("socket.io-client");
+const socket = io(process.env.SOCKET_SERVER_URL);
 const config = {
   app_id: "2553",
   key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
@@ -116,8 +118,9 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
     return { return_code: -1, return_message: "mac not equal" };
   } else {
     const dataJson = JSON.parse(dataStr);
-    const orderData = JSON.parse(dataJson["embed_data"])
+    const orderData = JSON.parse(dataJson["embed_data"]);
 
+    // Tạo đơn hàng mới trong database
     const newOrder = await db.Order.create({
       listCartItem: orderData.listCartItem,
       receiver_name: orderData.receiver_name,
@@ -134,11 +137,19 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       note: orderData.note,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
     });
+
+    socket.emit("newOrderForRestaurant", {
+      orderId: newOrder.id,
+      restaurant_id: orderData.listCartItem[0].restaurant_id,
+    });
+    console.log("Thông báo đơn hàng mới đã được gửi tới server socket");
+
     return {
       Order: newOrder,
     };
   }
 };
+
 
 const checkStatusOrder = async ({ app_trans_id }) => {
   let postData = {
