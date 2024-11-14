@@ -13,7 +13,7 @@ class OrderRestaurantService {
     static changeStatusOrder = async ({ orderId, status }) => {
         const order = await Order.findByPk(orderId);
         if (order) {
-            order.status = status;
+            order.order_status = status;
             await order.save();
             return order;
         } else {
