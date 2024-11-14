@@ -61,6 +61,7 @@ class OrderRestaurantService {
 
             if (nearestDriver) {
                 order.dataValues.driver_id = nearestDriver;
+                return order.dataValues;
             } else {
                 throw new Error('No available driver found');
             }
