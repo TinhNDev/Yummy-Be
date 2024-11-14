@@ -1,4 +1,4 @@
-const { Restaurant, Order } = require("../../../models/index.model");
+const { Restaurant, Order, Driver, Profile } = require("../../../models/index.model");
 const geolib = require('geolib');
 const redis = require('redis');
 const getAllDriverIdsFromRedis = require("../../../helper/redisFunction");
@@ -61,7 +61,11 @@ class OrderRestaurantService {
 
             if (nearestDriver) {
                 order.dataValues.driver_id = nearestDriver;
-                return order.dataValues;
+                return {
+                    order: order.dataValues,
+                    profile: await Profile.findByPk(nearestDriver).dataValues,
+                    place_lisence: await Driver.findByPk(nearestDriver).dataValues.license_plate
+                }
             } else {
                 throw new Error('No available driver found');
             }

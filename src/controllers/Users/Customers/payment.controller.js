@@ -28,6 +28,7 @@ class PaymentController{
             })
         }).send(res)
     }
+    
 }
 
 module.exports = new PaymentController();
