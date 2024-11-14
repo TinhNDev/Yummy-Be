@@ -61,10 +61,11 @@ class OrderRestaurantService {
 
             if (nearestDriver) {
                 order.dataValues.driver_id = nearestDriver;
+                const place_lisence = await Driver.findOne({where:{id:parseFloat(nearestDriver)}})
                 return {
                     order: order.dataValues,
                     profile: await Profile.findByPk(nearestDriver).dataValues,
-                    place_lisence: await Driver.findByPk(nearestDriver).dataValues.license_plate
+                    license_plate: place_lisence?.dataValues.license_plate || {}
                 }
             } else {
                 throw new Error('No available driver found');
