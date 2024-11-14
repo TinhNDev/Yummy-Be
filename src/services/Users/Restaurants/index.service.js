@@ -21,7 +21,7 @@ class OrderRestaurantService {
         }
     };
     
-    static findDriver = async (restaurant_id, order_id) => {
+    static findDriver = async ({restaurant_id, order_id}) => {
         try {
             if (!redisClient.isOpen) {
                 await redisClient.connect();
@@ -60,7 +60,7 @@ class OrderRestaurantService {
             }
 
             if (nearestDriver) {
-                return nearestDriver;
+                order.dataValues.driver_id = nearestDriver;
             } else {
                 throw new Error('No available driver found');
             }

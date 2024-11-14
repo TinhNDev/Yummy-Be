@@ -13,4 +13,7 @@ router.post("/restaurant/order/status",
   authorization,
   asyncHandle(restaurantController.changeStatusOrder)
 )
+router.get(
+  "/restaurant/:order_id/driver",authorization,asyncHandle(restaurantController.findDriver)
+)
 module.exports = router;

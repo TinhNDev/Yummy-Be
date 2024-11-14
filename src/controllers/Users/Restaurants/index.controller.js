@@ -20,6 +20,15 @@ class OrderRestaunrantController{
             })
         }).send(res)
     }
+    findDriver = async(req, res) =>{
+        new SuccessResponse({
+            message:"driver",
+            metadata: await OrderRestaunrantService.findDriver({
+                restaurant_id: req.user.user_id,
+                order_id: req.params.order_id,
+            })
+        }).send(res)
+    }
 }
 
 module.exports =new OrderRestaunrantController();
