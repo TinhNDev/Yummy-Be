@@ -28,8 +28,8 @@ const getNearbyRestaurantDetails = (
         return {
           id: restaurant.id,
           name: restaurant.name,
-          latitude: restaurant.address_x,
-          longitude: restaurant.address_y,
+          descriptions: restaurant.descriptions,
+          image: restaurant.image,
           distance: distance,
           inRadius: distance <= radius,
         };

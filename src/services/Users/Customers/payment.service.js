@@ -120,7 +120,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
 
     const newOrder = await db.Order.create({
       listCartItem: orderData.listCartItem,
-      receiver_name: orderData.name,
+      receiver_name: orderData.receiver_name,
       address_receiver: orderData.address,
       order_status: orderData.order_status,
       driver_id: orderData.driver_id,
