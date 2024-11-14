@@ -61,10 +61,11 @@ class OrderRestaurantService {
 
             if (nearestDriver) {
                 order.dataValues.driver_id = nearestDriver;
-                const place_lisence = await Driver.findOne({where:{id:parseFloat(nearestDriver)}})
+                const place_lisence = await Driver.findOne({where:{id:parseFloat(1)}})
+                const profile =  await Profile.findOne({where:{id:parseFloat(1)}})
                 return {
                     order: order.dataValues,
-                    profile: await Profile.findByPk(nearestDriver).dataValues,
+                    profile: profile?.dataValues||{},
                     license_plate: place_lisence?.dataValues.license_plate || {}
                 }
             } else {
