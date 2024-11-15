@@ -2,7 +2,8 @@ const { Restaurant, Order, Driver, Profile } = require("../../../models/index.mo
 const geolib = require('geolib');
 const redis = require('redis');
 const getAllDriverIdsFromRedis = require("../../../helper/redisFunction");
-
+const { io } = require("socket.io-client");
+const socket = io(process.env.SOCKET_SERVER_URL);
 const redisClient = redis.createClient();
 
 class OrderRestaurantService {
@@ -64,8 +65,8 @@ class OrderRestaurantService {
                 const place_lisence = await Driver.findOne({where:{id:parseFloat(1)}})
                 const profile =  await Profile.findOne({where:{id:parseFloat(1)}})
                 socket.emit("newOrderForDriver", {
-                    orderId: newOrder.id,
-                    restaurant_id: orderData.driver_id,
+                    orderId: order.dataValues.id,
+                    driver_id: order.dataValues.driver_id,
                   });
                 return {
                     order:{
