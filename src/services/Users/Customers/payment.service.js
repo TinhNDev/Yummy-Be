@@ -125,7 +125,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       listCartItem: orderData.listCartItem,
       receiver_name: orderData.receiver_name,
       address_receiver: orderData.address,
-      order_status: orderData.order_status,
+      order_status: 'PAID',
       driver_id: orderData.driver_id,
       blacklist_id: orderData.blacklist_id,
       price: orderData.price,
