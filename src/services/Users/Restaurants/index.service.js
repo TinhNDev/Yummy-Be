@@ -68,9 +68,11 @@ class OrderRestaurantService {
                     restaurant_id: orderData.driver_id,
                   });
                 return {
-                    order: order.dataValues,
-                    profile: profile?.dataValues||{},
-                    license_plate: place_lisence?.dataValues.license_plate || {}
+                    order:{
+                        order: order.dataValues,
+                        profile: profile?.dataValues||{},
+                        license_plate: place_lisence?.dataValues.license_plate || {}
+                    }
                 }
             } else {
                 throw new Error('No available driver found');
