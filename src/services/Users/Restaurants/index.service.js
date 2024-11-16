@@ -79,7 +79,7 @@ class OrderRestaurantService {
 
         try {
           await Order.update(
-            { driver_id: nearestDriver },
+            { driver_id: nearestDriver, order_status:'PREPARING_ORDER' },
             { where: { id: order.dataValues.id }, transaction }
           );
           const updatedOrder = await Order.findOne({

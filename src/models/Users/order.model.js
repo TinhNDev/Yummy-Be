@@ -11,7 +11,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     order_status: {
       type: Sequelize.ENUM,
-      values: ["pending", "confirmed", "delivered"],
+      values: ['PAID','UNPAID','PREPARING_ORDER','ORDER_CANCELED','ORDER_RECEIVED','DELIVERING','ORDER_CONFIRMED'],
     },
     driver_id: {
       type: Sequelize.INTEGER,

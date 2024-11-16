@@ -15,6 +15,20 @@ class DriverService {
       { where: { id: orderId } }
     );
   };
+  static acceptOrder = async (orderId, driver_id) =>{
+    await Driver.update(
+      {
+        status: 'BUSY',
+      },
+      {where:{id:driver_id}}
+    )
+    return await Order.update(
+      {
+        order_status: "DELIVERING",
+      },
+      { where: { id: orderId } }
+    );
+  }
 }
 
 module.exports = DriverService;
