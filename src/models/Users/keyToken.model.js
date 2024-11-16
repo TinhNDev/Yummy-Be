@@ -12,6 +12,9 @@ module.exports = (sequelize, Sequelize) => {
     refreshToken: {
       type: Sequelize.TEXT,
     },
+    fcmToken:{
+      type: Sequelize.TEXT
+    }
   });
   return KeyToken;
 };

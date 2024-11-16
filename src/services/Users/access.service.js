@@ -14,7 +14,7 @@ const { createTokenPair } = require("../../auth/authUtils");
 const getInforData = require("../../utils/index");
 const { findByEmail } = require("./user.service");
 class AccessService {
-  static singUp = async ({ password, email }) => {
+  static singUp = async ({ password, email,fcmToken }) => {
     const holderUser = await user.findOne({
       where: {
         email,
@@ -48,6 +48,7 @@ class AccessService {
         user_id: newUser.id,
         publicKey,
         privateKey,
+        fcmToken
       });
       if (!keyStore) {
         throw new BadRequestError("Error: Key not in database");
@@ -76,7 +77,7 @@ class AccessService {
       metadata: null,
     };
   };
-  static login = async ({ email, password, refreshToken = null }) => {
+  static login = async ({ email, password, refreshToken = null,fcmToken }) => {
     /*
             #step1: check exist email
             #step2: check match password

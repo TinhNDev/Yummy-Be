@@ -6,6 +6,7 @@ const db = require("../../../models/index.model");
 const calculateDistance = require("../../../helper/calculateDistance");
 const { getRestaurantById } = require("../restaurant.service");
 const { io } = require("socket.io-client");
+const admin = require('firebase-admin')
 const socket = io(process.env.SOCKET_SERVER_URL);
 const config = {
   app_id: "2553",
@@ -139,7 +140,21 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       note: orderData.note,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
     });
-
+    const KeyToken = db.KeyToken.findOne({where:{id:orderData.listCartItem[0].restaurant_id}})
+    try {
+      const payload = {
+        notification: {
+          title: 'New Order',
+          body: `123`,
+        },
+        token: KeyToken.fcmToken,
+      };
+      const response = await admin.messaging().send(payload);
+      console.log('Successfully sent message:', response);
+    } catch (error) {
+      throw error
+    }
+    
     socket.emit("newOrderForRestaurant", {
       orderId: newOrder.id,
       restaurant_id: orderData.listCartItem[0].restaurant_id,

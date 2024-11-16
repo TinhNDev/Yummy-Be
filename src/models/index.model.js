@@ -135,7 +135,7 @@ db.Order.belongsTo(db.Cupon, {
 });
 
 
-//Cupon Order
+//Restaurant Order
 db.Restaurant.hasMany(db.Order, {
   foreignKey: "restaurant_id",
 });
@@ -143,6 +143,13 @@ db.Order.belongsTo(db.Restaurant, {
   foreignKey: "restaurant_id",
 });
 
+//Restaurant Order
+db.Restaurant.hasMany(db.Order, {
+  foreignKey: "restaurant_id",
+});
+db.Order.belongsTo(db.Restaurant, {
+  foreignKey: "restaurant_id",
+});
 
 //customer order
 db.Customer.hasMany(db.Order, {

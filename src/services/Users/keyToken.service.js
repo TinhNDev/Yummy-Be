@@ -8,6 +8,7 @@ class KeyTokenService {
     publicKey,
     privateKey,
     refreshToken,
+    fcmToken
   }) => {
     try {
       const tokensRecord = await keyTokenModel.findOne({
@@ -21,6 +22,7 @@ class KeyTokenService {
             publicKey: publicKey,
             refreshTokenUsed:{},
             refreshToken: refreshToken,
+            fcmToken:fcmToken
           },
           {
             where: { user_id: user_id },
@@ -32,6 +34,7 @@ class KeyTokenService {
           privateKey: privateKey,
           publicKey: publicKey,
           refreshToken: refreshToken || "",
+          fcmToken:fcmToken
         });
       }
       return tokens ? tokens.publicKey : null;
