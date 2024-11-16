@@ -140,7 +140,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       note: orderData.note,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
     });
-    const KeyToken = db.KeyToken.findOne({where:{id:orderData.listCartItem[0].restaurant_id}})
+    const KeyToken = await db.KeyToken.findOne({where:{id:orderData.listCartItem[0].restaurant_id}})
     try {
       const payload = {
         notification: {
