@@ -66,6 +66,7 @@ const calculateShippingCost = (distanceInKm) => {
 };
 
 const createOrder = async ({ order, user_id }) => {
+  
   const transID = Math.floor(Math.random() * 1000000);
   const { totalFoodPrice, shippingCost, totalPrice } = await getTotalPrice(
     order.userLatitude,
@@ -73,6 +74,7 @@ const createOrder = async ({ order, user_id }) => {
     order.listCartItem[0].restaurant_id,
     order.listCartItem
   );
+  
   const configOrder = {
     app_id: config.app_id,
     app_trans_id: `${moment().format("YYMMDD")}_${transID}`,

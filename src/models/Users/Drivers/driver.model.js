@@ -11,7 +11,8 @@ module.exports = (sequelize, Sequelize) => {
     },
     status: {
       type: Sequelize.ENUM,
-      values: ["active", "warming", "inactive"],
+      values: ["ONLINE", "BUSY", "WARMING","LOCKED","PROCESSING"],
+      defaultValue:"PROCESSING",
     },
     phone_number: {
       type: Sequelize.INTEGER,
