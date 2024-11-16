@@ -144,11 +144,11 @@ db.Order.belongsTo(db.Restaurant, {
 });
 
 //Restaurant Order
-db.Restaurant.hasMany(db.Order, {
-  foreignKey: "restaurant_id",
+db.Driver.hasMany(db.Order, {
+  foreignKey: "driver_id",
 });
-db.Order.belongsTo(db.Restaurant, {
-  foreignKey: "restaurant_id",
+db.Order.belongsTo(db.Driver, {
+  foreignKey: "driver_id",
 });
 
 //customer order

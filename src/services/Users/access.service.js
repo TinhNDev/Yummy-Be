@@ -44,15 +44,6 @@ class AccessService {
         },
       });
       console.log(publicKey, privateKey);
-      const keyStore = await KeyTokenService.createKeyToken({
-        user_id: newUser.id,
-        publicKey,
-        privateKey,
-        fcmToken
-      });
-      if (!keyStore) {
-        throw new BadRequestError("Error: Key not in database");
-      }
       const tokens = await createTokenPair(
         {
           user_id: newUser.id,
@@ -61,8 +52,16 @@ class AccessService {
         publicKey,
         privateKey
       );
-      console.log(`Create tokens successfully::`, tokens);
-
+      const keyStore = await KeyTokenService.createKeyToken({
+        user_id: newUser.id,
+        publicKey,
+        privateKey,
+        refreshToken: tokens.refreshToken,
+        fcmToken
+      });
+      if (!keyStore) {
+        throw new BadRequestError("Error: Key not in database");
+      }
       return {
         code: 201,
         user: getInforData({
@@ -118,6 +117,7 @@ class AccessService {
       publicKey,
       privateKey,
       refreshToken: tokens.refreshToken,
+      fcmToken: fcmToken
     });
     return {
       user: getInforData({

@@ -14,9 +14,6 @@ module.exports = (sequelize, Sequelize) => {
       values: ["ONLINE", "BUSY", "WARMING","LOCKED","PROCESSING"],
       defaultValue:"PROCESSING",
     },
-    phone_number: {
-      type: Sequelize.INTEGER,
-    },
   });
   return Driver;
 };
