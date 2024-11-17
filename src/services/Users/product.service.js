@@ -57,7 +57,7 @@ class ProductService extends Product {
     if (!productData) {
       throw new Error("Payload is required to create a product");
     }
-
+    const restaurant = await db.Restaurant.findOne({where:{user_id:productData.user_id}})
     const { name, image, descriptions, price, quantity, is_available } =
       productData.productData;
     const newProductInstance = new Product({
@@ -67,7 +67,7 @@ class ProductService extends Product {
       price,
       quantity,
       is_available,
-      restaurant_id: productData.user_id,
+      restaurant_id: restaurant.id,
     });
 
     const newProduct = await newProductInstance.createProduct();
