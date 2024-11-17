@@ -6,6 +6,7 @@ const {
   sequelize,
   User,
   KeyToken,
+  Customer,
 } = require("../../../models/index.model");
 const geolib = require("geolib");
 const redis = require("redis");
@@ -73,13 +74,13 @@ class OrderRestaurantService {
           }
         }
       }
-
+      let fcmToken;
       if (nearestDriver) {
         const transaction = await sequelize.transaction();
 
         try {
           await Order.update(
-            { driver_id: nearestDriver, order_status:'PREPARING_ORDER' },
+            { driver_id: nearestDriver, order_status: "PREPARING_ORDER" },
             { where: { id: order.dataValues.id }, transaction }
           );
           const updatedOrder = await Order.findOne({
@@ -117,13 +118,13 @@ class OrderRestaurantService {
             transaction,
           });
           await transaction.commit();
+          fcmToken =
+            updatedOrder?.Driver?.Profile?.User?.["Key Tokens"]?.[0]?.fcmToken;
           try {
-            const fcmToken =
-              updatedOrder?.Driver?.Profile?.User?.['Key Tokens']?.[0]?.fcmToken;
             if (fcmToken) {
               const payload = {
                 notification: {
-                  title: "New Order",
+                  title: `new order ${order_id}`,
                   body: `Bạn có đơn hàng mới!`,
                 },
                 token: fcmToken,
@@ -151,12 +152,134 @@ class OrderRestaurantService {
           throw error;
         }
       } else {
-        throw new Error("No available driver found");
+        try {
+          if (fcmToken) {
+            const payload = {
+              notification: {
+                title: `new order ${order_id}`,
+                body: `No available driver found`,
+              },
+              token: fcmToken,
+            };
+
+            const response = await admin.messaging().send(payload);
+            console.log("Successfully sent message:", response);
+          } else {
+            console.log("FCM token not found");
+          }
+        } catch (error) {
+          console.error("Error sending notification:", error);
+        }
       }
     } catch (error) {
       console.error("Error in findDriver:", error.message);
       throw new Error("Could not find driver");
     }
+  };
+
+  static rejectOrderByRestaurant = async ({
+    restaurant_id,
+    order_id,
+    reason,
+  }) => {
+    const OrderRejected = await Order.findOne({
+      where: { id: order_id },
+      include: [
+        {
+          model: Restaurant,
+          attributes: ["id", "name", "address"],
+        },
+        {
+          model: Customer,
+          attributes: ["license_plate"],
+          include: [
+            {
+              model: Profile,
+              as: "Profile",
+              attributes: ["id", "name", "image", "phone_number", "cic"],
+              include: [
+                {
+                  model: User,
+                  as: "User",
+                  include: [
+                    {
+                      model: KeyToken,
+                      as: "Key Tokens",
+                      attributes: ["fcmToken"],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      transaction,
+    });
+    const fcmToken =
+      updatedOrder?.Customer?.Profile?.User?.["Key Tokens"]?.[0]?.fcmToken;
+    try {
+      await Order.update(
+        {
+          order_status: "ORDER_CANCELED",
+        },
+        { where: { id: order_id } }
+      );
+      switch (reason) {
+        case 1:
+          try {
+            if (fcmToken) {
+              const payload = {
+                notification: {
+                  title: `order ${order_id} rejected`,
+                  body: `Could not find driver`,
+                },
+                token: fcmToken,
+              };
+              const response = await admin.messaging().send(payload);
+              console.log("Successfully sent message:", response);
+            }
+          } catch (error) {
+            throw error;
+          }
+          break;
+        case 2:
+          try {
+            if (fcmToken) {
+              const payload = {
+                notification: {
+                  title: `order ${order_id} rejected`,
+                  body: `Out of toppings!`,
+                },
+                token: fcmToken,
+              };
+              const response = await admin.messaging().send(payload);
+              console.log("Successfully sent message:", response);
+            }
+          } catch (error) {
+            throw error;
+          }
+          break;
+        case 3:
+          try {
+            if (fcmToken) {
+              const payload = {
+                notification: {
+                  title: `order ${order_id} rejected`,
+                  body: `confirm order rejected`,
+                },
+                token: fcmToken,
+              };
+              const response = await admin.messaging().send(payload);
+              console.log("Successfully sent message:", response);
+            }
+          } catch (error) {
+            throw error;
+          }
+        default:
+          break;
+      }
+    } catch (error) {}
   };
 }
 
