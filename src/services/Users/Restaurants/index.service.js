@@ -191,7 +191,6 @@ class OrderRestaurantService {
         },
         {
           model: Customer,
-          attributes: ["license_plate"],
           include: [
             {
               model: Profile,
@@ -217,7 +216,7 @@ class OrderRestaurantService {
       transaction,
     });
     const fcmToken =
-      updatedOrder?.Customer?.Profile?.User?.["Key Tokens"]?.[0]?.fcmToken;
+      OrderRejected?.Customer?.Profile?.User?.["Key Tokens"]?.[0]?.fcmToken;
     try {
       await Order.update(
         {
