@@ -16,4 +16,5 @@ router.post("/restaurant/order/status",
 router.get(
   "/restaurant/:order_id/driver",authorization,asyncHandle(restaurantController.findDriver)
 )
+router.get("/restaurant/reject/:order_id/:reason",authorization,asyncHandle(restaurantController.rejectOrder))
 module.exports = router;

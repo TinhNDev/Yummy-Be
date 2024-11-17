@@ -29,6 +29,16 @@ class OrderRestaunrantController{
             })
         }).send(res)
     }
+    rejectOrder = async(req, res) =>{
+        new SuccessResponse({
+            message:"reject order",
+            metadata: await OrderRestaunrantService.rejectOrderByRestaurant({
+                restaurant_id: req.user.user_id,
+                order_id: req.params.order_id,
+                reason: req.params.reason,
+            })
+        })
+    }
 }
 
 module.exports =new OrderRestaunrantController();
