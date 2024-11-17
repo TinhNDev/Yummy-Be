@@ -7,6 +7,7 @@ const {
   User,
   KeyToken,
   Customer,
+  BlackList,
 } = require("../../../models/index.model");
 const geolib = require("geolib");
 const redis = require("redis");
@@ -31,7 +32,7 @@ class OrderRestaurantService {
     }
   };
 
-  static findDriver = async ({ restaurant_id, order_id }) => {
+  static findDriver = async ({ restaurant_id, order_id}) => {
     try {
       if (!redisClient.isOpen) {
         await redisClient.connect();
@@ -46,8 +47,15 @@ class OrderRestaurantService {
       const driverIds = await getAllDriverIdsFromRedis();
       let nearestDriver = null;
       let shortestDistance = Infinity;
-
+      const blacklist = BlackList.findAll({where:{order_id:order_id}})
       for (const driverId of driverIds) {
+        const isBlacklist = blacklist.some(
+          (entry)=>entry.driver_id == driverId && entry.status == true
+        )
+        if (isBlacklist) {
+          console.log(`Driver ${driverId} bị blacklist, bỏ qua.`);
+          continue;
+        }
         const driverLocation = await redisClient.hGetAll(
           `driver:${driverId}:location`
         );
