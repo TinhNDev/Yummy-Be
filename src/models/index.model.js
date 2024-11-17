@@ -142,6 +142,21 @@ db.Restaurant.hasMany(db.Order, {
 db.Order.belongsTo(db.Restaurant, {
   foreignKey: "restaurant_id",
 });
+//Restaurant Order
+db.Order.hasMany(db.BlackList, {
+  foreignKey: "order_id",
+});
+db.BlackList.belongsTo(db.Order, {
+  foreignKey: "order_id",
+});
+
+db.Driver.hasMany(db.BlackList, {
+  foreignKey: "driver_id",
+});
+db.BlackList.belongsTo(db.Driver, {
+  foreignKey: "driver_id",
+});
+
 
 //Restaurant Order
 db.Driver.hasMany(db.Order, {
