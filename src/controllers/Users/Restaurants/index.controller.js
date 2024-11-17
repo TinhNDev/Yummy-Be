@@ -37,7 +37,7 @@ class OrderRestaunrantController{
                 order_id: req.params.order_id,
                 reason: req.params.reason,
             })
-        })
+        }).send(res);
     }
 }
 
