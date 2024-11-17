@@ -29,6 +29,9 @@ class DriverService {
       { where: { id: orderId } }
     );
   }
+  static rejectOrder = async (orderId, driver_id) =>{
+    
+  }
 }
 
 module.exports = DriverService;
