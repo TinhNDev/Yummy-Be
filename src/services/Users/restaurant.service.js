@@ -122,6 +122,11 @@ class RestaurantService {
   static getRestaurantById = async(id) =>{
     return await Restaurants.findByPk(id)
   }
+  static lockProductByRes = async ({restaurant_id,product_id}) =>{
+    return await db.Product.update({
+      is_available: false,
+    }, {where:{restaurant_id:restaurant_id}})
+  }
 }
 
 module.exports = RestaurantService;
