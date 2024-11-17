@@ -6,12 +6,12 @@ module.exports = (sequelize, Sequelize) => {
     receiver_name: {
       type: Sequelize.STRING,
     },
-    address_id: {
-      type: Sequelize.INTEGER,
+    address_receiver: {
+      type: Sequelize.TEXT,
     },
     order_status: {
       type: Sequelize.ENUM,
-      values: ["pending", "confirmed", "delivered"],
+      values: ['PAID','UNPAID','PREPARING_ORDER','ORDER_CANCELED','ORDER_RECEIVED','DELIVERING','ORDER_CONFIRMED'],
     },
     driver_id: {
       type: Sequelize.INTEGER,
@@ -33,7 +33,10 @@ module.exports = (sequelize, Sequelize) => {
     },
     order_pay:{
       type: Sequelize.ENUM,
-      values:["OCD","ONLINE"]
+      values:["OCD","ZALOPAY"]
+    },
+    note:{
+      type: Sequelize.TEXT,
     }
   });
   return Order;

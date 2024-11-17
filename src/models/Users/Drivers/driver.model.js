@@ -1,21 +1,18 @@
 module.exports = (sequelize, Sequelize) => {
   const Driver = sequelize.define("Driver", {
-    vehicle_type: {
-      type: Sequelize.ENUM,
-      values: ["motorbike", "car"],
-    },
     license_plate: {
       type: Sequelize.STRING,
     },
-    current_location: {
+    latitude:{
+      type: Sequelize.STRING,
+    },
+    longitude:{
       type: Sequelize.STRING,
     },
     status: {
       type: Sequelize.ENUM,
-      values: ["active", "warming", "inactive"],
-    },
-    phone_number: {
-      type: Sequelize.INTEGER,
+      values: ["ONLINE", "BUSY", "WARMING","LOCKED","PROCESSING"],
+      defaultValue:"PROCESSING",
     },
   });
   return Driver;

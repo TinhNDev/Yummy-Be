@@ -1,5 +1,5 @@
 const { SuccessResponse } = require("../../core/success.response")
-const { UpdateProfile } = require("../../services/Users/profile.service")
+const { UpdateProfile, getProfie } = require("../../services/Users/profile.service")
 
 class ProfileController {
     UpdateProfile = async (req,res,next)=>{
@@ -11,6 +11,12 @@ class ProfileController {
                 address: req.body.address,
             })
         }).send(res);
+    }
+    GetProfile = async (req, res, next) =>{
+        new SuccessResponse({
+            message: "Profile user",
+            metadata: await getProfie(req.user.user_id)
+        }).send(res)
     }
 }
 module.exports  =new  ProfileController();

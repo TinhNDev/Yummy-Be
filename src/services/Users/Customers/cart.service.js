@@ -1,6 +1,6 @@
 const { NotFoundError } = require("../../../core/error.response");
 const db = require("../../../models/index.model");
-const RedisHelper = require("../../../caches/redis");
+const RedisHelper = require("../../../cache/redis");
 
 class CartService {
   constructor() {

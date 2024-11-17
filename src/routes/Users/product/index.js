@@ -6,7 +6,8 @@ const { asyncHandle } = require('../../../helper/asyncHandler');
 const productController = require('../../../controllers/Users/product.controller');
 const router = express.Router();
 //search by user
-router.get("/products/restaurantId",authorization,asyncHandle(productController.FindProductByIdRestaurant))
+router.get("/products/:id/restaurantId",asyncHandle(productController.getListProductForUser))
+router.get("/products/restaurantId",authorization,asyncHandle(productController.getListProductForRes))
 router.get("/products/search/:keySearch",asyncHandle(productController.GetListSearchProduct))
 router.get("/products",asyncHandle(productController.FindAllProducts))
 router.get("/products/:product_id",asyncHandle(productController.FindProduct))

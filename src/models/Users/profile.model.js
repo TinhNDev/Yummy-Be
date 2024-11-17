@@ -9,9 +9,6 @@ module.exports = (sequelize, Sequelize) => {
     date: {
       type: Sequelize.DATE,
     },
-    id_address: {
-      type: Sequelize.INTEGER,
-    },
     phone_number: {
       type: Sequelize.INTEGER,
     },

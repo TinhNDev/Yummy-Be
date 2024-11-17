@@ -112,11 +112,20 @@ class ProductController {
   };
 
   // Lấy danh sách sản phẩm theo nhà hàng
-  FindProductByIdRestaurant = async (req, res, next) => {
+  getListProductForRes = async (req, res, next) => {
     new SuccessResponse({
       message: "List Product of Restaurants",
-      metadata: await ProductService.FindProductByIdRestaurant({
+      metadata: await ProductService.getListProductForRes({
         restaurant_id: req.user.user_id,
+      }),
+    }).send(res);
+  };
+  // Lấy danh sách sản phẩm theo nhà hàng
+  getListProductForUser = async (req, res, next) => {
+    new SuccessResponse({
+      message: "List Product of Restaurants",
+      metadata: await ProductService.getListProductForUser({
+        restaurant_id: req.params.id,
       }),
     }).send(res);
   };

@@ -35,6 +35,7 @@ db.Product = require("./Users/products.model")(sequelize, Sequelize);
 db.Restaurant = require("./Users/restaurants.model")(sequelize, Sequelize);
 db.Topping = require("./Users/topping.model")(sequelize,Sequelize);
 db.OrderItem = require("./Users/orderItem.model")(sequelize,Sequelize);
+db.Payment = require("../models/Users/Customers/payment.model")(sequelize, Sequelize);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -65,13 +66,19 @@ db.Driver.belongsTo(db.Profile, {
   as: "Profile",
 });
 
-//profile address
-db.Profile.belongsToMany(db.Address, {
-  through: "Address Profile",
+// In Profile model
+db.Profile.hasMany(db.Address, {
+  as: "Address",  
+  foreignKey: "profileId",
 });
-db.Address.belongsToMany(db.Profile, {
-  through: "Address Profile",
+
+// In Address model
+db.Address.belongsTo(db.Profile, {
+  as: "Profile",
+  foreignKey: "profileId",
 });
+
+
 
 //Product Restaurant
 db.Restaurant.hasMany(db.Product, {
@@ -91,17 +98,15 @@ db.Product.belongsToMany(db.Categories, {
   through: "Product Categories",
 });
 
-
-
-//Oder OderItem
-db.Order.hasOne(db.OrderItem, {
-  foreignKey: "order_id",
-  as: "OrderItem",
-});
-db.OrderItem.belongsTo(db.Order, {
-  foreignKey: "order_id",
-  as: "Order",
-});
+// //Oder OderItem
+// db.Order.hasOne(db.OrderItem, {
+//   foreignKey: "order_id",
+//   as: "OrderItem",
+// });
+// db.OrderItem.belongsTo(db.Order, {
+//   foreignKey: "order_id",
+//   as: "Order",
+// });
 //Product Order
 db.Product.hasOne(db.OrderItem, {
   foreignKey: "prod_id",
@@ -127,6 +132,38 @@ db.Cupon.hasMany(db.Order, {
 });
 db.Order.belongsTo(db.Cupon, {
   foreignKey: "cupon_id",
+});
+
+
+//Restaurant Order
+db.Restaurant.hasMany(db.Order, {
+  foreignKey: "restaurant_id",
+});
+db.Order.belongsTo(db.Restaurant, {
+  foreignKey: "restaurant_id",
+});
+//Restaurant Order
+db.Order.hasMany(db.BlackList, {
+  foreignKey: "order_id",
+});
+db.BlackList.belongsTo(db.Order, {
+  foreignKey: "order_id",
+});
+
+db.Driver.hasMany(db.BlackList, {
+  foreignKey: "driver_id",
+});
+db.BlackList.belongsTo(db.Driver, {
+  foreignKey: "driver_id",
+});
+
+
+//Restaurant Order
+db.Driver.hasMany(db.Order, {
+  foreignKey: "driver_id",
+});
+db.Order.belongsTo(db.Driver, {
+  foreignKey: "driver_id",
 });
 
 //customer order
@@ -168,3 +205,11 @@ db.User.hasOne(db.Restaurant,{
 db.Restaurant.belongsTo(db.User,{
   foreignKey:"user_id"
 })
+
+//Order payment
+db.Order.belongsTo(db.Payment, {
+  foreignKey: "order_id",
+});
+db.Payment.hasMany(db.Order, {
+  foreignKey: "order_id",
+});

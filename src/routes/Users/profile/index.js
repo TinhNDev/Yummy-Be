@@ -6,5 +6,5 @@ const profileController = require('../../../controllers/Users/profile.controller
 const router = express.Router();
 
 router.put("/profile",authorization,asyncHandle(profileController.UpdateProfile))
-
+router.get("/profile", authorization,asyncHandle(profileController.GetProfile))
 module.exports = router;
