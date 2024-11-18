@@ -3,6 +3,7 @@ const Address = db.Address;
 class AddressService {
   static CreateAddress = async (body,profileId) => {
     return await Address.create({
+      id:profileId,
       address_name: body.address_name,
       address_x: body.address_x,
       address_y: body.address_y,

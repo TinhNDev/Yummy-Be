@@ -8,6 +8,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     is_available: {
       type: Sequelize.BOOLEAN,
+      defaultValue: true
     },
   });
   return Topping;

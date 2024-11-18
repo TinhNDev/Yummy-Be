@@ -25,7 +25,7 @@ class RestaurantService {
     }
 
     const existingRestaurant = await Restaurants.findOne({
-      where: { id: restaurant_id },
+      where: { user_id: restaurant_id },
     });
 
     const updateData = {
@@ -36,6 +36,8 @@ class RestaurantService {
       opening_hours: restaurant.opening_hours,
       phone_number: restaurant.phone_number,
       description: restaurant.description,
+      address_x: restaurant.address_x,
+      address_y: restaurant.address_y
     };
 
     if (existingRestaurant) {
