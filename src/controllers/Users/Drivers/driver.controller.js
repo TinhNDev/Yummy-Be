@@ -11,6 +11,15 @@ class DriverController{
             })
         }).send(res)
     }
+    rejectOrder = async(req, res)=>{
+        new SuccessResponse({
+            message:" reject order",
+            metadata: await DriverService.rejectOrder({
+                driver_id: req.user.user_id,
+                order_id : req.params.orderId,
+            })
+        }).send(res)
+    }
 }
 
 module.exports = new DriverController();

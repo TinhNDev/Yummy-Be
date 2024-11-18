@@ -38,19 +38,24 @@ class OrderRestaurantService {
         await redisClient.connect();
       }
       const order = await Order.findByPk(parseInt(order_id));
-      if (!order&&order.order_status!='PAID') throw new Error("Order not found");
+      if (!order) throw new Error("Order not found");
       const restaurant = await Restaurant.findOne({where:{id:order.restaurant_id}})
       const driverIds = await getAllDriverIdsFromRedis();
       let nearestDriver = null;
       let shortestDistance = Infinity;
-      const blacklist = await BlackList.findAll({where:{order_id:order_id}})
+      let blacklist;
+      if(order.order_status=='ORDER_CANCELED'){
+        blacklist = await BlackList.findAll({where:{order_id:order_id}})
+      }
       for (const driverId of driverIds) {
-        const isBlacklist = blacklist.some(
-          (entry)=>entry.driver_id == driverId && entry.status == true
-        )
-        if (isBlacklist) {
-          console.log(`Driver ${driverId} bị blacklist, bỏ qua.`);
-          continue;
+        if(blacklist){
+          const isBlacklist = blacklist.some(
+            (entry)=>entry.driver_id == driverId && entry.status == true
+          )
+          if (isBlacklist) {
+            console.log(`Driver ${driverId} bị blacklist, bỏ qua.`);
+            continue;
+          }
         }
         const driverLocation = await redisClient.hGetAll(
           `driver:${driverId}:location`
