@@ -27,7 +27,16 @@ class DriverController{
                 driver_id:req.user.user_id,
                 order_id: req.params.user_id,
             })
-        })
+        }).send(res)
+    }
+    confirmOrder = async(req,res) =>{
+        new SuccessResponse({
+            message: "confirm order",
+            metadata: await DriverService.confirmOrder({
+                driver_id:req.user.user_id,
+                order_id: req.params.user_id,
+            })
+        }).send(res)
     }
 }
 

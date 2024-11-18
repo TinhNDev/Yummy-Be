@@ -21,24 +21,29 @@ class DriverService {
     }
     return await Driver.findOne({where:{profile_id:user_id}})
   }
-  static confirmOrder = async (orderId, driver_id) => {
+  static confirmOrder = async ({order_id, driver_id}) => {
+    const order = await Order.findOne({where:{id:order_id}})
+    const driver =await Driver.findOne({where:{profile_id:driver_id}});
+    if(!driver ||order.driver_id !=driver.id ||order.order_status != 'PREPARING_ORDER'){
+      throw Error('do not have a shipper in systems');
+    }
     await Driver.update(
       {
         status: "ONLINE",
       },
-      { where: { id: driver_id } }
+      { where: { id: driver.id } }
     );
     await BlackList.update(
       {
         status: false,
       },
-      { where: { order_id: orderId } }
+      { where: { order_id: order.id } }
     );
     return await Order.update(
       {
         order_status: "ORDER_CONFIRMED",
       },
-      { where: { id: orderId } }
+      { where: { id: order.id } }
     );
   };
   static acceptOrder = async ({order_id, driver_id}) => {
@@ -51,7 +56,7 @@ class DriverService {
       {
         status: "BUSY",
       },
-      { where: { id: driver,id } }
+      { where: { id: driver.id } }
     );
     return await Order.update(
       {
