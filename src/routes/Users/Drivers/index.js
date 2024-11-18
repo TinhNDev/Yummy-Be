@@ -6,5 +6,5 @@ const router = express.Router();
 
 router.put("/driver", authorization, asyncHandle(driverController.updateInformation))
 router.get("/driver/reject/:orderId",authorization,asyncHandle(driverController.rejectOrder))
-
+router.get("/drver/accept/:orderId",authorization,asyncHandle(driverController.acceptOrder))
 module.exports = router

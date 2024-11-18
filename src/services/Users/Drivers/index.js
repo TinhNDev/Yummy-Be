@@ -41,18 +41,23 @@ class DriverService {
       { where: { id: orderId } }
     );
   };
-  static acceptOrder = async (orderId, driver_id) => {
+  static acceptOrder = async ({order_id, driver_id}) => {
+    const order = await Order.findOne({where:{id:order_id}})
+    const driver =await Driver.findOne({where:{profile_id:driver_id}});
+    if(!driver ||order.driver_id !=driver.id ||order.order_status != 'PREPARING_ORDER'){
+      throw Error('do not have a shipper in systems');
+    }
     await Driver.update(
       {
         status: "BUSY",
       },
-      { where: { id: driver_id } }
+      { where: { id: driver,id } }
     );
     return await Order.update(
       {
         order_status: "DELIVERING",
       },
-      { where: { id: orderId } }
+      { where: { id: order.id } }
     );
   };
   static rejectOrder = async ({order_id, driver_id}) => {
