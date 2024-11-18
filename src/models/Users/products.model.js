@@ -23,7 +23,8 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.BOOLEAN
     },
     is_draft:{
-      type: Sequelize.BOOLEAN
+      type: Sequelize.BOOLEAN,
+      default: true,
     }
   });
 
