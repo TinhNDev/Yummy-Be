@@ -144,6 +144,8 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       customer_id: parseInt(dataJson["app_user"]),
       note: orderData.note,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
+      longtitude: orderData.longtitude,
+      latitude: orderData.latitude,
     });
     const KeyToken = await db.KeyToken.findOne({where:{id:orderData.listCartItem[0].restaurant_id}})
     try {
