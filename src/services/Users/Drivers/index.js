@@ -2,6 +2,25 @@ const { Order, Driver, BlackList } = require("../../../models/index.model");
 const { findDriver } = require("../Restaurants/index.service");
 
 class DriverService {
+  static updateInformation = async({user_id, body})=>{
+    const driver = await Driver.findOne({where:{profile_id:user_id}})
+    if(driver){
+      await Driver.update({
+        license_plate:body.license_plate,
+        status: 'ONLINE',
+      },
+      {where:{profile_id:user_id}}  
+      )
+    } else {
+      await Driver.create({
+        license_plate:body.license_plate,
+        status: 'ONLINE',
+        profile_id:user_id
+      },
+    )
+    }
+    return await Driver.findOne({where:{profile_id:user_id}})
+  }
   static confirmOrder = async (orderId, driver_id) => {
     await Driver.update(
       {
