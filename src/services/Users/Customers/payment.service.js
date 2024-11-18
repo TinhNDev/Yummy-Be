@@ -75,11 +75,17 @@ const createOrder = async ({ order, user_id }) => {
     order.listCartItem[0].restaurant_id,
     order.listCartItem
   );
-  
+  order.delivery_fee = shippingCost;
+  let customer = await db.Customer.findOne({where:{profile_id:user_id}})
+  if(!customer){
+    customer = await db.Customer.create({
+      profile_id:user_id
+    })
+  };
   const configOrder = {
     app_id: config.app_id,
     app_trans_id: `${moment().format("YYMMDD")}_${transID}`,
-    app_user: user_id,
+    app_user: customer.id,
     app_time: Date.now(),
     item: JSON.stringify(order.listCartItem),
     embed_data: JSON.stringify(order),
@@ -122,21 +128,20 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
   } else {
     const dataJson = JSON.parse(dataStr);
     const orderData = JSON.parse(dataJson["embed_data"]);
-
     // Tạo đơn hàng mới trong database
     const newOrder = await db.Order.create({
       listCartItem: orderData.listCartItem,
       receiver_name: orderData.receiver_name,
-      address_receiver: orderData.address,
+      address_receiver: orderData.address_receiver,
       order_status: 'PAID',
       driver_id: orderData.driver_id,
       blacklist_id: orderData.blacklist_id,
-      price: orderData.price,
+      price: dataJson.amount,
       phone_number: parseInt(orderData.phone_number),
       order_date: new Date(orderData.order_date),
       delivery_fee: orderData.delivery_fee,
       order_pay: orderData.order_pay,
-      customer_id: dataJson["app_user"],
+      customer_id: parseInt(dataJson["app_user"]),
       note: orderData.note,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
     });
