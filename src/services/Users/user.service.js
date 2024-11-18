@@ -14,4 +14,15 @@ const findByEmail=async({
         attribute:select
     });
 };
-module.exports={findByEmail};
+
+const findRoleByEmail = async ({ email }) => {
+    return user.findOne({
+      where: { email: email },
+      include: [{
+        model: db.Roles,
+        attributes: ['name']
+      }]
+    });
+  };
+  
+module.exports={findByEmail,findRoleByEmail};
