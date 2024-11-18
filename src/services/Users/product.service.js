@@ -13,6 +13,7 @@ const {
   findProductByUser,
   findAllPublicForShop,
   getProductByRestaurantId,
+  resgetProductByRestaurantId
 } = require("./repositories/product.repo");
 
 class Product {
@@ -212,7 +213,7 @@ class ProductService extends Product {
     return await findProduct({ product_id, unSelect: ["__v"] });
   }
   static async getListProductForRes({ restaurant_id }) {
-    return await getProductByRestaurantId({ restaurant_id });
+    return await resgetProductByRestaurantId({ restaurant_id });
   }
   static async getListProductForUser({ restaurant_id }) {
     const redisKey = `restaurant_id:${restaurant_id}:products`;
