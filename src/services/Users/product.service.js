@@ -122,7 +122,7 @@ class ProductService extends Product {
           id: categoriesId,
         },
       });
-      const product = await Products.findByPk(product_id);
+      let product = await Products.findOne({where:{id:parseInt(product_id)}});
       await product.setCategories(categories);
     }
     if (toppingData && toppingData.length > 0) {

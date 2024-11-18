@@ -5,7 +5,7 @@ class ToppingService {
 
   static changeStatusTopping = async ({ user_id, product_id, topping_id }) => {
     const restaurant = await db.Restaurant.findOne({
-      where: { id: user_id },
+      where: { user_id: user_id },
       include: [
         {
           model: db.Product,
