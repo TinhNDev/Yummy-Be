@@ -186,6 +186,11 @@ class OrderRestaurantService {
     order_id,
     reason,
   }) => {
+    const restaurant =await Restaurant.findOne({where:{user_id:restaurant_id}});
+    if(!restaurant){
+      throw Error;
+    }
+
     const OrderRejected = await Order.findOne({
       where: { id: order_id },
       include: [
@@ -217,8 +222,11 @@ class OrderRestaurantService {
           ],
         },
       ],
-      transaction,
     });
+    if(OrderRejected.restaurant_id != restaurant.id){
+      throw Error;
+    }
+    let response;
     const fcmToken =
       OrderRejected?.Customer?.Profile?.User?.["Key Tokens"]?.[0]?.fcmToken;
     try {
@@ -229,7 +237,7 @@ class OrderRestaurantService {
         { where: { id: order_id } }
       );
       switch (reason) {
-        case 1:
+        case '1':
           try {
             if (fcmToken) {
               const payload = {
@@ -239,14 +247,14 @@ class OrderRestaurantService {
                 },
                 token: fcmToken,
               };
-              const response = await admin.messaging().send(payload);
+              response = await admin.messaging().send(payload);
               console.log("Successfully sent message:", response);
             }
           } catch (error) {
             throw error;
           }
           break;
-        case 2:
+        case '2':
           try {
             if (fcmToken) {
               const payload = {
@@ -256,14 +264,14 @@ class OrderRestaurantService {
                 },
                 token: fcmToken,
               };
-              const response = await admin.messaging().send(payload);
+              response = await admin.messaging().send(payload);
               console.log("Successfully sent message:", response);
             }
           } catch (error) {
             throw error;
           }
           break;
-        case 3:
+        case '3':
           try {
             if (fcmToken) {
               const payload = {
@@ -273,7 +281,7 @@ class OrderRestaurantService {
                 },
                 token: fcmToken,
               };
-              const response = await admin.messaging().send(payload);
+              response = await admin.messaging().send(payload);
               console.log("Successfully sent message:", response);
             }
           } catch (error) {
@@ -282,7 +290,7 @@ class OrderRestaurantService {
         default:
           break;
       }
-    } catch (error) {}
+    } catch (error) {} finally{return "ORDER_CANCELED"}
   };
 }
 
