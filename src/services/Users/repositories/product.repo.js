@@ -116,6 +116,12 @@ const getProductById = async (productId) => {
 };
 
 const getProductByRestaurantId = async ({restaurant_id}) =>{
+  return Product.findAll({
+    where:{restaurant_id: restaurant_id,is_public:true }
+  })
+}
+
+const resgetProductByRestaurantId = async ({restaurant_id}) =>{
   const restaurant = await Restaurant.findOne({where:{user_id:restaurant_id}})
   return Product.findAll({
     where:{restaurant_id: restaurant.id}
@@ -132,4 +138,5 @@ module.exports = {
   findAllPublicForShop,
   findProductByUser,
   getProductByRestaurantId,
+  resgetProductByRestaurantId
 };
