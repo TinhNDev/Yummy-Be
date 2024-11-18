@@ -32,22 +32,18 @@ class OrderRestaurantService {
     }
   };
 
-  static findDriver = async ({ restaurant_id, order_id}) => {
+  static findDriver = async ({order_id}) => {
     try {
       if (!redisClient.isOpen) {
         await redisClient.connect();
       }
-
-      const restaurant = await Restaurant.findByPk(restaurant_id);
-      if (!restaurant) throw new Error("Restaurant not found");
-
-      const order = await Order.findByPk(order_id);
-      if (!order) throw new Error("Order not found");
-
+      const order = await Order.findByPk(parseInt(order_id));
+      if (!order&&order.order_status!='PAID') throw new Error("Order not found");
+      const restaurant = await Restaurant.findOne({where:{id:order.restaurant_id}})
       const driverIds = await getAllDriverIdsFromRedis();
       let nearestDriver = null;
       let shortestDistance = Infinity;
-      const blacklist = BlackList.findAll({where:{order_id:order_id}})
+      const blacklist = await BlackList.findAll({where:{order_id:order_id}})
       for (const driverId of driverIds) {
         const isBlacklist = blacklist.some(
           (entry)=>entry.driver_id == driverId && entry.status == true
