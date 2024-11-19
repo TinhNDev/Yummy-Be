@@ -13,6 +13,7 @@ class DriverService {
     if (driver) {
       await Driver.update(
         {
+          car_name: body.car_name,
           license_plate: body.license_plate,
           status: "ONLINE",
         },

@@ -9,6 +9,9 @@ module.exports = (sequelize, Sequelize) => {
     longitude:{
       type: Sequelize.STRING,
     },
+    car_name:{
+      type: Sequelize.STRING,
+    },
     status: {
       type: Sequelize.ENUM,
       values: ["ONLINE", "BUSY", "WARMING","LOCKED","PROCESSING"],
