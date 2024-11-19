@@ -161,12 +161,11 @@ class ProductService extends Product {
 
   static async publishedProductByRestaurant({
     product_id,
-    product_restaurant,
   }) {
-    return publishedProductByRestaurant({ product_id, product_restaurant });
+    return publishedProductByRestaurant({ product_id});
   }
-  static async draftProductByRestaurant({ product_id, product_restaurant }) {
-    return draftProductByRestaurant({ product_id, product_restaurant });
+  static async draftProductByRestaurant({ product_id}) {
+    return draftProductByRestaurant({ product_id });
   }
 
   static async findAllDraftsForRestaurant({
@@ -199,14 +198,14 @@ class ProductService extends Product {
     limit = 30,
     sort = "ctime",
     page = 1,
-    filter = { is_public: true },
+    filter,
   }) {
     return await findAllProduct({
       limit,
       sort,
       page,
       filter,
-      select: ["name", "image", "price", "restaurant_id"],
+      select: ["id","name", "image", "price", "restaurant_id","is_public","is_draft"],
     });
   }
   static async findProduct({ product_id }) {

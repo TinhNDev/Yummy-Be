@@ -11,6 +11,14 @@ class DriverController{
             })
         }).send(res)
     }
+    getProfileDriver = async(req,res) =>{
+        new SuccessResponse({
+            message:"profile driver",
+            metadata: await DriverService.getProfileDriver({
+                user_id:req.user.user_id,
+            })
+        }).send(res)
+    }
     rejectOrder = async(req, res)=>{
         new SuccessResponse({
             message:" reject order",
