@@ -3,6 +3,7 @@ const {
   Driver,
   BlackList,
   Profile,
+  Restaurant
 } = require("../../../models/index.model");
 const { findDriver } = require("../Restaurants/index.service");
 
@@ -86,12 +87,17 @@ class DriverService {
       },
       { where: { id: driver.id } }
     );
-    return await Order.update(
+    await Order.update(
       {
         order_status: "DELIVERING",
       },
       { where: { id: order.id } }
     );
+    const restaurant = Restaurant.findOne({where:{id:order.restaurant_id}});
+    return {
+      longtitude:restaurant.address_x,
+      latitude:restaurant.address_y
+    }
   };
   static rejectOrder = async ({ order_id, driver_id }) => {
     const order = await Order.findOne({ where: { id: order_id } });
