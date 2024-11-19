@@ -27,12 +27,10 @@ const findProductByUser = async (keySearch) => {
 //chuyển trạng thái sản phẩm
 const publishedProductByRestaurant = async ({
   product_id,
-  product_restaurant,
 }) => {
   const foundRestaurant = await Product.findOne({
     where: {
       id: product_id,
-      restaurant_id: product_restaurant,
     },
   });
   if (!foundRestaurant) return null;
@@ -41,11 +39,10 @@ const publishedProductByRestaurant = async ({
   const result = foundRestaurant.save();
   return result ? 1 : 0;
 };
-const draftProductByRestaurant = async ({ product_id, product_restaurant }) => {
+const draftProductByRestaurant = async ({ product_id}) => {
   const foundRestaurant = await Product.findOne({
     where: {
       id: product_id,
-      restaurant_id: product_restaurant,
     },
   });
   if (!foundRestaurant) return null;

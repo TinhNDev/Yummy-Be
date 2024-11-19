@@ -37,6 +37,12 @@ module.exports = (sequelize, Sequelize) => {
     },
     note:{
       type: Sequelize.TEXT,
+    },
+    latitude:{
+      type: Sequelize.STRING,
+    },
+    longtitude:{
+      type: Sequelize.STRING
     }
   });
   return Order;

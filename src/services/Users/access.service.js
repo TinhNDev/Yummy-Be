@@ -12,9 +12,9 @@ const crypto = require("crypto");
 const KeyTokenService = require("./keyToken.service");
 const { createTokenPair } = require("../../auth/authUtils");
 const getInforData = require("../../utils/index");
-const { findByEmail } = require("./user.service");
+const { findByEmail, findRoleByEmail } = require("./user.service");
 class AccessService {
-  static singUp = async ({ password, email,fcmToken }) => {
+  static singUp = async ({ password, email,fcmToken, role }) => {
     const holderUser = await user.findOne({
       where: {
         email,
@@ -30,7 +30,11 @@ class AccessService {
       password: hashPassword,
       email,
     });
-
+    const roleRecord = await db.Roles.findOne({ where: { name: role } });
+    if (!roleRecord) {
+      throw new BadRequestError("Vai trò không hợp lệ");
+    }
+    await newUser.addRoles(roleRecord);
     if (newUser) {
       const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
         modulusLength: 2048,
@@ -48,6 +52,7 @@ class AccessService {
         {
           user_id: newUser.id,
           email,
+          role
         },
         publicKey,
         privateKey
@@ -87,7 +92,8 @@ class AccessService {
     //check user exist
     const foundUser = await findByEmail({ email });
     if (!foundUser) throw new BadRequestError("User not registered");
-
+    const data = await findRoleByEmail({email})
+    const role = data?.roles?.[0]?.name;
     //check match password
     const matchPassword = await bcrypt.compare(password, foundUser.password);
 
@@ -107,9 +113,10 @@ class AccessService {
 
     //grenerate tokens
     const tokens = await createTokenPair(
-      { user_id: foundUser.id, email },
+      { user_id: foundUser.id, email ,role},
       publicKey,
-      privateKey
+      privateKey,
+      
     );
     console.log("day la token", tokens);
     await KeyTokenService.createKeyToken({

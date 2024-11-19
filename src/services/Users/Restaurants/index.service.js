@@ -32,29 +32,30 @@ class OrderRestaurantService {
     }
   };
 
-  static findDriver = async ({ restaurant_id, order_id}) => {
+  static findDriver = async ({order_id}) => {
     try {
       if (!redisClient.isOpen) {
         await redisClient.connect();
       }
-
-      const restaurant = await Restaurant.findByPk(restaurant_id);
-      if (!restaurant) throw new Error("Restaurant not found");
-
-      const order = await Order.findByPk(order_id);
+      const order = await Order.findByPk(parseInt(order_id));
       if (!order) throw new Error("Order not found");
-
+      const restaurant = await Restaurant.findOne({where:{id:order.restaurant_id}})
       const driverIds = await getAllDriverIdsFromRedis();
       let nearestDriver = null;
       let shortestDistance = Infinity;
-      const blacklist = BlackList.findAll({where:{order_id:order_id}})
+      let blacklist;
+      if(order.order_status=='ORDER_CANCELED'){
+        blacklist = await BlackList.findAll({where:{order_id:order_id}})
+      }
       for (const driverId of driverIds) {
-        const isBlacklist = blacklist.some(
-          (entry)=>entry.driver_id == driverId && entry.status == true
-        )
-        if (isBlacklist) {
-          console.log(`Driver ${driverId} bị blacklist, bỏ qua.`);
-          continue;
+        if(blacklist){
+          const isBlacklist = blacklist.some(
+            (entry)=>entry.driver_id == driverId && entry.status == true
+          )
+          if (isBlacklist) {
+            console.log(`Driver ${driverId} bị blacklist, bỏ qua.`);
+            continue;
+          }
         }
         const driverLocation = await redisClient.hGetAll(
           `driver:${driverId}:location`
@@ -190,6 +191,11 @@ class OrderRestaurantService {
     order_id,
     reason,
   }) => {
+    const restaurant =await Restaurant.findOne({where:{user_id:restaurant_id}});
+    if(!restaurant){
+      throw Error;
+    }
+
     const OrderRejected = await Order.findOne({
       where: { id: order_id },
       include: [
@@ -221,8 +227,11 @@ class OrderRestaurantService {
           ],
         },
       ],
-      transaction,
     });
+    if(OrderRejected.restaurant_id != restaurant.id){
+      throw Error;
+    }
+    let response;
     const fcmToken =
       OrderRejected?.Customer?.Profile?.User?.["Key Tokens"]?.[0]?.fcmToken;
     try {
@@ -233,7 +242,7 @@ class OrderRestaurantService {
         { where: { id: order_id } }
       );
       switch (reason) {
-        case 1:
+        case '1':
           try {
             if (fcmToken) {
               const payload = {
@@ -243,14 +252,14 @@ class OrderRestaurantService {
                 },
                 token: fcmToken,
               };
-              const response = await admin.messaging().send(payload);
+              response = await admin.messaging().send(payload);
               console.log("Successfully sent message:", response);
             }
           } catch (error) {
             throw error;
           }
           break;
-        case 2:
+        case '2':
           try {
             if (fcmToken) {
               const payload = {
@@ -260,14 +269,14 @@ class OrderRestaurantService {
                 },
                 token: fcmToken,
               };
-              const response = await admin.messaging().send(payload);
+              response = await admin.messaging().send(payload);
               console.log("Successfully sent message:", response);
             }
           } catch (error) {
             throw error;
           }
           break;
-        case 3:
+        case '3':
           try {
             if (fcmToken) {
               const payload = {
@@ -277,7 +286,7 @@ class OrderRestaurantService {
                 },
                 token: fcmToken,
               };
-              const response = await admin.messaging().send(payload);
+              response = await admin.messaging().send(payload);
               console.log("Successfully sent message:", response);
             }
           } catch (error) {
@@ -286,7 +295,7 @@ class OrderRestaurantService {
         default:
           break;
       }
-    } catch (error) {}
+    } catch (error) {} finally{return "ORDER_CANCELED"}
   };
 }
 

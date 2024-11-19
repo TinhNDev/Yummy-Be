@@ -35,7 +35,7 @@ class ProfileService {
   };
   static getProfie = async (user_id) =>{
     return {
-      profile:await Profile.findOne({where:{id: user_id}}),
+      profile:await Profile.findOne({where:{user_id: user_id}}),
     }
   }
 }
