@@ -33,7 +33,7 @@ class DriverController{
             message:"accept order",
             metadata: await DriverService.acceptOrder({
                 driver_id:req.user.user_id,
-                order_id: req.params.user_id,
+                order_id: req.params.orderId,
             })
         }).send(res)
     }

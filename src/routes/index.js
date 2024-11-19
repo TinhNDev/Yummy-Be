@@ -1,6 +1,6 @@
 "use strict";
 const express = require("express");
-const { apiKey, permissions }=require("../auth/checkAuth");
+const { apiKey, permissions }=  require("../auth/checkAuth");
 //callbackzalo
 const { asyncHandle } = require('../helper/asyncHandler');
 const paymentController = require('../controllers/Users/Customers/payment.controller');

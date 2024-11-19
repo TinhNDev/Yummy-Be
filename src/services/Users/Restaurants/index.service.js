@@ -17,9 +17,7 @@ const socket = io(process.env.SOCKET_SERVER_URL);
 const admin = require("firebase-admin");
 const redisClient = redis.createClient();
 class OrderRestaurantService {
-  static getOrder = async ({ restaurant_id }) => {
-    return Order.findAll({ where: { restaurant_id } });
-  };
+
 
   static changeStatusOrder = async ({ orderId, status }) => {
     const order = await Order.findByPk(orderId);

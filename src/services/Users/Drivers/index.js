@@ -73,10 +73,7 @@ class DriverService {
   };
   static acceptOrder = async ({ order_id, driver_id }) => {
     const order = await Order.findOne({ where: { id: order_id } });
-    const driver = await Driver.findOne({ where: { profile_id: driver_id } });
     if (
-      !driver ||
-      order.driver_id != driver.id ||
       order.order_status != "PREPARING_ORDER"
     ) {
       throw Error("do not have a shipper in systems");
@@ -85,7 +82,7 @@ class DriverService {
       {
         status: "BUSY",
       },
-      { where: { id: driver.id } }
+      { where: { id: order.driver_id } }
     );
     await Order.update(
       {
@@ -93,7 +90,7 @@ class DriverService {
       },
       { where: { id: order.id } }
     );
-    const restaurant = Restaurant.findOne({where:{id:order.restaurant_id}});
+    const restaurant =await Restaurant.findOne({where:{id:order.restaurant_id}});
     return {
       longtitude:restaurant.address_x,
       latitude:restaurant.address_y
