@@ -1,6 +1,4 @@
-const { where } = require("underscore");
 const db = require("../../models/index.model");
-const { CreateAddress } = require("./address.service");
 const Profile = db.Profile;
 const Address = db.Address;
 class ProfileService {
