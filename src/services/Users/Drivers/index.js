@@ -87,8 +87,8 @@ class DriverService {
     return {
       longtitudeUser: order.longtitude,
       latitudeUser:order.latitude,
-      longtitudeRes:restaurant.address_x,
-      latitudeRes:restaurant.address_y
+      longtitudeRes:restaurant.address_y,
+      latitudeRes:restaurant.address_x
     }
   };
   static rejectOrder = async ({ order_id, driver_id }) => {
