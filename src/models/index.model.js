@@ -36,6 +36,7 @@ db.Restaurant = require("./Users/restaurants.model")(sequelize, Sequelize);
 db.Topping = require("./Users/topping.model")(sequelize,Sequelize);
 db.OrderItem = require("./Users/orderItem.model")(sequelize,Sequelize);
 db.Payment = require("../models/Users/Customers/payment.model")(sequelize, Sequelize);
+db.Review = require("../models/Users/reviews.model")(sequelize,Sequelize);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -116,16 +117,13 @@ db.OrderItem.belongsTo(db.Product, {
   foreignKey: "prod_id",
   as: "Product",
 });
-
-
-// Cupon Product
-db.Product.belongsToMany(db.Cupon, {
-  through: "Cupon Product",
-});
-db.Cupon.belongsToMany(db.Product, {
-  through: "Cupon Product",
-});
-
+// //Cupon Order
+// db.Restaurant.hasMany(db.Cupon, {
+//   foreignKey: "restaurant_id",
+// });
+// db.Cupon.belongsTo(db.Restaurant, {
+//   foreignKey: "restaurant_id",
+// });
 //Cupon Order
 db.Cupon.hasMany(db.Order, {
   foreignKey: "cupon_id",
@@ -133,7 +131,6 @@ db.Cupon.hasMany(db.Order, {
 db.Order.belongsTo(db.Cupon, {
   foreignKey: "cupon_id",
 });
-
 
 //Restaurant Order
 db.Restaurant.hasMany(db.Order, {
@@ -213,3 +210,25 @@ db.Order.belongsTo(db.Payment, {
 db.Payment.hasMany(db.Order, {
   foreignKey: "order_id",
 });
+
+
+db.Review.belongsTo(db.Customer,{
+  foreignKey:"customer_id",
+})
+db.Customer.hasMany(db.Review,{
+  foreignKey:"customer_id",
+})
+
+db.Review.belongsTo(db.Restaurant,{
+  foreignKey:"restaurant_id",
+})
+db.Restaurant.hasMany(db.Review,{
+  foreignKey:"restaurant_id",
+})
+
+db.Review.belongsTo(db.Driver,{
+  foreignKey:"driver_id",
+})
+db.Driver.hasMany(db.Review,{
+  foreignKey:"driver_id",
+})

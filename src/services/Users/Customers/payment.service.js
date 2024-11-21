@@ -6,7 +6,8 @@ const db = require("../../../models/index.model");
 const calculateDistance = require("../../../helper/calculateDistance");
 const { getRestaurantById } = require("../restaurant.service");
 const { io } = require("socket.io-client");
-const admin = require('firebase-admin')
+const admin = require('firebase-admin');
+const { addCuponToOrder } = require("../cupon.service");
 const socket = io(process.env.SOCKET_SERVER_URL);
 const config = {
   app_id: "2553",
@@ -69,13 +70,18 @@ const calculateShippingCost = (distanceInKm) => {
 const createOrder = async ({ order, user_id }) => {
   
   const transID = Math.floor(Math.random() * 1000000);
+  const cupon = await db.Cupon.findOne({where:{id:order.cupon_id}});
+  if(cupon?.amount<=0){
+    throw Error("Expired Cupon Code")
+  }
   const { totalFoodPrice, shippingCost, totalPrice } = await getTotalPrice(
     order.userLatitude,
     order.userLongitude,
     order.listCartItem[0].restaurant_id,
-    order.listCartItem
+    order.listCartItem,
   );
   order.delivery_fee = shippingCost;
+  const cuponCost = cupon.price || 0;
   let customer = await db.Customer.findOne({where:{profile_id:user_id}})
   if(!customer){
     customer = await db.Customer.create({
@@ -89,7 +95,7 @@ const createOrder = async ({ order, user_id }) => {
     app_time: Date.now(),
     item: JSON.stringify(order.listCartItem),
     embed_data: JSON.stringify(order),
-    amount: totalPrice,
+    amount: totalPrice - cuponCost,
     callback_url: `${process.env.URL}/callback`,
     description: `
 Thanh toán cho đơn hàng #${order.listCartItem
@@ -110,10 +116,6 @@ Thanh toán cho đơn hàng #${order.listCartItem
   try {
     const result = await axios.post(config.endpoint, null, {
       params: configOrder,
-    });
-    socket.emit("backendEvent", {
-      orderId: order.id,
-      status: "UNPAID",
     });
     
     return {
@@ -151,6 +153,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       restaurant_id: orderData.listCartItem[0].restaurant_id,
       longtitude: orderData.userLongitude,
       latitude: orderData.userLatitude,
+      cupon_id: orderData.cupon_id
     });
     const KeyToken = await db.KeyToken.findOne({where:{id:orderData.listCartItem[0].restaurant_id}})
     try {
@@ -166,7 +169,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
     } catch (error) {
       throw error
     }
-    
+    newOrder.cupon_id?.(await addCuponToOrder(newOrder.id,newOrder.cupon_id));
     socket.emit("newOrderForRestaurant", {
       orderId: newOrder.id,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
