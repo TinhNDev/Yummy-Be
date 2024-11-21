@@ -2,7 +2,7 @@ const { Restaurant, Cupon } = require("../../models/index.model")
 
 class CuponService{
     static getCupon = async () =>{
-        return await Cupon.fildAll();
+        return await Cupon.findAll();
     }
     // static createCupon = async ({restaurant_id,body})=>{
     //     const restaurant = Restaurant.findOne({where:{profile_id: restaurant_id}});
