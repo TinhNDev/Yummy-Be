@@ -31,6 +31,16 @@ class OrderRestaurantService {
   };
 
   static findDriver = async ({order_id}) => {
+    socket.emit("backendEvent", {
+      driver:"null",
+      orderId: order_id,
+      status: "FINDING DRIVER",
+    });
+    socket.emit("backendEvent", {
+      driver:"null",
+      orderId: order_id,
+      status: "PREPARING_ORDER",
+    });
     try {
       if (!redisClient.isOpen) {
         await redisClient.connect();

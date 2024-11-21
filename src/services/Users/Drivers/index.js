@@ -6,7 +6,8 @@ const {
   Restaurant
 } = require("../../../models/index.model");
 const { findDriver } = require("../Restaurants/index.service");
-
+const { io } = require("socket.io-client");
+const socket = io(process.env.SOCKET_SERVER_URL);
 class DriverService {
   static updateInformation = async ({ user_id, body }) => {
     const profile = await Profile.findOne({where:{user_id:user_id}})
@@ -57,6 +58,10 @@ class DriverService {
       },
       { where: { order_id: order.id } }
     );
+    socket.emit("backendEvent", {
+      orderId: order.id,
+      status: "ORDER_CONFIRMED",
+    });
     return await Order.update(
       {
         order_status: "ORDER_CONFIRMED",
@@ -78,7 +83,14 @@ class DriverService {
       { where: { id: order.id } }
     );
     const restaurant =await Restaurant.findOne({where:{id:order.restaurant_id}});
+    socket.emit("backendEvent", {
+      orderId: order_id,
+      driver: order.driver_id,
+      status: "FINDED  DRIVER",
+    });
+  
     return {
+      driver: order.driver_id,
       longtitudeUser: order.longtitude,
       latitudeUser:order.latitude,
       longtitudeRes:restaurant.address_y,

@@ -111,10 +111,6 @@ Thanh toán cho đơn hàng #${order.listCartItem
     const result = await axios.post(config.endpoint, null, {
       params: configOrder,
     });
-    socket.emit("backendEvent", {
-      orderId: order.id,
-      status: "UNPAID",
-    });
     
     return {
       url: result.data.order_url,
