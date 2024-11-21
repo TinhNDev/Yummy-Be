@@ -5,4 +5,6 @@ const { getAllOrderForCustomer ,getOrderForCustomer} = require('../../../control
 const router = express.Router();
 
 router.get("/customer/all/order", authorization,checkRole(['user']),asyncHandle(getAllOrderForCustomer))
-router.get("/customer/:order_id/order", authorization, checkRole(['user']),asyncHandle(getOrderForCustomer))
+router.get("/customer/:order_id/order", authorization, checkRole(['user']),asyncHandle(getOrderForCustomer));
+
+module.exports = router;
