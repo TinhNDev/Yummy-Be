@@ -18,7 +18,7 @@ class DriverService {
           license_plate: body.license_plate,
           status: "ONLINE",
         },
-        { where: { profile_id: user_id } }
+        { where: { id: driver.id } }
       );
     } else {
       await Driver.create({
