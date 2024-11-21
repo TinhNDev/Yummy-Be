@@ -5,3 +5,5 @@ const cuponController = require('../../../controllers/Users/cupon.controller');
 const router = express.Router();
 
 router.get("/cupon", asyncHandle(cuponController.getCupon))
+
+module.exports = router
