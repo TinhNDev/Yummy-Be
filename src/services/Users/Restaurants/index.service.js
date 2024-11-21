@@ -55,6 +55,9 @@ class OrderRestaurantService {
             continue;
           }
         }
+        if((await Driver.findOne({where:{id:driverId}})).status =='BUSY'){
+          continue;
+        }
         const driverLocation = await redisClient.hGetAll(
           `driver:${driverId}:location`
         );
@@ -90,6 +93,7 @@ class OrderRestaurantService {
             { driver_id: nearestDriver, order_status: "PREPARING_ORDER" },
             { where: { id: order.dataValues.id }, transaction }
           );
+          await Driver.update({status:'BUSY'},{where:{id:nearestDriver}});
           const updatedOrder = await Order.findOne({
             where: { id: order.dataValues.id },
             include: [
