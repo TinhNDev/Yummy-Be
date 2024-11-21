@@ -36,6 +36,7 @@ db.Restaurant = require("./Users/restaurants.model")(sequelize, Sequelize);
 db.Topping = require("./Users/topping.model")(sequelize,Sequelize);
 db.OrderItem = require("./Users/orderItem.model")(sequelize,Sequelize);
 db.Payment = require("../models/Users/Customers/payment.model")(sequelize, Sequelize);
+db.Review = require("../models/Users/reviews.model")(sequelize,Sequelize);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -209,3 +210,25 @@ db.Order.belongsTo(db.Payment, {
 db.Payment.hasMany(db.Order, {
   foreignKey: "order_id",
 });
+
+
+db.Review.belongsTo(db.Customer,{
+  foreignKey:"customer_id",
+})
+db.Customer.hasMany(db.Review,{
+  foreignKey:"customer_id",
+})
+
+db.Review.belongsTo(db.Restaurant,{
+  foreignKey:"restaurant_id",
+})
+db.Restaurant.hasMany(db.Review,{
+  foreignKey:"restaurant_id",
+})
+
+db.Review.belongsTo(db.Driver,{
+  foreignKey:"driver_id",
+})
+db.Driver.hasMany(db.Review,{
+  foreignKey:"driver_id",
+})
