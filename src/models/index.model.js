@@ -116,13 +116,13 @@ db.OrderItem.belongsTo(db.Product, {
   foreignKey: "prod_id",
   as: "Product",
 });
-//Cupon Order
-db.Cupon.hasMany(db.Restaurant, {
-  foreignKey: "cupon_id",
-});
-db.Restaurant.belongsTo(db.Cupon, {
-  foreignKey: "cupon_id",
-});
+// //Cupon Order
+// db.Restaurant.hasMany(db.Cupon, {
+//   foreignKey: "restaurant_id",
+// });
+// db.Cupon.belongsTo(db.Restaurant, {
+//   foreignKey: "restaurant_id",
+// });
 //Cupon Order
 db.Cupon.hasMany(db.Order, {
   foreignKey: "cupon_id",
