@@ -3,6 +3,7 @@ const {
   Driver,
   BlackList,
   Profile,
+  Restaurant
 } = require("../../../models/index.model");
 const { findDriver } = require("../Restaurants/index.service");
 
@@ -13,6 +14,7 @@ class DriverService {
     if (driver) {
       await Driver.update(
         {
+          car_name: body.car_name,
           license_plate: body.license_plate,
           status: "ONLINE",
         },
@@ -40,21 +42,14 @@ class DriverService {
     });
     return profile;
   };
-  static confirmOrder = async ({ order_id, driver_id }) => {
-    const order = await Order.findOne({ where: { id: order_id } });
-    const driver = await Driver.findOne({ where: { profile_id: driver_id } });
-    if (
-      !driver ||
-      order.driver_id != driver.id ||
-      order.order_status != "PREPARING_ORDER"
-    ) {
-      throw Error("do not have a shipper in systems");
-    }
+  static confirmOrder = async ({ orderId, driver_id }) => {
+    const order = await Order.findOne({ where: { id: orderId } });
+
     await Driver.update(
       {
         status: "ONLINE",
       },
-      { where: { id: driver.id } }
+      { where: { id: order.driver_id } }
     );
     await BlackList.update(
       {
@@ -71,42 +66,38 @@ class DriverService {
   };
   static acceptOrder = async ({ order_id, driver_id }) => {
     const order = await Order.findOne({ where: { id: order_id } });
-    const driver = await Driver.findOne({ where: { profile_id: driver_id } });
     if (
-      !driver ||
-      order.driver_id != driver.id ||
       order.order_status != "PREPARING_ORDER"
     ) {
       throw Error("do not have a shipper in systems");
     }
-    await Driver.update(
-      {
-        status: "BUSY",
-      },
-      { where: { id: driver.id } }
-    );
-    return await Order.update(
+    await Order.update(
       {
         order_status: "DELIVERING",
       },
       { where: { id: order.id } }
     );
+    const restaurant =await Restaurant.findOne({where:{id:order.restaurant_id}});
+    return {
+      longtitudeUser: order.longtitude,
+      latitudeUser:order.latitude,
+      longtitudeRes:restaurant.address_y,
+      latitudeRes:restaurant.address_x
+    }
   };
   static rejectOrder = async ({ order_id, driver_id }) => {
     const order = await Order.findOne({ where: { id: order_id } });
-    const driver = await Driver.findOne({ where: { profile_id: driver_id } });
-    if (
-      !driver ||
-      order.driver_id != driver.id ||
-      order.order_status != "PREPARING_ORDER"
-    ) {
-      throw Error("do not have a shipper in systems");
-    }
     await BlackList.create({
       order_id: order_id,
-      driver_id: driver.id,
+      driver_id: order.driver_id,
       status: true,
     });
+    await Driver.update(
+      {
+        status: "ONLINE",
+      },
+      { where: { id: order.driver_id } }
+    );
     await Order.update(
       { order_status: "ORDER_CANCELED" },
       { where: { id: order_id } }

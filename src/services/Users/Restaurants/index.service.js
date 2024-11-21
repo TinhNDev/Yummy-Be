@@ -17,9 +17,7 @@ const socket = io(process.env.SOCKET_SERVER_URL);
 const admin = require("firebase-admin");
 const redisClient = redis.createClient();
 class OrderRestaurantService {
-  static getOrder = async ({ restaurant_id }) => {
-    return Order.findAll({ where: { restaurant_id } });
-  };
+
 
   static changeStatusOrder = async ({ orderId, status }) => {
     const order = await Order.findByPk(orderId);
@@ -57,6 +55,9 @@ class OrderRestaurantService {
             continue;
           }
         }
+        if((await Driver.findOne({where:{id:driverId}})).status =='BUSY'){
+          continue;
+        }
         const driverLocation = await redisClient.hGetAll(
           `driver:${driverId}:location`
         );
@@ -92,6 +93,7 @@ class OrderRestaurantService {
             { driver_id: nearestDriver, order_status: "PREPARING_ORDER" },
             { where: { id: order.dataValues.id }, transaction }
           );
+          await Driver.update({status:'BUSY'},{where:{id:nearestDriver}});
           const updatedOrder = await Order.findOne({
             where: { id: order.dataValues.id },
             include: [

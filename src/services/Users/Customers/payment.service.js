@@ -111,6 +111,11 @@ Thanh toán cho đơn hàng #${order.listCartItem
     const result = await axios.post(config.endpoint, null, {
       params: configOrder,
     });
+    socket.emit("backendEvent", {
+      orderId: order.id,
+      status: "UNPAID",
+    });
+    
     return {
       url: result.data.order_url,
       app_trans_id: configOrder.app_trans_id,
@@ -144,8 +149,8 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       customer_id: parseInt(dataJson["app_user"]),
       note: orderData.note,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
-      longtitude: orderData.longtitude,
-      latitude: orderData.latitude,
+      longtitude: orderData.userLongitude,
+      latitude: orderData.userLatitude,
     });
     const KeyToken = await db.KeyToken.findOne({where:{id:orderData.listCartItem[0].restaurant_id}})
     try {
