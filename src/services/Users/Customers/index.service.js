@@ -1,9 +1,10 @@
-const { Customer, Order } = require("../../../models/index.model");
+const { Customer, Order, Profile, Order } = require("../../../models/index.model");
 
 class CustomerService {
   static getAllOrderForCustomer = async ({ user_id }) => {
+    const Profile = findOne({where:{user_id:user_id}})
     const Order = await Customer.findAll({
-      where: { user_id: user_id },
+      where: { profile_id: Profile.id },
       includes: [
         {
           model: Order,
