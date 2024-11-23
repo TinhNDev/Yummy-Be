@@ -210,4 +210,4 @@ const checkStatusOrder = async ({ app_trans_id }) => {
   }
 };
 
-module.exports = { createOrder, verifyCallback, checkStatusOrder };
+module.exports = { createOrder, verifyCallback, checkStatusOrder ,getTotalPrice};

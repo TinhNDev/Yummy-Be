@@ -1,7 +1,14 @@
 const { SuccessResponse } = require("../../../core/success.response")
-const { createOrder, verifyCallback, checkStatusOrder } = require("../../../services/Users/Customers/payment.service")
+const { createOrder, verifyCallback, checkStatusOrder, getTotalPrice } = require("../../../services/Users/Customers/payment.service")
 
 class PaymentController{
+    checkCost = async(req,res)=>{
+        const {userLatitude,userLongitude,restaurant_id,listCartItem} = req.body
+        new SuccessResponse({
+            message:"full cost",
+            metadata: await getTotalPrice(userLatitude,userLongitude,restaurant_id,listCartItem)
+        }).send(res)
+    }
     createOrder = async(req,res, next) =>{
         new SuccessResponse({
             message:"create order",
