@@ -21,11 +21,15 @@ class CustomerService {
         include: [
             {
                 model: Restaurant,
-                attributes: [],
+                attribute: [],
             },
             {
                 model: Driver,
-                attributes: [],
+                attribute: [],
+                include:[{
+                  model: Profile,
+                  attribute:[]
+                }]
             },
         ],
         order: [["createdAt", "DESC"]],
