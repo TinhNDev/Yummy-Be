@@ -72,7 +72,7 @@ class RestaurantService {
     
     const cachedData = await redis.get(redisKey);
     if (cachedData) {
-      return JSON.parse(cachedData);
+      return cachedData;
     } else {
       const radiusInDegrees = process.env.RADIUS / 111.32;
       const limit = 20;
