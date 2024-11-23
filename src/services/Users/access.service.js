@@ -7,7 +7,7 @@ const {
 } = require("../../core/error.response");
 const db = require("../../models/index.model");
 const user = db.User;
-const bcrypt = require("bcrypt");
+const bcryptjs = require("bcryptjs");
 const crypto = require("crypto");
 const KeyTokenService = require("./keyToken.service");
 const { createTokenPair } = require("../../auth/authUtils");
@@ -24,7 +24,7 @@ class AccessService {
       throw new BadRequestError(`Error: An email already resgistered`);
     }
 
-    const hashPassword = await bcrypt.hash(password, 10);
+    const hashPassword = await bcryptjs.hash(password, 10);
 
     const newUser = await user.create({
       password: hashPassword,
@@ -95,7 +95,7 @@ class AccessService {
     const data = await findRoleByEmail({email})
     const role = data?.roles?.[0]?.name;
     //check match password
-    const matchPassword = await bcrypt.compare(password, foundUser.password);
+    const matchPassword = await bcryptjs.compare(password, foundUser.password);
 
     if (!matchPassword) throw new AuthFailError("password incorrect");
     //create AT and RT and save
