@@ -28,7 +28,7 @@ class CustomerService {
                 attribute: [],
                 include:[{
                   model: Profile,
-                  attribute:[]
+                  attributes:["name","image"]
                 }]
             },
         ],
