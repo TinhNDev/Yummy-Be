@@ -26,13 +26,6 @@ const getTotalPrice = async (
 
   for (const item of listCartItem) {
     let itemTotalPrice = item.price * item.quantity;
-
-    if (item.toppings && item.toppings.length > 0) {
-      item.toppings.forEach((topping) => {
-        itemTotalPrice += topping.price;
-      });
-    }
-
     totalFoodPrice += itemTotalPrice;
   }
 
@@ -70,19 +63,16 @@ const calculateShippingCost = (distanceInKm) => {
 const createOrder = async ({ order, user_id }) => {
   
   const transID = Math.floor(Math.random() * 1000000);
-  const cupon = await db.Cupon.findOne({where:{id:order.cupon_id}});
-  if(cupon?.amount<=0){
-    throw Error("Expired Cupon Code")
+  let cupon;
+  if(!order.cupon_id){
+    cupon =  await db.Cupon.findOne({where:{id:order.cupon_id}});
+    if(cupon?.amount<=0){
+      throw Error("Expired Cupon Code")
+    }
   }
-  const { totalFoodPrice, shippingCost, totalPrice } = await getTotalPrice(
-    order.userLatitude,
-    order.userLongitude,
-    order.listCartItem[0].restaurant_id,
-    order.listCartItem,
-  );
-  order.delivery_fee = shippingCost;
   const cuponCost = cupon.price || 0;
-  let customer = await db.Customer.findOne({where:{profile_id:user_id}})
+  order.delivery_fee = shippingCost;
+  let customer =  await db.Customer.findOne({where:{profile_id:user_id}})
   if(!customer){
     customer = await db.Customer.create({
       profile_id:user_id
