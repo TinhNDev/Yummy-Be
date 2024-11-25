@@ -229,6 +229,18 @@ class ProductService extends Product {
       return result;
     }
   }
+
+  static hiddenProduct = async({product_id})=>{
+    const product = Product.findOne({where:{id:product_id}});
+    product.is_available = false;
+    const result = product.save();
+    return product;
+  }
+  static showProduct = async({product_id})=>{
+    const product = Product.findOne({where:{id:product_id}});
+    product.is_available = product.quantity > 0 ? true : false;
+    return product.save();
+  }
   // static async getProductDetails({ product_id, userLatitude, userLongitude }) {
   //   const redis = new RedisHelper({ keyPrefix: "restaurant:" });
   //   await redis.connect();
