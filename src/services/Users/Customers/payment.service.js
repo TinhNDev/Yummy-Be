@@ -102,10 +102,7 @@ Thanh toán cho đơn hàng #${order.listCartItem
 `,
   };
 
-  const data = `${config.app_id}
-  |${configOrder.app_trans_id}|${configOrder.app_user}
-  |${configOrder.amount}|${configOrder.app_time}
-  |${configOrder.embed_data}|${configOrder.item}`;
+  const data = `${config.app_id}|${configOrder.app_trans_id}|${configOrder.app_user}|${configOrder.amount}|${configOrder.app_time}|${configOrder.embed_data}|${configOrder.item}`;
   configOrder.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
 
   try {
