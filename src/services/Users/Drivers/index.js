@@ -120,10 +120,14 @@ class DriverService {
   static getAllOrderForDriver = async({driver_id})=>{
     return Order.findAll({where:{driver_id:driver_id}})
   }
-  static turnOff = async({driver_id}) =>{
-    return Driver.update({
-      status:'BUSY'
-    },{where:{id:driver_id}})
+  static changeStatus = async({driver_id}) =>{
+    let driver = Driver.findOne({where:{id:driver_id}});
+    if(driver.status === 'BUSY'){
+      driver.status = 'ONLINE'
+    } else if(driver.status === 'ONLINE'){
+      driver.status = 'BUSY'
+    }
+    return driver.save();
   }
 }
 
