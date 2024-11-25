@@ -129,6 +129,23 @@ class ProductController {
       }),
     }).send(res);
   };
+  showProduct = async (req, res) =>{
+    new SuccessResponse({
+      message: "show product",
+      metadata: await ProductService.showProduct({
+        product_id: req.params.product_id,
+      })
+    }).send(res);
+  }
+  hiddenProduct = async (req, res) =>{
+    new SuccessResponse({
+      message: "show product",
+      metadata: await ProductService.hiddenProduct({
+        product_id: req.params.product_id,
+      })
+    }).send(res);
+  }
+
 }
 
 module.exports = new ProductController();

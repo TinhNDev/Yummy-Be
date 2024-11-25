@@ -16,7 +16,8 @@ router.post("/products",authorization, checkRole(['seller','admin']),asyncHandle
 router.put("/products/:id",authorization, checkRole(['seller','admin']),asyncHandle(productController.UpdateProduct));
 router.post("/products/public/:id", authorization,checkRole(['seller','admin']),asyncHandle(productController.PublicProductByShop))
 router.post("/products/unpublic/:id",authorization,checkRole(['seller','admin']),asyncHandle(productController.DraftProductByRestaurant))
-
+router.put("/products/hidden/:id",authorization,checkRole(['seller','admin']), asyncHandle(productController.hiddenProduct))
+router.put("/products/show/:id",authorization,checkRole(['seller','admin']), asyncHandle(productController.showProduct))
 router.get("/products/draft/all",authorization,checkRole(['seller','admin']),asyncHandle(productController.GetAllDraftsForShop))
 router.get("/products/public/all",authorization,checkRole(['seller','admin']),asyncHandle(productController.GetAllPublicForShop))
 module.exports = router;
