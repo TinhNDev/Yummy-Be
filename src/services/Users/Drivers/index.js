@@ -128,7 +128,7 @@ class DriverService {
   
     if (driver.status === 'BUSY') {
       driver.status = 'ONLINE';
-    } else if (driver.status === 'ONLINE') {
+    } else {
       driver.status = 'BUSY';
     }
   
