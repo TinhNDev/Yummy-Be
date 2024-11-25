@@ -116,6 +116,10 @@ class DriverService {
     );
     return findDriver({ order_id });
   };
+
+  static getAllOrderForDriver = async({driver_id})=>{
+    return Order.findAll({where:{driver_id:driver_id}})
+  }
 }
 
 module.exports = DriverService;
