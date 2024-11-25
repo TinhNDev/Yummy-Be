@@ -18,7 +18,9 @@ const admin = require("firebase-admin");
 const redisClient = redis.createClient();
 class OrderRestaurantService {
 
-
+  static getOrder = async ({restaurant_id}) =>{
+    return await Order.findAll({where:{restaurant_id: restaurant_id}});
+  }
   static changeStatusOrder = async ({ orderId, status }) => {
     const order = await Order.findByPk(orderId);
     if (order) {
