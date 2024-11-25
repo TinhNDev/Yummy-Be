@@ -54,6 +54,14 @@ class DriverController{
             })
         }).send(res);
     }
+    turnOffOrder = async(req,res)=>{
+        new SuccessResponse({
+            message:"ok",
+            metadata: await DriverService.turnOff({
+                driver_id: req.params.driver_id
+            })
+        }).send(res)
+    }
 }
 
 module.exports = new DriverController();

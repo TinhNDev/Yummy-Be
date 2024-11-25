@@ -120,6 +120,11 @@ class DriverService {
   static getAllOrderForDriver = async({driver_id})=>{
     return Order.findAll({where:{driver_id:driver_id}})
   }
+  static turnOff = async({driver_id}) =>{
+    return Driver.update({
+      status:'BUSY'
+    },{where:{id:driver_id}})
+  }
 }
 
 module.exports = DriverService;
