@@ -231,13 +231,12 @@ class ProductService extends Product {
   }
 
   static hiddenProduct = async({product_id})=>{
-    const product = Product.findOne({where:{id:product_id}});
+    const product =await Product.findOne({where:{id:product_id}});
     product.is_available = false;
-    const result = product.save();
-    return product;
+    return product.save()
   }
   static showProduct = async({product_id})=>{
-    const product = Product.findOne({where:{id:product_id}});
+    const product =await Product.findOne({where:{id:product_id}});
     product.is_available = product.quantity > 0 ? true : false;
     return product.save();
   }
