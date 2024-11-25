@@ -9,4 +9,5 @@ router.get("/driver/detail",authorization,checkRole(['driver','admin']),asyncHan
 router.get("/driver/reject/:orderId",authorization,checkRole(['driver','admin']),asyncHandle(driverController.rejectOrder))
 router.get("/driver/accept/:orderId",authorization,checkRole(['driver','admin']),asyncHandle(driverController.acceptOrder))
 router.get("/driver/confirm/:orderId",authorization,checkRole(['driver','admin']),asyncHandle(driverController.confirmOrder))
+router.get("/driver/:id/order",authorization,checkRole(['driver','admin']),asyncHandle(driverController.getAllOrderForDriver))
 module.exports = router

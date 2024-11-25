@@ -46,6 +46,14 @@ class DriverController{
             })
         }).send(res)
     }
+    getAllOrderForDriver = async(req, res)=>{
+        new SuccessResponse({
+            message: "full order",
+            metadata: await DriverService.getAllOrderForDriver({
+                driver_id:req.params.driver_id,
+            })
+        }).send(res);
+    }
 }
 
 module.exports = new DriverController();
