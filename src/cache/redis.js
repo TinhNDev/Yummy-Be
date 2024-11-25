@@ -3,9 +3,9 @@ const Redis = require('ioredis');
 class RedisHelper {
     constructor(config = {}) {
         this.config = {
-            host: config.host || 'localhost',
-            port: config.port || 6379,
-            password: config.password || null,
+            host: `redis.railway.internal`,
+            port: 6379,
+            password: `QtBvykWIzHGlwLdnDyGwBUAgmqSsAXIF`,
             db: config.db || 0,
             retryStrategy: (times) => {
                 const delay = Math.min(times * 50, 2000);

@@ -6,7 +6,7 @@ const db = require("../../../models/index.model");
 const calculateDistance = require("../../../helper/calculateDistance");
 const { getRestaurantById } = require("../restaurant.service");
 const { io } = require("socket.io-client");
-const admin = require('firebase-admin');
+const admin = require("firebase-admin");
 const { addCuponToOrder } = require("../cupon.service");
 const socket = io(process.env.SOCKET_SERVER_URL);
 const config = {
@@ -61,23 +61,21 @@ const calculateShippingCost = (distanceInKm) => {
 };
 
 const createOrder = async ({ order, user_id }) => {
-  
   const transID = Math.floor(Math.random() * 1000000);
   let cupon;
-  if(!order.cupon_id){
-    cupon =  await db.Cupon.findOne({where:{id:order.cupon_id}});
-    if(cupon?.amount<=0){
-      throw Error("Expired Cupon Code")
+  if (!order.cupon_id) {
+    cupon = await db.Cupon.findOne({ where: { id: order.cupon_id } });
+    if (cupon?.amount <= 0) {
+      throw Error("Expired Cupon Code");
     }
   }
   const cuponCost = cupon.price || 0;
-  order.delivery_fee = shippingCost;
-  let customer =  await db.Customer.findOne({where:{profile_id:user_id}})
-  if(!customer){
+  let customer = await db.Customer.findOne({ where: { profile_id: user_id } });
+  if (!customer) {
     customer = await db.Customer.create({
-      profile_id:user_id
-    })
-  };
+      profile_id: user_id,
+    });
+  }
   const configOrder = {
     app_id: config.app_id,
     app_trans_id: `${moment().format("YYMMDD")}_${transID}`,
@@ -100,14 +98,17 @@ Thanh toán cho đơn hàng #${order.listCartItem
 `,
   };
 
-  const data = `${config.app_id}|${configOrder.app_trans_id}|${configOrder.app_user}|${configOrder.amount}|${configOrder.app_time}|${configOrder.embed_data}|${configOrder.item}`;
+  const data = `${config.app_id}
+  |${configOrder.app_trans_id}|${configOrder.app_user}
+  |${configOrder.amount}|${configOrder.app_time}
+  |${configOrder.embed_data}|${configOrder.item}`;
   configOrder.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
 
   try {
     const result = await axios.post(config.endpoint, null, {
       params: configOrder,
     });
-    
+
     return {
       url: result.data.order_url,
       app_trans_id: configOrder.app_trans_id,
@@ -130,7 +131,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       listCartItem: orderData.listCartItem,
       receiver_name: orderData.receiver_name,
       address_receiver: orderData.address_receiver,
-      order_status: 'PAID',
+      order_status: "PAID",
       driver_id: orderData.driver_id,
       blacklist_id: orderData.blacklist_id,
       price: dataJson.amount,
@@ -143,23 +144,25 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       restaurant_id: orderData.listCartItem[0].restaurant_id,
       longtitude: orderData.userLongitude,
       latitude: orderData.userLatitude,
-      cupon_id: orderData.cupon_id
+      cupon_id: orderData.cupon_id,
     });
-    const KeyToken = await db.KeyToken.findOne({where:{id:orderData.listCartItem[0].restaurant_id}})
+    const KeyToken = await db.KeyToken.findOne({
+      where: { id: orderData.listCartItem[0].restaurant_id },
+    });
     try {
       const payload = {
         notification: {
-          title: 'New Order',
+          title: "New Order",
           body: `123`,
         },
         token: KeyToken.fcmToken,
       };
       const response = await admin.messaging().send(payload);
-      console.log('Successfully sent message:', response);
+      console.log("Successfully sent message:", response);
     } catch (error) {
-      throw error
+      throw error;
     }
-    newOrder.cupon_id?.(await addCuponToOrder(newOrder.id,newOrder.cupon_id));
+    newOrder.cupon_id?.(await addCuponToOrder(newOrder.id, newOrder.cupon_id));
     socket.emit("newOrderForRestaurant", {
       orderId: newOrder.id,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
@@ -171,7 +174,6 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
     };
   }
 };
-
 
 const checkStatusOrder = async ({ app_trans_id }) => {
   let postData = {
@@ -200,4 +202,9 @@ const checkStatusOrder = async ({ app_trans_id }) => {
   }
 };
 
-module.exports = { createOrder, verifyCallback, checkStatusOrder ,getTotalPrice};
+module.exports = {
+  createOrder,
+  verifyCallback,
+  checkStatusOrder,
+  getTotalPrice,
+};
