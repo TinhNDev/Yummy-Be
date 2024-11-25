@@ -27,4 +27,5 @@ router.use("/v1/api", require("./Users/Drivers"));
 router.use("/v1/api", require("./Users/cupon"));
 router.use("/v1/api", require("./Users/review"));
 router.use("/v1/api", require("./Users/Customers/index"))
+router.use("/v1/api", require("./Admin/index"))
 module.exports = router;
