@@ -120,15 +120,20 @@ class DriverService {
   static getAllOrderForDriver = async({driver_id})=>{
     return Order.findAll({where:{driver_id:driver_id}})
   }
-  static changeStatus = async({driver_id}) =>{
-    let driver = Driver.findOne({where:{id:driver_id}});
-    if(driver.status === 'BUSY'){
-      driver.status = 'ONLINE'
-    } else if(driver.status === 'ONLINE'){
-      driver.status = 'BUSY'
+  static changeStatus = async ({ driver_id }) => {
+    let driver = await Driver.findOne({ where: { id: driver_id } });
+    if (!driver) {
+      throw new Error("Driver not found");
     }
-    return driver.save();
-  }
+  
+    if (driver.status === 'BUSY') {
+      driver.status = 'ONLINE';
+    } else if (driver.status === 'ONLINE') {
+      driver.status = 'BUSY';
+    }
+  
+    return await driver.save();
+  };
 }
 
 module.exports = DriverService;
