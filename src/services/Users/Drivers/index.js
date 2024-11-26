@@ -61,7 +61,7 @@ class DriverService {
     socket.emit("backendEvent", {
       orderId: order.id,
       status: "ORDER_CONFIRMED",
-      driver_id:order.driver_id
+      driver:order.driver_id
     });
     return await Order.update(
       {
