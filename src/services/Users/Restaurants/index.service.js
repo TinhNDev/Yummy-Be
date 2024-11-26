@@ -104,7 +104,7 @@ class OrderRestaurantService {
                   include: [
                       {
                           model: Restaurant,
-                          attributes: ["id", "name", "address"],
+                          attributes: ["id", "name", "address","image"],
                       },
                       {
                           model: Driver,
