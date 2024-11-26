@@ -43,8 +43,8 @@ class DriverService {
     });
     return profile;
   };
-  static confirmOrder = async ({ orderId, driver_id }) => {
-    const order = await Order.findOne({ where: { id: orderId } });
+  static confirmOrder = async ({ order_id, driver_id }) => {
+    const order = await Order.findOne({ where: { id: order_id } });
 
     await Driver.update(
       {
@@ -72,10 +72,12 @@ class DriverService {
   static giveOrder = async({order_id, driver_id})=>{
     const order = await Order.findOne({ where: { id: order_id } });
     if (
-      order.order_status != "PREPARING_ORDER"
+      order.order_status != "DELIVERING"
     ) {
       throw Error("do not have a shipper in systems");
     }
+    order.order_status = "ORDER_RECEIVED"
+    order.save();
     socket.emit("backendEvent", {
       orderId: order_id,
       driver: order.driver_id,
