@@ -5,14 +5,11 @@ const ReviewService = require("../../services/Users/reviews.service");
 class ReviewController {
   // Tạo đánh giá mới
   createReview = async (req, res, next) => {
-    const { res_rating, dri_rating, res_comment, dri_comment } = req.body;
-    const user_id = req.user.user_id;
+
     const newReview = await ReviewService.createReview({
-      user_id,
-      res_rating,
-      dri_rating,
-      res_comment,
-      dri_comment,
+      user_id:req.user.user_id,
+      reviews: req.body.reviews,
+      order_id: req.params.order_id
     });
 
     new SuccessResponse({

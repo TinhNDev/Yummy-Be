@@ -63,18 +63,22 @@ const calculateShippingCost = (distanceInKm) => {
 const createOrder = async ({ order, user_id }) => {
   const transID = Math.floor(Math.random() * 1000000);
   let cupon;
-  if (!order.cupon_id) {
+  if (order.cupon_id) {
     cupon = await db.Cupon.findOne({ where: { id: order.cupon_id } });
     if (cupon?.amount <= 0) {
       throw Error("Expired Cupon Code");
     }
   }
-  const cuponCost = cupon.price || 0;
+  const cuponCost = cupon?.price || 0;
   let customer = await db.Customer.findOne({ where: { profile_id: user_id } });
   if (!customer) {
-    customer = await db.Customer.create({
-      profile_id: user_id,
-    });
+    try {
+      customer = await db.Customer.create({
+        profile_id: user_id,
+      });
+    } catch (error) {
+      throw error;
+    }
   }
   const configOrder = {
     app_id: config.app_id,
@@ -83,7 +87,7 @@ const createOrder = async ({ order, user_id }) => {
     app_time: Date.now(),
     item: JSON.stringify(order.listCartItem),
     embed_data: JSON.stringify(order),
-    amount: totalPrice - cuponCost,
+    amount: order.price - cuponCost,
     callback_url: `${process.env.URL}/callback`,
     description: `
 Thanh toán cho đơn hàng #${order.listCartItem
@@ -98,10 +102,7 @@ Thanh toán cho đơn hàng #${order.listCartItem
 `,
   };
 
-  const data = `${config.app_id}
-  |${configOrder.app_trans_id}|${configOrder.app_user}
-  |${configOrder.amount}|${configOrder.app_time}
-  |${configOrder.embed_data}|${configOrder.item}`;
+  const data = `${config.app_id}|${configOrder.app_trans_id}|${configOrder.app_user}|${configOrder.amount}|${configOrder.app_time}|${configOrder.embed_data}|${configOrder.item}`;
   configOrder.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
 
   try {

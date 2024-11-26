@@ -69,6 +69,20 @@ class DriverService {
       { where: { id: order.id } }
     );
   };
+  static giveOrder = async({order_id, driver_id})=>{
+    const order = await Order.findOne({ where: { id: order_id } });
+    if (
+      order.order_status != "PREPARING_ORDER"
+    ) {
+      throw Error("do not have a shipper in systems");
+    }
+    socket.emit("backendEvent", {
+      orderId: order_id,
+      driver: order.driver_id,
+      status: "GIVED ORDER",
+    });
+    return order;
+  }
   static acceptOrder = async ({ order_id, driver_id }) => {
     const order = await Order.findOne({ where: { id: order_id } });
     if (
@@ -115,6 +129,24 @@ class DriverService {
       { where: { id: order_id } }
     );
     return findDriver({ order_id });
+  };
+
+  static getAllOrderForDriver = async({driver_id})=>{
+    return Order.findAll({where:{driver_id:driver_id}})
+  }
+  static changeStatus = async ({ driver_id }) => {
+    let driver = await Driver.findOne({ where: { id: driver_id } });
+    if (!driver) {
+      throw new Error("Driver not found");
+    }
+  
+    if (driver.status === 'BUSY') {
+      driver.status = 'ONLINE';
+    } else {
+      driver.status = 'BUSY';
+    }
+  
+    return await driver.save();
   };
 }
 

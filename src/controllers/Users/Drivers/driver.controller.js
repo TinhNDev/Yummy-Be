@@ -46,6 +46,31 @@ class DriverController{
             })
         }).send(res)
     }
+    getAllOrderForDriver = async(req, res)=>{
+        new SuccessResponse({
+            message: "full order",
+            metadata: await DriverService.getAllOrderForDriver({
+                driver_id:req.params.driver_id,
+            })
+        }).send(res);
+    }
+    changeStatus = async(req,res)=>{
+        new SuccessResponse({
+            message:"ok",
+            metadata: await DriverService.changeStatus({
+                driver_id: req.params.driver_id
+            })
+        }).send(res)
+    }
+    giveOrder = async(req,res) =>{
+        new SuccessResponse({
+            message:"ok",
+            metadata: await DriverService.giveOrder({
+                driver_id:req.user.user_id,
+                order_id: req.params.user_id,
+            })
+        }).send(res)
+    }
 }
 
 module.exports = new DriverController();

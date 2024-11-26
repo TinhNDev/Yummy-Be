@@ -21,13 +21,16 @@ class CustomerService {
         include: [
             {
                 model: Restaurant,
+                as: "Restaurant",
                 attribute: [],
             },
             {
                 model: Driver,
                 attribute: [],
+                as: "Driver",
                 include:[{
                   model: Profile,
+                  as:"Profile",
                   attributes:["name","image"]
                 }]
             },

@@ -5,6 +5,6 @@ const { createReview } = require('../../../controllers/Users/review.controller')
 
 const router = express.Router();
 
-router.post("/review",authorization,checkRole(['user']),asyncHandle(createReview));
+router.post("/review/:order_id",authorization,checkRole(['user']),asyncHandle(createReview));
 
 module.exports = router;
