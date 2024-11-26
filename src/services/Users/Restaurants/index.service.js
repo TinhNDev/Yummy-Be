@@ -33,6 +33,7 @@ class OrderRestaurantService {
   };
 
   static findDriver = async ({order_id}) => {
+    let nearestDriver = null;
     socket.emit("backendEvent", {
       driver:"null",
       orderId: order_id,
@@ -46,13 +47,13 @@ class OrderRestaurantService {
     const redisHelper = new RedisHelper();
     try {
       await redisHelper.connect(); // Connect to Redis
-
+      
       const order = await Order.findByPk(parseInt(order_id));
       if (!order) throw new Error("Order not found");
 
       const restaurant = await Restaurant.findOne({ where: { id: order.restaurant_id } });
       const driverIds = await getAllDriverIdsFromRedis();
-      let nearestDriver = null;
+      
       let shortestDistance = Infinity;
       const blacklist = order.order_status === 'ORDER_CANCELED' 
           ? await BlackList.findAll({ where: { order_id: order_id } }) 
@@ -191,7 +192,8 @@ class OrderRestaurantService {
       console.error("Error in findDriver:", error.message);
       throw new Error("Could not find driver");
   } finally {
-      await redisHelper.disconnect(); // Disconnect Redis
+      await redisHelper.disconnect();
+      return nearestDriver;
   }
 };
 
