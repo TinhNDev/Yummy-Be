@@ -1,15 +1,12 @@
-const Redis = require('ioredis');
+const redis = require('redis');
 
 class RedisHelper {
     constructor(config = {}) {
         this.config = {
-            host: `redis.railway.internal`,
-            port: 6379,
-            password: `QtBvykWIzHGlwLdnDyGwBUAgmqSsAXIF`,
-            db: config.db || 0,
-            retryStrategy: (times) => {
-                const delay = Math.min(times * 50, 2000);
-                return delay;
+            password: 'CfbiVj75pXOSlwoLF9I1PRn7WzSkjWsY',
+            socket: {
+                host: 'redis-18508.c98.us-east-1-4.ec2.redns.redis-cloud.com',
+                port: 18508
             }
         };
 
@@ -19,16 +16,17 @@ class RedisHelper {
     // Kết nối tới Redis
     async connect() {
         try {
-            this.client = new Redis(this.config);
-            
+            this.client = redis.createClient(this.config);
+
+            // Add error handling
             this.client.on('error', (err) => {
                 console.error('Redis Error:', err);
             });
 
-            this.client.on('connect', () => {
-                console.log('Redis connected successfully');
-            });
-
+            // Ensure connection using the 'connect' method of the client
+            await this.client.connect();
+            console.log('Redis connected successfully');
+            
             return this.client;
         } catch (error) {
             console.error('Redis connection error:', error);
@@ -47,8 +45,11 @@ class RedisHelper {
     // Set một giá trị với thời gian hết hạn (ttl tính bằng giây)
     async set(key, value, ttl = null) {
         try {
+            if (!this.client || !this.client.isOpen) {
+                throw new Error('Redis client is not connected');
+            }
             if (ttl) {
-                await this.client.setex(key, ttl, JSON.stringify(value));
+                await this.client.setEx(key, ttl, JSON.stringify(value)); // setex equivalent in redis v4.x
             } else {
                 await this.client.set(key, JSON.stringify(value));
             }
@@ -62,6 +63,9 @@ class RedisHelper {
     // Lấy giá trị
     async get(key) {
         try {
+            if (!this.client || !this.client.isOpen) {
+                throw new Error('Redis client is not connected');
+            }
             const value = await this.client.get(key);
             return value ? JSON.parse(value) : null;
         } catch (error) {
@@ -73,6 +77,9 @@ class RedisHelper {
     // Xóa một hoặc nhiều key
     async delete(...keys) {
         try {
+            if (!this.client || !this.client.isOpen) {
+                throw new Error('Redis client is not connected');
+            }
             return await this.client.del(keys);
         } catch (error) {
             console.error('Redis DELETE error:', error);
@@ -83,6 +90,9 @@ class RedisHelper {
     // Kiểm tra key tồn tại
     async exists(key) {
         try {
+            if (!this.client || !this.client.isOpen) {
+                throw new Error('Redis client is not connected');
+            }
             return await this.client.exists(key);
         } catch (error) {
             console.error('Redis EXISTS error:', error);
@@ -93,11 +103,14 @@ class RedisHelper {
     // Set nhiều cặp key-value cùng lúc
     async mset(pairs) {
         try {
+            if (!this.client || !this.client.isOpen) {
+                throw new Error('Redis client is not connected');
+            }
             const args = [];
             for (const [key, value] of Object.entries(pairs)) {
                 args.push(key, JSON.stringify(value));
             }
-            return await this.client.mset(args);
+            return await this.client.mSet(args); // mset equivalent in redis v4.x
         } catch (error) {
             console.error('Redis MSET error:', error);
             throw error;
@@ -107,7 +120,10 @@ class RedisHelper {
     // Lấy nhiều giá trị cùng lúc
     async mget(...keys) {
         try {
-            const values = await this.client.mget(keys);
+            if (!this.client || !this.client.isOpen) {
+                throw new Error('Redis client is not connected');
+            }
+            const values = await this.client.mGet(keys); // mget equivalent in redis v4.x
             return values.map(value => value ? JSON.parse(value) : null);
         } catch (error) {
             console.error('Redis MGET error:', error);
