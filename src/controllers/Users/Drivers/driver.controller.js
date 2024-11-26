@@ -42,7 +42,7 @@ class DriverController{
             message: "confirm order",
             metadata: await DriverService.confirmOrder({
                 driver_id:req.user.user_id,
-                order_id: req.params.user_id,
+                order_id: req.params.orderId,
             })
         }).send(res)
     }
@@ -67,7 +67,7 @@ class DriverController{
             message:"ok",
             metadata: await DriverService.giveOrder({
                 driver_id:req.user.user_id,
-                order_id: req.params.user_id,
+                order_id: req.params.orderId,
             })
         }).send(res)
     }
