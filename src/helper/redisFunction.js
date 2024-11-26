@@ -1,4 +1,4 @@
-const RedisHelper = require('./RedisHelper');
+const RedisHelper = require('../cache/redis');
 
 async function getAllDriverIdsFromRedis() {
     const redisHelper = new RedisHelper();
