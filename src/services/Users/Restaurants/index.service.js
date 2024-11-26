@@ -92,11 +92,10 @@ class OrderRestaurantService {
 
       let fcmToken;
       if (nearestDriver) {
-          const transaction = await sequelize.transaction();
           try {
               await Order.update(
                   { driver_id: nearestDriver, order_status: "PREPARING_ORDER" },
-                  { where: { id: order.dataValues.id }, transaction }
+                  { where: { id: order.dataValues.id }}
               );
               await Driver.update({ status: 'BUSY' }, { where: { id: nearestDriver } });
 
@@ -132,9 +131,7 @@ class OrderRestaurantService {
                           ],
                       },
                   ],
-                  transaction,
               });
-              await transaction.commit();
 
               fcmToken = updatedOrder?.Driver?.Profile?.User?.["Key Tokens"]?.[0]?.fcmToken;
 
