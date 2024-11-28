@@ -8,6 +8,27 @@ class AdminController{
             metadata: await AdminService.getAllRestaurant()
         }).send(res)
     }
+    changeStatusRes = async(req,res)=>{
+        new SuccessResponse({
+            message:"change success",
+            metadata: await AdminService.changeStatusRestaurant(req.params.restaurant_id)
+        }).send(res)
+    }
+    getAllDriver = async(req,res)=>{
+        new SuccessResponse({
+            message:"all driver",
+            metadata: await AdminService.getAllDriver()
+        }).send(res)
+    }
+    changeStatusDriver = async(req,res)=>{
+        new SuccessResponse({
+            message:"change",
+            metadata: await AdminService.changeStatusDriver({
+                driver_id: req.params.driver_id,
+                status: req.body.status
+            })
+        }).send(res)
+    }
 }
 
 module.exports = new AdminController();
