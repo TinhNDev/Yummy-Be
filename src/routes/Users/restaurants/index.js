@@ -17,6 +17,10 @@ router.get(
   asyncHandle(restaurantController.getDetailProRes)
 );
 router.get(
+  "/restaurant/:restaurant_id/detail",
+  asyncHandle(restaurantController.getDetailProResForUser)
+);
+router.get(
   "/restaurants/:userLatitude/:userLongitude",
   asyncHandle(restaurantController.getAllRestaurant)
 );

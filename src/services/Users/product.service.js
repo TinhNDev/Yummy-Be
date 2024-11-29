@@ -68,6 +68,8 @@ class ProductService extends Product {
       price,
       quantity,
       is_available,
+      is_public:false,
+      is_draft:true,
       restaurant_id: restaurant.id,
     });
 

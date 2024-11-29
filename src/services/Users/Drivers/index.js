@@ -10,7 +10,7 @@ const { io } = require("socket.io-client");
 const socket = io(process.env.SOCKET_SERVER_URL);
 class DriverService {
   static updateInformation = async ({ user_id, body }) => {
-    const profile = await Profile.findOne({where:{user_id:user_id}})
+    const profile = await Profile.findOne({ where: { user_id: user_id } })
     const driver = await Driver.findOne({ where: { profile_id: profile.id } });
     if (driver) {
       await Driver.update(
@@ -23,6 +23,7 @@ class DriverService {
       );
     } else {
       await Driver.create({
+        car_name: body.car_name,
         license_plate: body.license_plate,
         status: "ONLINE",
         profile_id: profile.id,
@@ -30,14 +31,14 @@ class DriverService {
     }
     return await Driver.findOne({ where: { profile_id: profile.id } });
   };
-  static getProfileDriver = async ({user_id}) => {
-    const profile =await Profile.findOne({
+  static getProfileDriver = async ({ user_id }) => {
+    const profile = await Profile.findOne({
       where: { user_id: user_id },
       include: [
         {
           model: Driver,
           as: `Driver`,
-          atribute:[]
+          atribute: []
         },
       ],
     });
@@ -61,7 +62,7 @@ class DriverService {
     socket.emit("backendEvent", {
       orderId: order.id,
       status: "ORDER_CONFIRMED",
-      driver:order.driver_id
+      driver: order.driver_id
     });
     return await Order.update(
       {
@@ -70,7 +71,7 @@ class DriverService {
       { where: { id: order.id } }
     );
   };
-  static giveOrder = async({order_id, driver_id})=>{
+  static giveOrder = async ({ order_id, driver_id }) => {
     const order = await Order.findOne({ where: { id: order_id } });
     if (
       order.order_status != "DELIVERING"
@@ -99,19 +100,19 @@ class DriverService {
       },
       { where: { id: order.id } }
     );
-    const restaurant =await Restaurant.findOne({where:{id:order.restaurant_id}});
+    const restaurant = await Restaurant.findOne({ where: { id: order.restaurant_id } });
     socket.emit("backendEvent", {
       orderId: order_id,
       driver: order.driver_id,
       status: "FINDED  DRIVER",
     });
-  
+
     return {
       driver: order.driver_id,
       longtitudeUser: order.longtitude,
-      latitudeUser:order.latitude,
-      longtitudeRes:restaurant.address_y,
-      latitudeRes:restaurant.address_x
+      latitudeUser: order.latitude,
+      longtitudeRes: restaurant.address_y,
+      latitudeRes: restaurant.address_x
     }
   };
   static rejectOrder = async ({ order_id, driver_id }) => {
@@ -145,13 +146,13 @@ class DriverService {
     if (!driver) {
       throw new Error("Driver not found");
     }
-  
+
     if (driver.status === 'BUSY') {
       driver.status = 'ONLINE';
     } else {
       driver.status = 'BUSY';
     }
-  
+
     return await driver.save();
   };
 }

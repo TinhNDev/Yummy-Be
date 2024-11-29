@@ -28,6 +28,14 @@ class RestaurantController {
       }),
     }).send(res);
   };
+  getDetailProResForUser = async (req, res, next) => {
+    new SuccessResponse({
+      message: "res detail",
+      metadata: await restaurantService.getDetailProResForUser({
+        restaurant_id: req.params.restaurant_id,
+      }),
+    }).send(res);
+  };
   getRestaurantPending = async (req, res, next) => {
     new SuccessResponse({
       message: " list pending res",
