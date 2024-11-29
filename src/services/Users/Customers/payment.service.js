@@ -71,10 +71,12 @@ const createOrder = async ({ order, user_id }) => {
   }
   const cuponCost = cupon?.price || 0;
   let customer = await db.Customer.findOne({ where: { profile_id: user_id } });
+  console.log(customer)
   if (!customer) {
     try {
+      const profile =await db.Profile.findOne({where:{user_id: user_id}})
       customer = await db.Customer.create({
-        profile_id: user_id,
+        profile_id: profile.id,
       });
     } catch (error) {
       throw error;
@@ -120,7 +122,7 @@ Thanh toán cho đơn hàng #${order.listCartItem
 };
 
 const verifyCallback = async ({ dataStr, reqMac }) => {
-  const mac = CryptoJS.HmacSHA256(dataStr, config.key2).toString();
+  const mac =   CryptoJS.HmacSHA256(dataStr, config.key2).toString();
 
   if (reqMac !== mac) {
     return { return_code: -1, return_message: "mac not equal" };

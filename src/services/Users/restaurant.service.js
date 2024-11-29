@@ -6,6 +6,15 @@ const {
 const Restaurants = db.Restaurant;
 const RedisHelper = require("../../cache/redis");
 const { Op } = require("sequelize");
+const haversineQuery = `
+  6371 * 2 * ASIN(
+    SQRT(
+      POWER(SIN((? - address_x) * pi()/180 / 2), 2) + 
+      COS(? * pi()/180) * COS(address_x * pi()/180) * 
+      POWER(SIN((? - address_y) * pi()/180 / 2), 2)
+    )
+  ) AS distance
+`;
 class RestaurantService {
   static async initRedis() {
     const redis = new RedisHelper({ keyPrefix: "restaurant:" });
@@ -62,49 +71,59 @@ class RestaurantService {
     });
   };
 
-  static getAllRestaurant = async (
-    userLatitude,
-    userLongitude,
-    page = 1,
-  ) => {
-    const redisKey = `restaurants:nearby:${userLatitude}:${userLongitude}:${process.env.RADIUS}:page:${page}`;
+  static getAllRestaurant = async (userLatitude, userLongitude, page = 1) => {
     const redis = await RestaurantService.initRedis();
+    const redisKey = `restaurants:nearby:${userLatitude}:${userLongitude}:${process.env.RADIUS}:page:${page}`;
     
     const cachedData = await redis.get(redisKey);
     if (cachedData) {
       return cachedData;
-    } else {
-      const radiusInDegrees = process.env.RADIUS / 111.32;
-      const limit = 20;
-      const offset = (page - 1) * limit;
-  
-      const restaurants = await Restaurants.findAll({
-        where: {
-          address_x: {
-            [Op.between]: [userLatitude - radiusInDegrees, userLatitude + radiusInDegrees],
-          },
-          address_y: {
-            [Op.between]: [userLongitude - (process.env.RADIUS / (111.32 * Math.cos((userLatitude * Math.PI) / 180))),
-                           userLongitude + (process.env.RADIUS / (111.32 * Math.cos((userLatitude * Math.PI) / 180)))],
-          },
-        },
-      });
-  
-
-      const nearbyRestaurants = getNearbyRestaurantDetails(
-        restaurants,
-        userLatitude,
-        userLongitude,
-        process.env.RADIUS
-      );
-  
-      nearbyRestaurants.sort((a, b) => a.distance - b.distance);
-      const paginatedRestaurants = nearbyRestaurants.slice(offset, offset + limit);
-  
-      await redis.set(redisKey, JSON.stringify(paginatedRestaurants));
-      return paginatedRestaurants;
     }
+  
+    const limit = 20;
+    const offset = (page - 1) * limit;
+  
+    const haversineQuery = `
+      6371 * 2 * ASIN(
+        SQRT(
+          POWER(SIN((:userLatitude - address_x) * pi()/180 / 2), 2) + 
+          COS(:userLatitude * pi()/180) * COS(address_x * pi()/180) * 
+          POWER(SIN((:userLongitude - address_y) * pi()/180 / 2), 2)
+        )
+      )
+    `;
+  
+    const restaurants = await Restaurants.findAll({
+      attributes: {
+        include: [[db.sequelize.literal(haversineQuery), 'distance']]
+      },
+      where: db.sequelize.where(
+        db.sequelize.literal(haversineQuery),
+        '<=',
+        Number(process.env.RADIUS) / 1000
+      ),
+      replacements: {
+        userLatitude,
+        userLongitude
+      },
+      order: [[db.sequelize.literal('distance'), 'ASC']],
+      limit,
+      offset,
+    });
+  
+    if (!restaurants || restaurants.length === 0) {
+      throw new Error("No restaurants found for the given parameters.");
+    }
+  
+    const nearbyRestaurants = restaurants.map(restaurant => ({
+      ...restaurant.get(),
+      distance: restaurant.get('distance')
+    }));
+  
+    await redis.set(redisKey, JSON.stringify(nearbyRestaurants)); // Cache 1 giờ
+    return nearbyRestaurants;
   };
+  
   
 
   static searchRestaurantByKeyWord = async (keySearch) => {
@@ -129,6 +148,9 @@ class RestaurantService {
       is_available: false,
     }, {where:{restaurant_id:restaurant_id}})
   }
+  static getDetailProResForUser = async ({ restaurant_id }) => {
+    return await Restaurants.findOne({ where: { id: restaurant_id } });
+  };
 }
 
 module.exports = RestaurantService;
