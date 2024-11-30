@@ -77,53 +77,55 @@ class RestaurantService {
     
     const cachedData = await redis.get(redisKey);
     if (cachedData) {
-      return cachedData;
+      return JSON.parse(cachedData);
     }
   
     const limit = 20;
     const offset = (page - 1) * limit;
   
-    const haversineQuery = `
-      6371 * 2 * ASIN(
-        SQRT(
-          POWER(SIN((:userLatitude - address_x) * pi()/180 / 2), 2) + 
-          COS(:userLatitude * pi()/180) * COS(address_x * pi()/180) * 
-          POWER(SIN((:userLongitude - address_y) * pi()/180 / 2), 2)
-        )
-      )
-    `;
+    const haversineQuery = (lat, lon, restaurantLat, restaurantLon) => {
+      const toRadians = (degree) => degree * (Math.PI / 180);
+      const R = 6371;
   
-    const restaurants = await Restaurants.findAll({
-      attributes: {
-        include: [[db.sequelize.literal(haversineQuery), 'distance']]
-      },
-      where: db.sequelize.where(
-        db.sequelize.literal(haversineQuery),
-        '<=',
-        Number(process.env.RADIUS) / 1000
-      ),
-      replacements: {
-        userLatitude,
-        userLongitude
-      },
-      order: [[db.sequelize.literal('distance'), 'ASC']],
-      limit,
-      offset,
+      const dLat = toRadians(restaurantLat - lat);
+      const dLon = toRadians(restaurantLon - lon);
+  
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(toRadians(lat)) * Math.cos(toRadians(restaurantLat)) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+  
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    };
+    const allRestaurants = await Restaurants.findAll({
+      attribute: []
     });
+    const nearbyRestaurants = allRestaurants
+      .map(restaurant => {
+        const distance = haversineQuery(
+          userLatitude, 
+          userLongitude, 
+          restaurant.address_x, 
+          restaurant.address_y
+        );
   
-    if (!restaurants || restaurants.length === 0) {
+        return {
+          ...restaurant.get(),
+          distance
+        };
+      })
+      .filter(restaurant => restaurant.distance <= Number(process.env.RADIUS) / 1000)
+      .sort((a, b) => a.distance - b.distance);
+    const paginatedRestaurants = nearbyRestaurants.slice(offset, offset + limit);
+  
+    if (!paginatedRestaurants || paginatedRestaurants.length === 0) {
       throw new Error("No restaurants found for the given parameters.");
     }
+    await redis.set(redisKey, JSON.stringify(paginatedRestaurants)); // 1 hour expiration
   
-    const nearbyRestaurants = restaurants.map(restaurant => ({
-      ...restaurant.get(),
-      distance: restaurant.get('distance')
-    }));
-  
-    await redis.set(redisKey, JSON.stringify(nearbyRestaurants)); // Cache 1 giờ
-    return nearbyRestaurants;
+    return paginatedRestaurants;
   };
-  
   
 
   static searchRestaurantByKeyWord = async (keySearch) => {

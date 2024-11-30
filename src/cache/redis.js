@@ -77,7 +77,7 @@ class RedisHelper {
         if (type === "hash") {
           const value = await this.client.hGetAll(key);
           return value;
-        } else if (type === "string") {
+        } else if (type === "string"||typeof(key)=="string") {
           const value = await this.client.get(key);
           return value ? JSON.parse(value) : null;
         }

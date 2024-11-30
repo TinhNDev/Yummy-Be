@@ -149,22 +149,23 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       latitude: orderData.userLatitude,
       cupon_id: orderData.cupon_id,
     });
+    const restaurant = await db.Restaurant.findOne({where:{id:orderData.listCartItem[0].restaurant_id}})
     const KeyToken = await db.KeyToken.findOne({
-      where: { id: orderData.listCartItem[0].restaurant_id },
+      where: { id: restaurant.user_id },
     });
-    try {
-      const payload = {
-        notification: {
-          title: "New Order",
-          body: `123`,
-        },
-        token: KeyToken.fcmToken,
-      };
-      const response = await admin.messaging().send(payload);
-      console.log("Successfully sent message:", response);
-    } catch (error) {
-      throw error;
-    }
+    
+      if(KeyToken.fcmToken){
+        const payload = {
+          notification: {
+            title: "New Order",
+            body: `Bạn có 1 đơn hàng mới`,
+          },
+          token: KeyToken.fcmToken,
+        };
+        const response = await admin.messaging().send(payload);
+        console.log("Successfully sent message:", response);
+      }
+    
     newOrder.cupon_id?.(await addCuponToOrder(newOrder.id, newOrder.cupon_id));
     socket.emit("newOrderForRestaurant", {
       orderId: newOrder.id,
