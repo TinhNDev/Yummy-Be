@@ -153,6 +153,13 @@ class ProductService extends Product {
                 where: { id: currentTopping.dataValues.id },
               }
             );
+          } else{
+            let topping = await Topping.create({
+              topping_name: data.topping_name,
+              is_available: data.is_available,
+              price: data.price
+            })
+            await product.addToppings(topping)
           }
         })
       );
