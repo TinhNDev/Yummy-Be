@@ -12,16 +12,14 @@ const calculateDistance = async (originsLat, originsLng, destinationLat, destina
 
     const data = response.data;
     if (data.rows && data.rows[0].elements[0]) {
-      let distanceText = data.rows[0].elements[0].distance.text; // Khoảng cách
-      const duration = data.rows[0].elements[0].duration.text; // Thời gian di chuyển
-
-      // Chuyển đổi khoảng cách sang km nếu cần
+      let distanceText = data.rows[0].elements[0].distance.text;
+      const duration = data.rows[0].elements[0].duration.text;
       let distanceInKm;
       if (distanceText.includes('km')) {
         distanceInKm = parseFloat(distanceText.replace(' km', ''));
       } else if (distanceText.includes('m')) {
         const distanceInMeters = parseFloat(distanceText.replace(' m', ''));
-        distanceInKm = (distanceInMeters / 1000).toFixed(2); // Chuyển đổi từ mét sang km
+        distanceInKm = (distanceInMeters / 1000).toFixed(2);
       }
 
       return {

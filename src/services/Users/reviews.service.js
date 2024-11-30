@@ -22,7 +22,7 @@ class ReviewService {
       dri_rating: reviews.dri_rating,
       res_comment: reviews.res_comment,
       dri_comment: reviews.dri_comment,
-      customer_id: Customer.Profile.Customer.id,
+      customer_id: Customer.id,
       driver_id: order.driver_id,
       restaurant_id: order.restaurant_id,
     });
