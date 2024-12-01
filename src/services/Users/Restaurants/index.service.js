@@ -15,12 +15,11 @@ const getAllDriverIdsFromRedis = require("../../../helper/redisFunction");
 const { io } = require("socket.io-client");
 const socket = io(process.env.SOCKET_SERVER_URL);
 const admin = require("firebase-admin");
-const RedisHelper = require('../../../cache/redis')
+const RedisHelper = require("../../../cache/redis");
 class OrderRestaurantService {
-
-  static getOrder = async ({restaurant_id}) =>{
-    return await Order.findAll({where:{restaurant_id: restaurant_id}});
-  }
+  static getOrder = async ({ restaurant_id }) => {
+    return await Order.findAll({ where: { restaurant_id: restaurant_id } });
+  };
   static changeStatusOrder = async ({ orderId, status }) => {
     const order = await Order.findByPk(orderId);
     if (order) {
@@ -32,175 +31,194 @@ class OrderRestaurantService {
     }
   };
 
-  static findDriver = async ({order_id}) => {
+  static findDriver = async ({ order_id }) => {
     let nearestDriver = null;
     socket.emit("backendEvent", {
-      driver:"null",
+      driver: "null",
       orderId: order_id,
       status: "FINDING DRIVER",
     });
     socket.emit("backendEvent", {
-      driver:"null",
+      driver: "null",
       orderId: order_id,
       status: "PREPARING_ORDER",
     });
     const redisHelper = new RedisHelper();
     try {
       await redisHelper.connect(); // Connect to Redis
-      
+
       const order = await Order.findByPk(parseInt(order_id));
       if (!order) throw new Error("Order not found");
 
-      const restaurant = await Restaurant.findOne({ where: { id: order.restaurant_id } });
+      const restaurant = await Restaurant.findOne({
+        where: { id: order.restaurant_id },
+      });
       const driverIds = await getAllDriverIdsFromRedis();
-      
+
       let shortestDistance = Infinity;
-      const blacklist = order.order_status === 'ORDER_CANCELED' 
-          ? await BlackList.findAll({ where: { order_id: order_id } }) 
+      const blacklist =
+        order.order_status === "ORDER_CANCELED"
+          ? await BlackList.findAll({ where: { order_id: order_id } })
           : [];
 
       for (const driverId of driverIds) {
-          if (blacklist.some(entry => entry.driver_id == driverId && entry.status)) {
-              console.log(`Driver ${driverId} is in the blacklist, skipping.`);
-              continue;
+        if (
+          blacklist.some((entry) => entry.driver_id == driverId && entry.status)
+        ) {
+          console.log(`Driver ${driverId} is in the blacklist, skipping.`);
+          continue;
+        }
+
+        const driverStatus = await Driver.findOne({
+          where: { id: driverId },
+        }).then((driver) => driver?.status);
+        if (driverStatus === "BUSY") {
+          continue;
+        }
+
+        const driverLocation = await redisHelper.get(
+          `driver:${driverId}:location`
+        );
+
+        if (
+          driverLocation &&
+          driverLocation.latitude &&
+          driverLocation.longitude
+        ) {
+          const driverCoords = {
+            latitude: parseFloat(driverLocation.latitude),
+            longitude: parseFloat(driverLocation.longitude),
+          };
+          const restaurantCoords = {
+            latitude: parseFloat(restaurant.dataValues.address_x),
+            longitude: parseFloat(restaurant.dataValues.address_y),
+          };
+
+          const distance = geolib.getDistance(driverCoords, restaurantCoords);
+          if (distance < shortestDistance) {
+            shortestDistance = distance;
+            nearestDriver = driverId;
           }
-
-          const driverStatus = await Driver.findOne({ where: { id: driverId } }).then(driver => driver?.status);
-          if (driverStatus === 'BUSY') {
-              continue;
-          }
-
-          const driverLocation = await redisHelper.get(`driver:${driverId}:location`);
-
-          if (driverLocation && driverLocation.latitude && driverLocation.longitude) {
-              const driverCoords = {
-                  latitude: parseFloat(driverLocation.latitude),
-                  longitude: parseFloat(driverLocation.longitude),
-              };
-              const restaurantCoords = {
-                  latitude: parseFloat(restaurant.dataValues.address_x),
-                  longitude: parseFloat(restaurant.dataValues.address_y),
-              };
-
-              const distance = geolib.getDistance(driverCoords, restaurantCoords);
-              if (distance < shortestDistance) {
-                  shortestDistance = distance;
-                  nearestDriver = driverId;
-              }
-          }
+        }
       }
 
       let fcmToken;
       if (nearestDriver) {
-          try {
-              await Order.update(
-                  { driver_id: nearestDriver, order_status: "PREPARING_ORDER" },
-                  { where: { id: order.dataValues.id }}
-              );
-              await Driver.update({ status: 'BUSY' }, { where: { id: nearestDriver } });
+        try {
+          await Order.update(
+            { driver_id: nearestDriver, order_status: "PREPARING_ORDER" },
+            { where: { id: order.dataValues.id } }
+          );
+          await Driver.update(
+            { status: "BUSY" },
+            { where: { id: nearestDriver } }
+          );
 
-              const updatedOrder = await Order.findOne({
-                  where: { id: order.dataValues.id },
-                  include: [
+          const updatedOrder = await Order.findOne({
+            where: { id: order.dataValues.id },
+            include: [
+              {
+                model: Restaurant,
+                attributes: ["id", "name", "address", "image"],
+              },
+              {
+                model: Driver,
+                attributes: ["license_plate"],
+                include: [
+                  {
+                    model: Profile,
+                    as: "Profile",
+                    attributes: ["id", "name", "image", "phone_number", "cic"],
+                    include: [
                       {
-                          model: Restaurant,
-                          attributes: ["id", "name", "address","image"],
-                      },
-                      {
-                          model: Driver,
-                          attributes: ["license_plate"],
-                          include: [
-                              {
-                                  model: Profile,
-                                  as: "Profile",
-                                  attributes: ["id", "name", "image", "phone_number", "cic"],
-                                  include: [
-                                      {
-                                          model: User,
-                                          as: "User",
-                                          include: [
-                                              {
-                                                  model: KeyToken,
-                                                  as: "Key Tokens",
-                                                  attributes: ["fcmToken"],
-                                              },
-                                          ],
-                                      },
-                                  ],
-                              },
-                          ],
-                      },
-                  ],
-              });
-
-              fcmToken = updatedOrder?.Driver?.Profile?.User?.["Key Tokens"]?.[0]?.fcmToken;
-
-              try {
-                  if (fcmToken) {
-                      const payload = {
-                          notification: {
-                              title: `New order ${order_id}`,
-                              body: `You have a new order!`,
+                        model: User,
+                        as: "User",
+                        include: [
+                          {
+                            model: KeyToken,
+                            as: "Key Tokens",
+                            attributes: ["fcmToken"],
                           },
-                          token: fcmToken,
-                      };
-
-                      const response = await admin.messaging().send(payload);
-                      console.log("Successfully sent message:", response);
-                  } else {
-                      console.log("FCM token not found");
-                  }
-              } catch (error) {
-                  console.error("Error sending notification:", error);
-              }
-
-              socket.emit("newOrderForDriver", { data: updatedOrder?.dataValues });
-
-              return {
-                  order: updatedOrder,
-              };
-          } catch (error) {
-              if (!transaction.finished) {
-                  await transaction.rollback();
-              }
-              throw error;
-          }
-      } else {
-          try {
-              if (fcmToken) {
-                  const payload = {
-                      notification: {
-                          title: `New order ${order_id}`,
-                          body: `No available driver found`,
+                        ],
                       },
-                      token: fcmToken,
-                  };
+                    ],
+                  },
+                ],
+              },
+            ],
+          });
 
-                  const response = await admin.messaging().send(payload);
-                  console.log("Successfully sent message:", response);
-              } else {
-                  console.log("FCM token not found");
-              }
+          fcmToken =
+            updatedOrder?.Driver?.Profile?.User?.["Key Tokens"]?.[0]?.fcmToken;
+
+          try {
+            if (fcmToken) {
+              const payload = {
+                notification: {
+                  title: `New order ${order_id}`,
+                  body: `You have a new order!`,
+                },
+                token: fcmToken,
+              };
+
+              const response = await admin.messaging().send(payload);
+              console.log("Successfully sent message:", response);
+            } else {
+              console.log("FCM token not found");
+            }
           } catch (error) {
-              console.error("Error sending notification:", error);
+            console.error("Error sending notification:", error);
           }
+
+          socket.emit("newOrderForDriver", { data: updatedOrder?.dataValues });
+
+          return {
+            order: updatedOrder,
+          };
+        } catch (error) {
+          if (!transaction.finished) {
+            await transaction.rollback();
+          }
+          throw error;
+        }
+      } else {
+        try {
+          if (fcmToken) {
+            const payload = {
+              notification: {
+                title: `New order ${order_id}`,
+                body: `No available driver found`,
+              },
+              token: fcmToken,
+            };
+
+            const response = await admin.messaging().send(payload);
+            console.log("Successfully sent message:", response);
+          } else {
+            console.log("FCM token not found");
+          }
+        } catch (error) {
+          console.error("Error sending notification:", error);
+        }
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Error in findDriver:", error.message);
       throw new Error("Could not find driver");
-  } finally {
+    } finally {
       await redisHelper.disconnect();
       return nearestDriver;
-  }
-};
+    }
+  };
 
   static rejectOrderByRestaurant = async ({
     restaurant_id,
     order_id,
     reason,
   }) => {
-    const restaurant =await Restaurant.findOne({where:{user_id:restaurant_id}});
-    if(!restaurant){
+    const restaurant = await Restaurant.findOne({
+      where: { user_id: restaurant_id },
+    });
+    if (!restaurant) {
       throw Error;
     }
 
@@ -236,7 +254,7 @@ class OrderRestaurantService {
         },
       ],
     });
-    if(OrderRejected.restaurant_id != restaurant.id){
+    if (OrderRejected.restaurant_id != restaurant.id) {
       throw Error;
     }
     let response;
@@ -250,7 +268,7 @@ class OrderRestaurantService {
         { where: { id: order_id } }
       );
       switch (reason) {
-        case '1':
+        case "1":
           try {
             if (fcmToken) {
               const payload = {
@@ -267,7 +285,7 @@ class OrderRestaurantService {
             throw error;
           }
           break;
-        case '2':
+        case "2":
           try {
             if (fcmToken) {
               const payload = {
@@ -284,7 +302,7 @@ class OrderRestaurantService {
             throw error;
           }
           break;
-        case '3':
+        case "3":
           try {
             if (fcmToken) {
               const payload = {
@@ -303,7 +321,10 @@ class OrderRestaurantService {
         default:
           break;
       }
-    } catch (error) {} finally{return "ORDER_CANCELED"}
+    } catch (error) {
+    } finally {
+      return "ORDER_CANCELED";
+    }
   };
 }
 
