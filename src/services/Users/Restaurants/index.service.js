@@ -321,9 +321,9 @@ class OrderRestaurantService {
         default:
           break;
       }
+      return  "Order cancel"
     } catch (error) {
-    } finally {
-      return "ORDER_CANCELED";
+      return error
     }
   };
 }
