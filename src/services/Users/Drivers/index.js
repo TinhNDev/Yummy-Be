@@ -104,7 +104,7 @@ class DriverService {
     socket.emit("backendEvent", {
       orderId: order_id,
       driver: order.driver_id,
-      status: "FINDED  DRIVER",
+      status: "DELIVERING",
     });
 
     return {

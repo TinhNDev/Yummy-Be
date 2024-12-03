@@ -165,7 +165,11 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
         const response = await admin.messaging().send(payload);
         console.log("Successfully sent message:", response);
       }
-    
+      socket.emit("backendEvent", {
+        driver: "null",
+        orderId: order_id,
+        status: "PAID",
+      });
     newOrder.cupon_id?.(await addCuponToOrder(newOrder.id, newOrder.cupon_id));
     socket.emit("newOrderForRestaurant", {
       orderId: newOrder.id,
