@@ -24,4 +24,5 @@ router.get(
   "/restaurants/:userLatitude/:userLongitude",
   asyncHandle(restaurantController.getAllRestaurant)
 );
+router.get("/restaurant/:restaurant_id/llm",asyncHandle(restaurantController.getRestaurantById))
 module.exports = router;
