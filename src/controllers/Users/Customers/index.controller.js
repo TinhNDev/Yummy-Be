@@ -16,8 +16,18 @@ class CustomerController{
             metadata: await CustomerService.getOrderForCustomer({
                 user_id: req.user.user_id,
                 order_id: req.params.order_id,
-            }).send(res)
-        })
+            })
+        }).send(res)
+    }
+    getDistanceByResId = async(req,res) =>{
+        new SuccessResponse({
+            message:"distance",
+            metadata: await CustomerService.getDistance({
+                restaurant_id:req.params.restaurant_id,
+                userLatitude:req.params.userLatitude,
+                userLongtitude:req.params.userLongtitude
+            })
+        }).send(res)
     }
 }
 

@@ -58,5 +58,11 @@ class RestaurantController {
       }),
     });
   };
+  getRestaurantById =async(req,res)=>{
+    new SuccessResponse({
+        message:"detail",
+        metadata: await restaurantService.getRestaurantById(req.params.restaurant_id)
+    }).send(res)
+}
 }
 module.exports = new RestaurantController();
