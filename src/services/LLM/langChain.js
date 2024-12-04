@@ -43,7 +43,7 @@ async function setupLangChain() {
     },
     {
       role: "human",
-      content: '{question},tên các món ăn phải được bọc trong dấu "",và giải thích sơ qua,ngắn gọn khoảng 30 từ trở xuống các món ăn này',
+      content: '{question},tên các món ăn phải được bọc trong dấu "",các tên món ăn chỉ cần tượng trưng không cần chi tiết ví dụ như "cơm gà bình định" thì chỉ cần "cơm gà",và giải thích sơ qua,ngắn gọn khoảng 30 từ trở xuống các món ăn này',
     },
   ]);
 
