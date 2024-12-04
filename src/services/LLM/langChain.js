@@ -4,7 +4,7 @@ const { OpenAIEmbeddings, ChatOpenAI } = require("@langchain/openai");
 const { MemoryVectorStore } = require("langchain/vectorstores/memory");
 const { Document } = require("@langchain/core/documents");
 const { ChatPromptTemplate } = require("@langchain/core/prompts");
-const { Op } = require('sequelize');
+const { Op } = require("sequelize");
 const {
   RunnableLambda,
   RunnableMap,
@@ -43,7 +43,8 @@ async function setupLangChain() {
     },
     {
       role: "human",
-      content: '{question},tên các món ăn phải được bọc trong dấu "",các tên món ăn chỉ cần tượng trưng không cần chi tiết ví dụ như "cơm gà bình định" thì chỉ cần "cơm gà",và giải thích sơ qua,ngắn gọn khoảng 30 từ trở xuống các món ăn này',
+      content:
+        '{question},tên các món ăn phải được bọc trong dấu "",các tên món ăn chỉ cần tượng trưng không cần chi tiết ví dụ như "cơm gà bình định" thì chỉ cần "cơm gà",và giải thích sơ qua,ngắn gọn khoảng 30 từ trở xuống các món ăn này',
     },
   ]);
 
@@ -83,22 +84,24 @@ async function handleSearch(query) {
     const chain = await setupLangChain();
     const response = await chain.invoke(query);
 
-    const productNames = response.match(/"\s*([^"]+)\s*"/g)
-      ?.map(match => match.replace(/"/g, "").trim());
+    const productNames = response
+      .match(/"\s*([^"]+)\s*"/g)
+      ?.map((match) => match.replace(/"/g, "").trim());
 
     if (productNames && productNames.length > 0) {
       const productNamesWithoutQuotes = productNames
-        .map((name) => name.replace(/"/g, '').trim())
-        .filter(name => name.length > 0);
+        .map((name) => name.replace(/"/g, "").trim())
+        .filter((name) => name.length > 0);
 
       if (productNamesWithoutQuotes.length > 0) {
         const products = await db.Product.findAll({
           where: {
             name: {
-              [Op.or]: productNamesWithoutQuotes.map(name => ({
-                [Op.like]: `%${name}%`
-              }))
-            }
+              [Op.or]: productNamesWithoutQuotes.map((name) => ({
+                [Op.like]: `%${name}%`,
+              })),
+            },
+            is_public: true,
           },
         });
 
