@@ -25,7 +25,7 @@ class MessageService {
   static async getChatHistory(user_id) {
     const messages = await Message.findAll({
       where: { user_id: user_id },
-      order: [["createdAt", "DESC"]],
+      order: [["createdAt", "ASC"]],
     });
 
     if (messages.length === 0) {
