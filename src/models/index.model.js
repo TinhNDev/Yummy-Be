@@ -37,6 +37,7 @@ db.Topping = require("./Users/topping.model")(sequelize,Sequelize);
 db.OrderItem = require("./Users/orderItem.model")(sequelize,Sequelize);
 db.Payment = require("../models/Users/Customers/payment.model")(sequelize, Sequelize);
 db.Review = require("../models/Users/reviews.model")(sequelize,Sequelize);
+db.Message = require("../models/Users/message.model")(sequelize,Sequelize)
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -232,3 +233,12 @@ db.Review.belongsTo(db.Driver,{
 db.Driver.hasMany(db.Review,{
   foreignKey:"driver_id",
 })
+
+db.User.hasMany(db.Message, {
+  foreignKey: "user_id",
+  as: "Messages",
+});
+db.Message.belongsTo(db.User, {
+  foreignKey: "user_id",
+  as: "User",
+});
