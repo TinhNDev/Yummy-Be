@@ -72,14 +72,6 @@ class RestaurantService {
   };
 
   static getAllRestaurant = async (userLatitude, userLongitude, page = 1) => {
-    const redis = await RestaurantService.initRedis();
-    const redisKey = `restaurants:nearby:${userLatitude}:${userLongitude}:${process.env.RADIUS}:page:${page}`;
-    
-    const cachedData = await redis.get(redisKey);
-    if (cachedData) {
-      return JSON.parse(cachedData);
-    }
-  
     const limit = 20;
     const offset = (page - 1) * limit;
   
@@ -98,9 +90,11 @@ class RestaurantService {
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       return R * c;
     };
-    const allRestaurants = await Restaurants.findAll({
-      attribute: []
-    });
+
+    // Lấy danh sách tất cả nhà hàng
+    const allRestaurants = await Restaurants.findAll();
+
+    // Lọc và tính khoảng cách cho từng nhà hàng
     const nearbyRestaurants = allRestaurants
       .map(restaurant => {
         const distance = haversineQuery(
@@ -109,23 +103,25 @@ class RestaurantService {
           restaurant.address_x, 
           restaurant.address_y
         );
-  
+
         return {
           ...restaurant.get(),
           distance
         };
       })
-      .filter(restaurant => restaurant.distance <= Number(process.env.RADIUS) / 1000)
-      .sort((a, b) => a.distance - b.distance);
+      .filter(restaurant => restaurant.distance <= Number(process.env.RADIUS) / 1000) // Lọc nhà hàng trong phạm vi bán kính
+      .sort((a, b) => a.distance - b.distance); // Sắp xếp theo khoảng cách từ gần nhất đến xa nhất
+
+    // Phân trang
     const paginatedRestaurants = nearbyRestaurants.slice(offset, offset + limit);
-  
+
     if (!paginatedRestaurants || paginatedRestaurants.length === 0) {
       throw new Error("No restaurants found for the given parameters.");
     }
-    await redis.set(redisKey, JSON.stringify(paginatedRestaurants)); // 1 hour expiration
-  
+
     return paginatedRestaurants;
-  };
+};
+
   
 
   static searchRestaurantByKeyWord = async (keySearch) => {

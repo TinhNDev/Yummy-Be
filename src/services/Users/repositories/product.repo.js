@@ -120,9 +120,10 @@ const getProductByRestaurantId = async ({restaurant_id}) =>{
 
 const resgetProductByRestaurantId = async ({restaurant_id}) =>{
   const restaurant = await Restaurant.findOne({where:{user_id:restaurant_id}})
-  return Product.findAll({
-    where:{restaurant_id: restaurant.id,is_public:true}
+  const product = await Product.findAll({
+    where:{restaurant_id: restaurant.id,is_public:true,is_draft:false}
   })
+  return product
 }
 module.exports = {
   updateProductById,

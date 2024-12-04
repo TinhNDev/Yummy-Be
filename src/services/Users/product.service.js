@@ -25,6 +25,8 @@ class Product {
     quantity,
     is_available,
     restaurant_id,
+    is_public,
+    is_draft
   }) {
     this.name = name;
     this.image = image;
@@ -33,6 +35,8 @@ class Product {
     this.quantity = quantity;
     this.is_available = is_available;
     this.restaurant_id = restaurant_id;
+    this.is_public = is_public;
+    this.is_draft = is_draft
   }
 
   async createProduct() {
