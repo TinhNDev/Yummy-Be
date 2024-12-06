@@ -20,7 +20,7 @@ class RedisHelper {
     // Kết nối tới Redis
     async connect() {
         try {
-            this.client = redis.createClient(this.config);
+            this.client = redis.createClient(this.config)
 
             // Xử lý lỗi kết nối
             this.client.on("error", (err) => {
