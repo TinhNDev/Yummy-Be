@@ -78,7 +78,6 @@ const authorization = asyncHandle(async (req, res, next) => {
 const checkRole = (allowedRoles) => asyncHandle(async (req, res, next) => {
   const userRoles = req.user.role
   if (userRoles.includes('admin')) {
-    // Nếu người dùng là admin, cho phép truy cập tất cả các route mà không cần kiểm tra vai trò
     return next();
   }
 
