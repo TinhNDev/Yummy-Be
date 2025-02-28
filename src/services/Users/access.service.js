@@ -12,14 +12,14 @@ const crypto = require("crypto");
 const KeyTokenService = require("./keyToken.service");
 const { createTokenPair } = require("../../auth/authUtils");
 const getInforData = require("../../utils/index");
-const nodemailer = require('nodemailer')
+const nodemailer = require("nodemailer");
 const { findByEmail, findRoleByEmail } = require("./user.service");
+const userModel = require("../../models/Users/user.model");
 class AccessService {
   static singUp = async ({ password, email, fcmToken, role }) => {
     const holderUser = await user.findOne({
       where: {
         email,
-        isVerified: true,
       },
     });
     if (holderUser) {
@@ -73,47 +73,46 @@ class AccessService {
         throw new BadRequestError("Error: Key not in database");
       }
 
-      const verificationLink = `${process.env.DOMAIN}verify-email?token=${tokens}`
+      const verificationLink = `${process.env.DOMAIN}verify-email?id_token=${keyStore.id}`;
 
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465, // hoặc 465 cho SSL
-        secure: true, // true cho 465, false cho các cổng khác
-        auth: {
-          user: `${process.env.EMAIL}`,
-          pass: `${process.env.PASSEMAIL}`,
-        }
-      })
+      try {
+        const transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465, // hoặc 465 cho SSL
+          secure: true, // true cho 465, false cho các cổng khác
+          auth: {
+            user: `${process.env.EMAIL}`,
+            pass: `${process.env.PASSEMAIL}`,
+          },
+        });
 
-      const mailOption = {
-        from:`${process.env.EMAIL}`,
-        to: email,
-        subject: "Email verification",
-        text: `please click to link ${verificationLink}`
+        const mailOption = {
+          from: `${process.env.EMAIL}`,
+          to: email,
+          subject: "Email verification",
+          text: `please click to link ${verificationLink}`,
+        };
+        await transporter.sendMail(mailOption);
+        return {
+          code: 201,
+          user: getInforData({
+            fileds: ["id", "email"],
+            object: newUser,
+          }),
+        };
+      } catch (error) {
+        await userModel.destroy({ where: { email: email } });
+        throw new BadRequestError(error);
       }
-      await transporter.sendMail(mailOption)
-      return {
-        code: 201,
-        user: getInforData({
-          fileds: ["id", "email"],
-          object: newUser,
-        }),
-      };
     }
+    await userModel.destroy({ where: { email: email } });
     return {
       code: 200,
       metadata: null,
     };
   };
   static login = async ({ email, password, refreshToken = null, fcmToken }) => {
-    /*
-            #step1: check exist email
-            #step2: check match password
-            #step3: create AT, RT and save
-            #step4: generate tokens
-            #step5: get data return login
-        */
-    //check user exist
+    
     const foundUser = await findByEmail({ email });
     if (!foundUser) throw new BadRequestError("User not registered");
     const data = await findRoleByEmail({ email });

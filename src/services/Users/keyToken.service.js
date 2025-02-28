@@ -37,7 +37,7 @@ class KeyTokenService {
           fcmToken:fcmToken,
         });
       }
-      return tokens ? tokens.publicKey : null;
+      return tokens ? tokens : null;
     } catch (error) {
       return error;
     }
