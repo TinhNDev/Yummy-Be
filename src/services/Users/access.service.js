@@ -15,6 +15,10 @@ const getInforData = require("../../utils/index");
 const nodemailer = require("nodemailer");
 const { findByEmail, findRoleByEmail } = require("./user.service");
 const userModel = require("../../models/Users/user.model");
+const {
+  verificationEmailTemplate,
+  forgotPasswordEmailTemplate,
+} = require("../../utils/emailTemplate");
 class AccessService {
   static singUp = async ({ password, email, fcmToken, role }) => {
     const holderUser = await user.findOne({
@@ -86,13 +90,11 @@ class AccessService {
           },
         });
 
-        const mailOption = {
-          from: `${process.env.EMAIL}`,
-          to: email,
-          subject: "Email verification",
-          text: `please click to link ${verificationLink}`,
-        };
-        await transporter.sendMail(mailOption);
+        const mailOptionVerify = verificationEmailTemplate(
+          email,
+          verificationLink
+        );
+        await transporter.sendMail(mailOptionVerify);
         return {
           code: 201,
           user: getInforData({
@@ -112,7 +114,6 @@ class AccessService {
     };
   };
   static login = async ({ email, password, refreshToken = null, fcmToken }) => {
-    
     const foundUser = await findByEmail({ email });
     if (!foundUser) throw new BadRequestError("User not registered");
     const data = await findRoleByEmail({ email });
@@ -157,29 +158,88 @@ class AccessService {
   };
   static handleRefreshToken = async ({ keyStore, user, refreshToken }) => {
     const { user_id, email } = user;
+
     if (keyStore.refreshTokenUsed.hasOwnProperty(refreshToken)) {
       await KeyTokenService.removeKeyById(user_id);
       throw new ForbiddenError("Something wrong happend!! please relogin");
     }
+
     if (keyStore.refreshToken !== refreshToken) {
       throw new AuthFailError("user not registered");
     }
+
     const tokens = await createTokenPair(
       { user_id, email },
       keyStore.publicKey,
       keyStore.privateKey
     );
+
     await keyStore.update({
       refreshToken: tokens.refreshToken,
       refreshTokenUsed: refreshToken,
     });
+
     return {
       user,
       tokens,
     };
   };
+
   static logout = async (keyStore) => {
     return await KeyTokenService.removeKeyById(keyStore.id);
+  };
+
+  static forgotPassword = async ({ email, password, role, fcmToken }) => {
+    const foundUser = await findByEmail({ email });
+    if (!foundUser) throw new BadRequestError("User not registered");
+
+    const { publicKey, privateKey } = await db.KeyToken.findOne({
+      where: { user_id: foundUser.id },
+    });
+
+    const tokens = await createTokenPair(
+      { user_id: foundUser.id, email, role },
+      publicKey,
+      privateKey
+    );
+    const keyStore = await KeyTokenService.createKeyToken({
+      user_id: foundUser.id,
+      publicKey,
+      privateKey,
+      refreshToken: tokens.refreshToken,
+      fcmToken: fcmToken,
+    });
+    const hashPassword = await bcryptjs.hash(password, 10);
+    const resetLink = `${process.env.DOMAIN}verify-password?id_token=${keyStore.id}&password=${hashPassword}`;
+
+    try {
+      const transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465, // hoặc 465 cho SSL
+        secure: true, // true cho 465, false cho các cổng khác
+        auth: {
+          user: `${process.env.EMAIL}`,
+          pass: `${process.env.PASSEMAIL}`,
+        },
+      });
+
+      const mailOptionForgotPassword = forgotPasswordEmailTemplate(
+        email,
+        resetLink
+      );
+
+      await transporter.sendMail(mailOptionForgotPassword);
+      return {
+        code: 201,
+        user: getInforData({
+          fileds: ["id", "email"],
+          object: foundUser,
+        }),
+      };
+    } catch (error) {
+      await userModel.destroy({ where: { email: email } });
+      throw new BadRequestError(error);
+    }
   };
 }
 

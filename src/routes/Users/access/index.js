@@ -12,10 +12,19 @@ router.post("/user/signup", asyncHandle(accessController.singUp));
 router.post("/user/login", asyncHandle(accessController.login));
 
 //logout
-router.post("/user/logout",authorization, asyncHandle(accessController.logout));
-
 router.post(
-  "/user/handelRefeshToken",authorization,
+  "/user/logout",
+  authorization,
+  asyncHandle(accessController.logout)
+);
+//forgot password
+router.put(
+  "/user/forgot-password",
+  asyncHandle(accessController.forgotPassword)
+);
+router.post(
+  "/user/handelRefeshToken",
+  authorization,
   asyncHandle(accessController.refreshToken)
 );
 module.exports = router;
