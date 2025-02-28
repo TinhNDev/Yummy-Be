@@ -13,8 +13,8 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.TEXT,
     },
     fcmToken:{
-      type: Sequelize.TEXT
-    }
+      type: Sequelize.TEXT,
+    },
   });
   return KeyToken;
 };

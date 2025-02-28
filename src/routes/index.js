@@ -4,7 +4,17 @@ const { apiKey, permissions } = require("../auth/checkAuth");
 //callbackzalo
 const { asyncHandle } = require("../helper/asyncHandler");
 const paymentController = require("../controllers/Users/Customers/payment.controller");
+const {KeyToken} = require("../models/index.model");
 const router = express.Router();
+router.get('/verify-email',async(req,res) =>{
+    const {token} = req.query;
+    const userToVerifyEmail = await KeyToken.findOne({where:{verificationToken: token}});
+    
+    if(!userToVerifyEmail){
+      return res.send('Invalid verification token');
+    }
+    res.send(token);
+  })
 router.post("/callback", asyncHandle(paymentController.callBack));
 //check apiKey
 router.use(apiKey);

@@ -1,4 +1,4 @@
-const redis = require("redis");
+const { createClient } = require("redis");
 const dotenv = require("dotenv");
 
 // Load biến môi trường từ tệp .env
@@ -6,21 +6,19 @@ dotenv.config();
 
 class RedisHelper {
     constructor() {
-        this.config = {
-            password: process.env.REDIS_PASSWORD || null,
-            socket: {
-                host: process.env.REDIS_HOST || "127.0.0.1",
-                port: parseInt(process.env.REDIS_PORT, 10) || 6379,
-            },
-        };
+        const password = process.env.REDIS_PASSWORD ? `:${process.env.REDIS_PASSWORD}@` : '';
+        const host = process.env.REDIS_HOST || "127.0.0.1";
+        const port = process.env.REDIS_PORT || 6379;
 
+        // Tạo URL kết nối Redis
+        this.url = `redis://${password}${host}:${port}`;
         this.client = null;
     }
 
     // Kết nối tới Redis
     async connect() {
         try {
-            this.client = redis.createClient(this.config)
+            this.client = createClient({ url: this.url });
 
             // Xử lý lỗi kết nối
             this.client.on("error", (err) => {
@@ -54,7 +52,7 @@ class RedisHelper {
                 throw new Error("Redis client is not connected");
             }
             if (ttl) {
-                await this.client.setEx(key, ttl, JSON.stringify(value)); // setex equivalent in redis v4.x
+                await this.client.setEx(key, ttl, JSON.stringify(value));
             } else {
                 await this.client.set(key, JSON.stringify(value));
             }
@@ -68,25 +66,25 @@ class RedisHelper {
 
     // Lấy giá trị
     async get(key) {
-      try {
-        if (!this.client || !this.client.isOpen) {
-          throw new Error("Redis client is not connected");
+        try {
+            if (!this.client || !this.client.isOpen) {
+                throw new Error("Redis client is not connected");
+            }
+
+            const type = await this.client.type(key);
+            if (type === "hash") {
+                const value = await this.client.hGetAll(key);
+                return value;
+            } else if (type === "string" || typeof (key) === "string") {
+                const value = await this.client.get(key);
+                return value ? JSON.parse(value) : null;
+            }
+
+            throw new Error(`Unsupported data type: ${type}`);
+        } catch (error) {
+            console.error("Redis GET error:", error);
+            throw error;
         }
-  
-        const type = await this.client.type(key);
-        if (type === "hash") {
-          const value = await this.client.hGetAll(key);
-          return value;
-        } else if (type === "string"||typeof(key)=="string") {
-          const value = await this.client.get(key);
-          return value ? JSON.parse(value) : null;
-        }
-  
-        throw new Error(`Unsupported data type: ${type}`);
-      } catch (error) {
-        console.error("Redis GET error:", error);
-        throw error;
-      }
     }
 
     // Xóa một hoặc nhiều key

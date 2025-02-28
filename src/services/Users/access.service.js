@@ -12,12 +12,14 @@ const crypto = require("crypto");
 const KeyTokenService = require("./keyToken.service");
 const { createTokenPair } = require("../../auth/authUtils");
 const getInforData = require("../../utils/index");
+const nodemailer = require('nodemailer')
 const { findByEmail, findRoleByEmail } = require("./user.service");
 class AccessService {
-  static singUp = async ({ password, email,fcmToken, role }) => {
+  static singUp = async ({ password, email, fcmToken, role }) => {
     const holderUser = await user.findOne({
       where: {
         email,
+        isVerified: true,
       },
     });
     if (holderUser) {
@@ -29,11 +31,15 @@ class AccessService {
     const newUser = await user.create({
       password: hashPassword,
       email,
+      isVerified: false,
     });
+
     const roleRecord = await db.Roles.findOne({ where: { name: role } });
+
     if (!roleRecord) {
       throw new BadRequestError("Vai trò không hợp lệ");
     }
+
     await newUser.addRoles(roleRecord);
     if (newUser) {
       const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
@@ -47,12 +53,11 @@ class AccessService {
           format: "pem",
         },
       });
-      console.log(publicKey, privateKey);
       const tokens = await createTokenPair(
         {
           user_id: newUser.id,
           email,
-          role
+          role,
         },
         publicKey,
         privateKey
@@ -62,18 +67,37 @@ class AccessService {
         publicKey,
         privateKey,
         refreshToken: tokens.refreshToken,
-        fcmToken
+        fcmToken,
       });
       if (!keyStore) {
         throw new BadRequestError("Error: Key not in database");
       }
+
+      const verificationLink = `${process.env.DOMAIN}verify-email?token=${tokens}`
+
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465, // hoặc 465 cho SSL
+        secure: true, // true cho 465, false cho các cổng khác
+        auth: {
+          user: `${process.env.EMAIL}`,
+          pass: `${process.env.PASSEMAIL}`,
+        }
+      })
+
+      const mailOption = {
+        from:`${process.env.EMAIL}`,
+        to: email,
+        subject: "Email verification",
+        text: `please click to link ${verificationLink}`
+      }
+      await transporter.sendMail(mailOption)
       return {
         code: 201,
         user: getInforData({
           fileds: ["id", "email"],
           object: newUser,
         }),
-        tokens,
       };
     }
     return {
@@ -81,7 +105,7 @@ class AccessService {
       metadata: null,
     };
   };
-  static login = async ({ email, password, refreshToken = null,fcmToken }) => {
+  static login = async ({ email, password, refreshToken = null, fcmToken }) => {
     /*
             #step1: check exist email
             #step2: check match password
@@ -92,7 +116,7 @@ class AccessService {
     //check user exist
     const foundUser = await findByEmail({ email });
     if (!foundUser) throw new BadRequestError("User not registered");
-    const data = await findRoleByEmail({email})
+    const data = await findRoleByEmail({ email });
     const role = data?.roles?.[0]?.name;
     //check match password
     const matchPassword = await bcryptjs.compare(password, foundUser.password);
@@ -113,18 +137,16 @@ class AccessService {
 
     //grenerate tokens
     const tokens = await createTokenPair(
-      { user_id: foundUser.id, email ,role},
+      { user_id: foundUser.id, email, role },
       publicKey,
-      privateKey,
-      
+      privateKey
     );
-    console.log("day la token", tokens);
     await KeyTokenService.createKeyToken({
       user_id: foundUser.id,
       publicKey,
       privateKey,
       refreshToken: tokens.refreshToken,
-      fcmToken: fcmToken
+      fcmToken: fcmToken,
     });
     return {
       user: getInforData({
