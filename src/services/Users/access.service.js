@@ -14,7 +14,6 @@ const { createTokenPair } = require("../../auth/authUtils");
 const getInforData = require("../../utils/index");
 const nodemailer = require("nodemailer");
 const { findByEmail, findRoleByEmail } = require("./user.service");
-const userModel = require("../../models/Users/user.model");
 const {
   verificationEmailTemplate,
   forgotPasswordEmailTemplate,
@@ -35,7 +34,6 @@ class AccessService {
     const newUser = await user.create({
       password: hashPassword,
       email,
-      isVerified: false,
     });
 
     const roleRecord = await db.Roles.findOne({ where: { name: role } });
@@ -103,11 +101,11 @@ class AccessService {
           }),
         };
       } catch (error) {
-        await userModel.destroy({ where: { email: email } });
+        await user.destroy({ where: { email: email } });
         throw new BadRequestError(error);
       }
     }
-    await userModel.destroy({ where: { email: email } });
+    await user.destroy({ where: { email: email } });
     return {
       code: 200,
       metadata: null,
