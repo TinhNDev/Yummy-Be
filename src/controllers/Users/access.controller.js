@@ -24,10 +24,10 @@ class AccessController {
   refreshToken = async (req, res, next) => {
     new SuccessResponse({
       metadata: await AccessService.handleRefreshToken({
-        refreshToken:req.refreshToken,
-        user:req.user,
-        keyStore:req.keyStore,
-        fcmToken:req.fcmToken
+        refreshToken: req.refreshToken,
+        user: req.user,
+        keyStore: req.keyStore,
+        fcmToken: req.fcmToken,
       }),
     }).send(res);
   };
@@ -36,6 +36,19 @@ class AccessController {
   logout = async (req, res, next) => {
     new SuccessResponse({
       metadata: await AccessService.logout(req.keyStore),
+    }).send(res);
+  };
+
+  //handle forgot password
+  forgotPassword = async (req, res) => {
+    const { email, password, role, fcmToken } = req.body;
+    new SuccessResponse({
+      metadata: await AccessService.forgotPassword({
+        email,
+        password,
+        role,
+        fcmToken,
+      }),
     }).send(res);
   };
 }

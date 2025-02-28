@@ -5,7 +5,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     password: {
       type: Sequelize.STRING,
-    }
+    },
   });
   return User;
 };

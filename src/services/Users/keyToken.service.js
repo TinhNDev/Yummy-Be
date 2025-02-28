@@ -8,7 +8,7 @@ class KeyTokenService {
     publicKey,
     privateKey,
     refreshToken,
-    fcmToken
+    fcmToken,
   }) => {
     try {
       const tokensRecord = await keyTokenModel.findOne({
@@ -16,28 +16,29 @@ class KeyTokenService {
       });
       let tokens;
       if (tokensRecord) {
-        tokens = await keyTokenModel.update(
+        await keyTokenModel.update(
           {
             privateKey: privateKey,
             publicKey: publicKey,
-            refreshTokenUsed:{},
+            refreshTokenUsed: {},
             refreshToken: refreshToken,
-            fcmToken:fcmToken
+            fcmToken: fcmToken,
           },
           {
             where: { user_id: user_id },
           }
         );
+        tokens = keyTokenModel.findOne({ where: { user_id: user_id } });
       } else {
         tokens = await keyTokenModel.create({
           user_id: user_id,
           privateKey: privateKey,
           publicKey: publicKey,
           refreshToken: refreshToken || "",
-          fcmToken:fcmToken
+          fcmToken: fcmToken,
         });
       }
-      return tokens ? tokens.publicKey : null;
+      return tokens ? tokens : null;
     } catch (error) {
       return error;
     }
@@ -45,7 +46,7 @@ class KeyTokenService {
   static findByUserId = async (user_id) => {
     return await keyTokenModel.findOne({
       where: {
-        user_id: user_id,  
+        user_id: user_id,
       },
     });
   };
