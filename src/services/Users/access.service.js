@@ -75,7 +75,7 @@ class AccessService {
         throw new BadRequestError("Error: Key not in database");
       }
 
-      const verificationLink = `${process.env.DOMAIN}verify-email?id_token=${keyStore.id}`;
+      const verificationLink = `${process.env.DOMAIN}/verify-email?id_token=${keyStore.id}`;
 
       try {
         const transporter = nodemailer.createTransport({
