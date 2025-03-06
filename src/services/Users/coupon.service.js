@@ -4,15 +4,24 @@ class CouponService {
   static getCoupon = async () => {
     return await Coupon.findAll();
   };
-  // static createCoupon = async ({restaurant_id,body})=>{
-  //     const restaurant = Restaurant.findOne({where:{profile_id: restaurant_id}});
-  //     return await Restaurant.create({
-  //         coupon_code:body.coupon_code,
-  //         price: body.price,
-  //         amount : body.amount,
-  //         restaurant_id: restaurant.id
-  //     })
-  // }
+
+  static createCoupon = async ({ body }) => {
+    const { coupon_code, price, amount, coupon_name } = body;
+    return await Restaurant.create({
+      cupon_name: coupon_name,
+      cupon_code: coupon_code,
+      price: price,
+      amount: amount,
+    });
+  };
+
+  static findCouponWithCodeCoupon = async (coupon_code) => {
+    const coupon = Coupon.findOne({ where: { coupon_code: coupon_code } });
+    if (!coupon) {
+      throw "Do not have a coupon with code";
+    }
+    return coupon;
+  };
 
   static addCouponToOrder = async (coupon_id) => {
     const coupon = await Coupon.findOne({ where: { id: coupon_id } });

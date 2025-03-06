@@ -41,6 +41,10 @@ db.Payment = require("../models/Users/Customers/payment.model")(
 );
 db.Review = require("../models/Users/reviews.model")(sequelize, Sequelize);
 db.Message = require("../models/Users/message.model")(sequelize, Sequelize);
+db.CouponPermission = require("./Users/couponPermisstion.model")(
+  sequelize,
+  Sequelize
+);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -240,4 +244,13 @@ db.User.hasMany(db.Message, {
 db.Message.belongsTo(db.User, {
   foreignKey: "user_id",
   as: "User",
+});
+
+db.Coupon.hasOne(db.CouponPermission, {
+  foreignKey: "coupon_permission",
+  as: "coupon-permission",
+});
+db.CouponPermission.belongsTo(db.Coupon, {
+  foreignKey: "coupon_permission",
+  as: "Coupon",
 });
