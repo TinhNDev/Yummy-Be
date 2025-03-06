@@ -2,7 +2,7 @@ const db = require("../../models/index.model");
 class ReviewService {
   static createReview = async ({ user_id, order_id, reviews }) => {
     const order = await db.Order.findOne({ where: { id: order_id } });
-    const Customer =await db.User.findOne({
+    const Customer = await db.User.findOne({
       where: { id: user_id },
       includes: [
         {
@@ -11,7 +11,7 @@ class ReviewService {
           includes: [
             {
               model: db.Customer,
-              as: "Customer"
+              as: "Customer",
             },
           ],
         },
@@ -26,6 +26,20 @@ class ReviewService {
       driver_id: order.driver_id,
       restaurant_id: order.restaurant_id,
     });
+  };
+
+  static getReviewOfRestaurant = async ({ restaurant_id }) => {
+    const reviews = await db.Review.findAll({
+      where: { restaurant_id: restaurant_id },
+    });
+    return reviews ? reviews : [];
+  };
+
+  static getReviewOfDriver = async ({ driver_id }) => {
+    const reviews = await db.Review.findAll({
+      where: { driver_id: driver_id },
+    });
+    return reviews ? reviews : [];
   };
 }
 
