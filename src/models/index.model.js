@@ -30,14 +30,21 @@ db.Order = require("./Users/order.model")(sequelize, Sequelize);
 db.Notification = require("./Users/notification.model")(sequelize, Sequelize);
 db.Categories = require("./Users/categories.model")(sequelize, Sequelize);
 db.BlackList = require("./Users/blacklitst.model")(sequelize, Sequelize);
-db.Cupon = require("./Users/cupon.model")(sequelize, Sequelize);
+db.Coupon = require("./Users/coupon.model")(sequelize, Sequelize);
 db.Product = require("./Users/products.model")(sequelize, Sequelize);
 db.Restaurant = require("./Users/restaurants.model")(sequelize, Sequelize);
-db.Topping = require("./Users/topping.model")(sequelize,Sequelize);
-db.OrderItem = require("./Users/orderItem.model")(sequelize,Sequelize);
-db.Payment = require("../models/Users/Customers/payment.model")(sequelize, Sequelize);
-db.Review = require("../models/Users/reviews.model")(sequelize,Sequelize);
-db.Message = require("../models/Users/message.model")(sequelize,Sequelize)
+db.Topping = require("./Users/topping.model")(sequelize, Sequelize);
+db.OrderItem = require("./Users/orderItem.model")(sequelize, Sequelize);
+db.Payment = require("../models/Users/Customers/payment.model")(
+  sequelize,
+  Sequelize
+);
+db.Review = require("../models/Users/reviews.model")(sequelize, Sequelize);
+db.Message = require("../models/Users/message.model")(sequelize, Sequelize);
+db.CouponPermission = require("./Users/couponPermisstion.model")(
+  sequelize,
+  Sequelize
+);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -70,7 +77,7 @@ db.Driver.belongsTo(db.Profile, {
 
 // In Profile model
 db.Profile.hasMany(db.Address, {
-  as: "Address",  
+  as: "Address",
   foreignKey: "profileId",
 });
 
@@ -80,13 +87,11 @@ db.Address.belongsTo(db.Profile, {
   foreignKey: "profileId",
 });
 
-
-
 //Product Restaurant
 db.Restaurant.hasMany(db.Product, {
   foreignKey: "restaurant_id",
-  onDelete: 'SET NULL',
-  onUpdate: 'CASCADE'
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
 });
 db.Product.belongsTo(db.Restaurant, {
   foreignKey: "restaurant_id",
@@ -118,19 +123,19 @@ db.OrderItem.belongsTo(db.Product, {
   foreignKey: "prod_id",
   as: "Product",
 });
-// //Cupon Order
-// db.Restaurant.hasMany(db.Cupon, {
+// //Coupon Order
+// db.Restaurant.hasMany(db.Coupon, {
 //   foreignKey: "restaurant_id",
 // });
-// db.Cupon.belongsTo(db.Restaurant, {
+// db.Coupon.belongsTo(db.Restaurant, {
 //   foreignKey: "restaurant_id",
 // });
-//Cupon Order
-db.Cupon.hasMany(db.Order, {
-  foreignKey: "cupon_id",
+//Coupon Order
+db.Coupon.hasMany(db.Order, {
+  foreignKey: "coupon_id",
 });
-db.Order.belongsTo(db.Cupon, {
-  foreignKey: "cupon_id",
+db.Order.belongsTo(db.Coupon, {
+  foreignKey: "coupon_id",
 });
 
 //Restaurant Order
@@ -154,7 +159,6 @@ db.Driver.hasMany(db.BlackList, {
 db.BlackList.belongsTo(db.Driver, {
   foreignKey: "driver_id",
 });
-
 
 //Restaurant Order
 db.Driver.hasMany(db.Order, {
@@ -187,22 +191,22 @@ db.User.hasMany(db.KeyToken, {
   foreignKey: "user_id",
 });
 //topping product
-db.Product.belongsToMany(db.Topping,{
-  through:"Product Topping"
-})
-db.Topping.belongsToMany(db.Product,{
-  through:"Product Topping"
-})
+db.Product.belongsToMany(db.Topping, {
+  through: "Product Topping",
+});
+db.Topping.belongsToMany(db.Product, {
+  through: "Product Topping",
+});
 module.exports = db;
 //user restaurant
-db.User.hasOne(db.Restaurant,{
-  foreignKey:"user_id",
-  onDelete: 'SET NULL',
-  onUpdate: 'CASCADE'
-})
-db.Restaurant.belongsTo(db.User,{
-  foreignKey:"user_id"
-})
+db.User.hasOne(db.Restaurant, {
+  foreignKey: "user_id",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+db.Restaurant.belongsTo(db.User, {
+  foreignKey: "user_id",
+});
 
 //Order payment
 db.Order.belongsTo(db.Payment, {
@@ -212,27 +216,26 @@ db.Payment.hasMany(db.Order, {
   foreignKey: "order_id",
 });
 
+db.Review.belongsTo(db.Customer, {
+  foreignKey: "customer_id",
+});
+db.Customer.hasMany(db.Review, {
+  foreignKey: "customer_id",
+});
 
-db.Review.belongsTo(db.Customer,{
-  foreignKey:"customer_id",
-})
-db.Customer.hasMany(db.Review,{
-  foreignKey:"customer_id",
-})
+db.Review.belongsTo(db.Restaurant, {
+  foreignKey: "restaurant_id",
+});
+db.Restaurant.hasMany(db.Review, {
+  foreignKey: "restaurant_id",
+});
 
-db.Review.belongsTo(db.Restaurant,{
-  foreignKey:"restaurant_id",
-})
-db.Restaurant.hasMany(db.Review,{
-  foreignKey:"restaurant_id",
-})
-
-db.Review.belongsTo(db.Driver,{
-  foreignKey:"driver_id",
-})
-db.Driver.hasMany(db.Review,{
-  foreignKey:"driver_id",
-})
+db.Review.belongsTo(db.Driver, {
+  foreignKey: "driver_id",
+});
+db.Driver.hasMany(db.Review, {
+  foreignKey: "driver_id",
+});
 
 db.User.hasMany(db.Message, {
   foreignKey: "user_id",
@@ -241,4 +244,13 @@ db.User.hasMany(db.Message, {
 db.Message.belongsTo(db.User, {
   foreignKey: "user_id",
   as: "User",
+});
+
+db.Coupon.hasOne(db.CouponPermission, {
+  foreignKey: "coupon_permission",
+  as: "coupon-permission",
+});
+db.CouponPermission.belongsTo(db.Coupon, {
+  foreignKey: "coupon_permission",
+  as: "Coupon",
 });

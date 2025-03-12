@@ -24,9 +24,17 @@ class AccessService {
       where: {
         email,
       },
+      include: {
+        model: db.Roles,
+        through: { attribute: [] },
+      },
     });
     if (holderUser) {
-      throw new BadRequestError(`Error: An email already resgistered`);
+      const hasRole =
+        holderUser.roles[0].dataValues.name === role ? true : false;
+      if (hasRole) {
+        throw new BadRequestError(`Error: An email already resgistered`);
+      }
     }
 
     const hashPassword = await bcryptjs.hash(password, 10);
@@ -75,7 +83,7 @@ class AccessService {
         throw new BadRequestError("Error: Key not in database");
       }
 
-      const verificationLink = `${process.env.DOMAIN}verify-email?id_token=${keyStore.id}`;
+      const verificationLink = `${process.env.DOMAIN}/verify-email?id_token=${keyStore.id}`;
 
       try {
         const transporter = nodemailer.createTransport({

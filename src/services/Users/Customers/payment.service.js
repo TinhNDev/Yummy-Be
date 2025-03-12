@@ -7,7 +7,7 @@ const calculateDistance = require("../../../helper/calculateDistance");
 const { getRestaurantById } = require("../restaurant.service");
 const { io } = require("socket.io-client");
 const admin = require("firebase-admin");
-const { addCuponToOrder } = require("../cupon.service");
+const { addCouponToOrder } = require("../coupon.service");
 const socket = io(process.env.SOCKET_SERVER_URL);
 const config = {
   app_id: "2553",
@@ -62,17 +62,19 @@ const calculateShippingCost = (distanceInKm) => {
 
 const createOrder = async ({ order, user_id }) => {
   const transID = Math.floor(Math.random() * 1000000);
-  let cupon;
-  if (order.cupon_id) {
-    cupon = await db.Cupon.findOne({ where: { id: order.cupon_id } });
-    if (cupon?.amount <= 0) {
-      throw Error("Expired Cupon Code");
+  let coupon;
+  if (order.coupon_id) {
+    coupon = await db.Coupon.findOne({ where: { id: order.coupon_id } });
+    if (coupon?.amount <= 0) {
+      throw Error("Expired Coupon Code");
     }
   }
-  const cuponCost = cupon?.price || 0;
+  const couponCost = coupon?.price || 0;
   let profile = await db.Profile.findOne({ where: { user_id: user_id } });
-  let customer = await db.Customer.findOne({ where: { profile_id: profile.id } });
-  console.log(customer)
+  let customer = await db.Customer.findOne({
+    where: { profile_id: profile.id },
+  });
+  console.log(customer);
   if (!customer) {
     try {
       customer = await db.Customer.create({
@@ -89,7 +91,7 @@ const createOrder = async ({ order, user_id }) => {
     app_time: Date.now(),
     item: JSON.stringify(order.listCartItem),
     embed_data: JSON.stringify(order),
-    amount: order.price - cuponCost,
+    amount: order.price - couponCost,
     callback_url: `${process.env.URL}/callback`,
     description: `
 Thanh toán cho đơn hàng #${order.listCartItem
@@ -122,7 +124,7 @@ Thanh toán cho đơn hàng #${order.listCartItem
 };
 
 const verifyCallback = async ({ dataStr, reqMac }) => {
-  const mac =   CryptoJS.HmacSHA256(dataStr, config.key2).toString();
+  const mac = CryptoJS.HmacSHA256(dataStr, config.key2).toString();
 
   if (reqMac !== mac) {
     return { return_code: -1, return_message: "mac not equal" };
@@ -147,30 +149,34 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       restaurant_id: orderData.listCartItem[0].restaurant_id,
       longtitude: orderData.userLongitude,
       latitude: orderData.userLatitude,
-      cupon_id: orderData.cupon_id,
+      coupon_id: orderData.coupon_id,
     });
-    const restaurant = await db.Restaurant.findOne({where:{id:orderData.listCartItem[0].restaurant_id}})
+    const restaurant = await db.Restaurant.findOne({
+      where: { id: orderData.listCartItem[0].restaurant_id },
+    });
     const KeyToken = await db.KeyToken.findOne({
       where: { id: restaurant.user_id },
     });
-    
-      if(KeyToken.fcmToken){
-        const payload = {
-          notification: {
-            title: "New Order",
-            body: `Bạn có 1 đơn hàng mới`,
-          },
-          token: KeyToken.fcmToken,
-        };
-        const response = await admin.messaging().send(payload);
-        console.log("Successfully sent message:", response);
-      }
-      socket.emit("backendEvent", {
-        driver: "null",
-        orderId: order_id,
-        status: "PAID",
-      });
-    newOrder.cupon_id?.(await addCuponToOrder(newOrder.id, newOrder.cupon_id));
+
+    if (KeyToken.fcmToken) {
+      const payload = {
+        notification: {
+          title: "New Order",
+          body: `Bạn có 1 đơn hàng mới`,
+        },
+        token: KeyToken.fcmToken,
+      };
+      const response = await admin.messaging().send(payload);
+      console.log("Successfully sent message:", response);
+    }
+    socket.emit("backendEvent", {
+      driver: "null",
+      orderId: order_id,
+      status: "PAID",
+    });
+    newOrder.coupon_id?.(
+      await addCouponToOrder(newOrder.id, newOrder.coupon_id)
+    );
     socket.emit("newOrderForRestaurant", {
       orderId: newOrder.id,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
