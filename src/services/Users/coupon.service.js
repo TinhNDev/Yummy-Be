@@ -1,3 +1,12 @@
+
+/**
+ *  Tạo mới, chỉnh sửa, xóa và quản lý mã giảm giá
+    Kiểm tra tính hợp lệ của mã giảm giá khi khách hàng áp dụng
+    Hỗ trợ nhiều loại giảm giá: theo phần trăm, số tiền cố định, miễn phí giao hàng
+    Giới hạn sử dụng: theo thời gian, số lần sử dụng, người dùng cụ thể
+    Áp dụng cho: toàn bộ đơn hàng, món ăn cụ thể, danh mục món ăn, nhà hàng cụ thể
+    Thống kê việc sử dụng mã giảm giá
+ */
 const { Restaurant, Coupon } = require("../../models/index.model");
 
 class CouponService {

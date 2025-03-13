@@ -45,6 +45,7 @@ db.CouponPermission = require("./Users/couponPermisstion.model")(
   sequelize,
   Sequelize
 );
+db.CouponUsage = require("./Users/couponUsage.model")(sequelize, Sequelize);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -253,4 +254,33 @@ db.Coupon.hasOne(db.CouponPermission, {
 db.CouponPermission.belongsTo(db.Coupon, {
   foreignKey: "coupon_permission",
   as: "Coupon",
+});
+// Mối quan hệ giữa Coupon và CouponUsage
+db.Coupon.hasMany(db.CouponUsage, {
+  foreignKey: "coupon_id",
+  as: "couponUsages",
+});
+db.CouponUsage.belongsTo(db.Coupon, {
+  foreignKey: "coupon_id",
+  as: "Coupon",
+});
+
+// Mối quan hệ giữa User và CouponUsage
+db.User.hasMany(db.CouponUsage, {
+  foreignKey: "user_id",
+  as: "couponUsages",
+});
+db.CouponUsage.belongsTo(db.User, {
+  foreignKey: "user_id",
+  as: "User",
+});
+
+// Mối quan hệ giữa Order và CouponUsage
+db.Order.hasMany(db.CouponUsage, {
+  foreignKey: "order_id",
+  as: "couponUsages",
+});
+db.CouponUsage.belongsTo(db.Order, {
+  foreignKey: "order_id",
+  as: "Order",
 });
