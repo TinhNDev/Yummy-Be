@@ -17,8 +17,22 @@ const socket = io(process.env.SOCKET_SERVER_URL);
 const admin = require("firebase-admin");
 const RedisHelper = require("../../../cache/redis");
 class OrderRestaurantService {
-  static getOrder = async ({ restaurant_id }) => {
-    return await Order.findAll({ where: { restaurant_id: restaurant_id } });
+  static getOrder = async ({ restaurant_id, date }) => {
+    let whereClause = { restaurant_id: restaurant_id };
+    
+    if (date) {
+      const startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      
+      const endDate = new Date(date);
+      endDate.setHours(23, 59, 59, 999);
+      
+      whereClause.createdAt = {
+        [Op.between]: [startDate, endDate]
+      };
+    }
+    
+    return await Order.findAll({ where: whereClause });
   };
   static changeStatusOrder = async ({ orderId, status }) => {
     const order = await Order.findByPk(orderId);

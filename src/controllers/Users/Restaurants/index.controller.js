@@ -6,7 +6,8 @@ class OrderRestaunrantController{
         new SuccessResponse({
             message:"all order",
             metadata: await OrderRestaunrantService.getOrder({
-                restaurant_id: req.user.user_id
+                restaurant_id: req.user.user_id,
+                date: req.date
             })
         }).send(res)
     }
