@@ -12,7 +12,7 @@ module.exports = (sequelize, Sequelize) => {
     status: {
       type: Sequelize.ENUM,
       defaultValue: "pending",
-      values: ["pending", "active", "unactive"]
+      values: ["pending", "active", "deactive"]
     },
     opening_hours: {
       type: Sequelize.TEXT,
