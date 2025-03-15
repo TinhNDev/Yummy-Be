@@ -36,7 +36,7 @@ class AdminController{
             metadata: await AdminService.getDetailDriverForAdmin({
                 driver_id: req.params.driver_id,
             })
-        })
+        }).send(res)
     }
 }
 
