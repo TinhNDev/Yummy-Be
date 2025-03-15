@@ -7,13 +7,13 @@ const router = express.Router();
 router.put(
   "/restaurant",
   authorization,
-  checkRole(['seller','admin']),
+  checkRole(['seller']),
   asyncHandle(restaurantController.updateRestaurant)
 );
 router.get(
   "/restaurant/detail",
   authorization,
-  checkRole(['seller','admin']),
+  checkRole(['seller']),
   asyncHandle(restaurantController.getDetailProRes)
 );
 router.get(
