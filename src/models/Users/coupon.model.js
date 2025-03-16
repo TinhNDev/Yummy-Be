@@ -73,7 +73,7 @@ module.exports = (sequelize, Sequelize) => {
           isAfterStartDate(value) {
             if (this.start_date && value <= this.start_date) {
               throw new Error("end_date phải lớn hơn start_date");
-            }
+            }  
           },
         },
       },
