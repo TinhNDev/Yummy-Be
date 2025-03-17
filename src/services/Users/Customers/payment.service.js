@@ -171,7 +171,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
     }
     socket.emit("backendEvent", {
       driver: "null",
-      orderId: order_id,
+      orderId: newOrder.id,
       status: "PAID",
     });
     newOrder.coupon_id?.(
