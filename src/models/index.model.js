@@ -209,10 +209,10 @@ db.Restaurant.belongsTo(db.User, {
 });
 
 //Order payment
-db.Order.belongsTo(db.Payment, {
+db.Order.hasMany(db.Payment, {
   foreignKey: "order_id",
 });
-db.Payment.hasMany(db.Order, {
+db.Payment.belongsTo(db.Order, {
   foreignKey: "order_id",
 });
 
