@@ -26,12 +26,13 @@ class AccessService {
       },
       include: {
         model: db.Roles,
-        through: { attribute: [] },
+        as: 'roles',  // Thêm thuộc tính 'as' ở đây
+        through: { attributes: [] },
       },
     });
     if (holderUser) {
       const hasRole =
-        holderUser.roles[0].dataValues.name === role ? true : false;
+        holderUser.roles[0]?.dataValues.name === role ? true : false;
       if (hasRole) {
         throw new BadRequestError(`Error: An email already resgistered`);
       }

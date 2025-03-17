@@ -177,9 +177,11 @@ db.Order.belongsTo(db.Customer, {
 //user roles
 db.User.belongsToMany(db.Roles, {
   through: "user_roles",
+  as: 'roles'  // Thêm alias này
 });
 db.Roles.belongsToMany(db.User, {
   through: "user_roles",
+  as: 'users'  // Thêm alias này
 });
 //keyToken user
 db.KeyToken.belongsTo(db.User, {
