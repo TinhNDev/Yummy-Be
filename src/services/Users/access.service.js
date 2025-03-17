@@ -20,16 +20,7 @@ const {
 } = require("../../utils/emailTemplate");
 class AccessService {
   static singUp = async ({ password, email, fcmToken, role }) => {
-    const holderUser = await user.findOne({
-      where: {
-        email,
-      },
-      include: {
-        model: db.Roles,
-        as: 'roles',
-        through: { attributes: [] },
-      },
-    });
+    const holderUser = await findRoleByEmail({email});
     if (holderUser) {
       const hasRole =
         holderUser.roles[0]?.dataValues.name === role ? true : false;
