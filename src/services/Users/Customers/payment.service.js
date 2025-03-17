@@ -178,7 +178,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       await addCouponToOrder(newOrder.id, newOrder.coupon_id)
     );
     socket.emit("newOrderForRestaurant", {
-      orderId: newOrder.id,
+      order: newOrder,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
     });
     console.log("Thông báo đơn hàng mới đã được gửi tới server socket");
