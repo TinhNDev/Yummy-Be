@@ -26,7 +26,7 @@ class AccessService {
       },
       include: {
         model: db.Roles,
-        as: 'roles',  // Thêm thuộc tính 'as' ở đây
+        as: 'roles',
         through: { attributes: [] },
       },
     });
