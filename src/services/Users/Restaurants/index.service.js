@@ -142,7 +142,7 @@ class OrderRestaurantService {
                   {
                     model: Profile,
                     as: "Profile",
-                    attributes: ["id", "name", "image", "phone_number", "cic"],
+                    attributes: ["id", "name", "image", "phone_number"],
                     include: [
                       {
                         model: User,
@@ -249,7 +249,7 @@ class OrderRestaurantService {
             {
               model: Profile,
               as: "Profile",
-              attributes: ["id", "name", "image", "phone_number", "cic"],
+              attributes: ["id", "name", "image", "phone_number"],
               include: [
                 {
                   model: User,

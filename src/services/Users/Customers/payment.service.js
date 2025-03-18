@@ -74,7 +74,7 @@ const createOrder = async ({ order, user_id }) => {
   let customer = await db.Customer.findOne({
     where: { profile_id: profile.id },
   });
-  console.log(customer);
+  
   if (!customer) {
     try {
       customer = await db.Customer.create({

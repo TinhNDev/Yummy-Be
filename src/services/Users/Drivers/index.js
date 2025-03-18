@@ -5,16 +5,25 @@ const {
   Profile,
   Restaurant
 } = require("../../../models/index.model");
+const { UpdateProfile } = require("../profile.service");
 const { findDriver } = require("../Restaurants/index.service");
 const { io } = require("socket.io-client");
 const socket = io(process.env.SOCKET_SERVER_URL);
 class DriverService {
   static updateInformation = async ({ user_id, body }) => {
-    const profile = await Profile.findOne({ where: { user_id: user_id } })
+    let profile = await Profile.findOne({ where: { user_id: user_id } })
+
+    if(!profile) profile = await UpdateProfile({user_id,body});
+
     const driver = await Driver.findOne({ where: { profile_id: profile.id } });
     if (driver) {
       await Driver.update(
         {
+          cic:body.cic,
+          cccdBack: body.cccdBack,
+          cccdFront: body.cccdFront,
+          dob: body.dob,
+          cavet: body.cavet,
           car_name: body.car_name,
           license_plate: body.license_plate,
           status: "ONLINE",

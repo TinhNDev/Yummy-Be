@@ -7,7 +7,6 @@ class ProfileController {
             message: "update successfully",
             metadata: await UpdateProfile({
                 user_id: req.user.user_id,
-                email: req.user.email,
                 body: req.body.profile,
             })
         }).send(res);
