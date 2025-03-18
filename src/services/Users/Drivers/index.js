@@ -32,6 +32,11 @@ class DriverService {
       );
     } else {
       await Driver.create({
+        cic:body.cic,
+        cccdBack: body.cccdBack,
+        cccdFront: body.cccdFront,
+        dob: body.dob,
+        cavet: body.cavet,
         car_name: body.car_name,
         license_plate: body.license_plate,
         status: "ONLINE",
