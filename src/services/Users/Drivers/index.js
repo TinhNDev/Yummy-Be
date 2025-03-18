@@ -13,13 +13,16 @@ class DriverService {
   static updateInformation = async ({ user_id, body }) => {
     let profile = await Profile.findOne({ where: { user_id: user_id } });
     let driver;
+    let profile_id;
     if (!profile) {
       profile = await UpdateProfile({ user_id, body });
       driver = await Driver.findOne({
         where: { profile_id: profile.Profile.id },
       });
+      profile_id = profile.Profile.id
     } else {
       driver = await Driver.findOne({ where: { profile_id: profile.id } });
+      profile_id = profile.id
     }
 
     if (driver) {
@@ -46,7 +49,7 @@ class DriverService {
         car_name: body.car_name,
         license_plate: body.license_plate,
         status: "ONLINE",
-        profile_id: profile.id,
+        profile_id: profile_id,
       });
     }
     return await Driver.findOne({ where: { profile_id: profile.id } });
