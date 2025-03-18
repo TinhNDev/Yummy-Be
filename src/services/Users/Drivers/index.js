@@ -52,7 +52,7 @@ class DriverService {
         profile_id: profile_id,
       });
     }
-    return await Driver.findOne({ where: { profile_id: profile.id } });
+    return await Driver.findOne({ where: { profile_id: profile_id } });
   };
   static getProfileDriver = async ({ user_id }) => {
     const profile = await Profile.findOne({
