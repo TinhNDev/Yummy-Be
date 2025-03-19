@@ -41,10 +41,8 @@ db.Payment = require("../models/Users/Customers/payment.model")(
 );
 db.Review = require("../models/Users/reviews.model")(sequelize, Sequelize);
 db.Message = require("../models/Users/message.model")(sequelize, Sequelize);
-db.CouponPermission = require("./Users/couponPermisstion.model")(
-  sequelize,
-  Sequelize
-);
+
+db.CouponUsage = require("./Users/couponUsage.model")(sequelize, Sequelize);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: "user_id",
@@ -179,9 +177,11 @@ db.Order.belongsTo(db.Customer, {
 //user roles
 db.User.belongsToMany(db.Roles, {
   through: "user_roles",
+  as: 'roles'  // Thêm alias này
 });
 db.Roles.belongsToMany(db.User, {
   through: "user_roles",
+  as: 'users'  // Thêm alias này
 });
 //keyToken user
 db.KeyToken.belongsTo(db.User, {
@@ -209,10 +209,10 @@ db.Restaurant.belongsTo(db.User, {
 });
 
 //Order payment
-db.Order.belongsTo(db.Payment, {
+db.Order.hasMany(db.Payment, {
   foreignKey: "order_id",
 });
-db.Payment.hasMany(db.Order, {
+db.Payment.belongsTo(db.Order, {
   foreignKey: "order_id",
 });
 
@@ -246,11 +246,32 @@ db.Message.belongsTo(db.User, {
   as: "User",
 });
 
-db.Coupon.hasOne(db.CouponPermission, {
-  foreignKey: "coupon_permission",
-  as: "coupon-permission",
+// Mối quan hệ giữa Coupon và CouponUsage
+db.Coupon.hasMany(db.CouponUsage, {
+  foreignKey: "coupon_id",
+  as: "couponUsages",
 });
-db.CouponPermission.belongsTo(db.Coupon, {
-  foreignKey: "coupon_permission",
+db.CouponUsage.belongsTo(db.Coupon, {
+  foreignKey: "coupon_id",
   as: "Coupon",
+});
+
+// Mối quan hệ giữa User và CouponUsage
+db.User.hasMany(db.CouponUsage, {
+  foreignKey: "user_id",
+  as: "couponUsages",
+});
+db.CouponUsage.belongsTo(db.User, {
+  foreignKey: "user_id",
+  as: "User",
+});
+
+// Mối quan hệ giữa Order và CouponUsage
+db.Order.hasMany(db.CouponUsage, {
+  foreignKey: "order_id",
+  as: "couponUsages",
+});
+db.CouponUsage.belongsTo(db.Order, {
+  foreignKey: "order_id",
+  as: "Order",
 });

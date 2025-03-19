@@ -45,6 +45,9 @@ class AdminService {
     driver.status = status;
     return await driver.save();
   }
+  static getDetailDriverForAdmin = async({driver_id}) =>{
+    return await Driver.findByPk(driver_id);
+  }
 }
 
 module.exports = AdminService;

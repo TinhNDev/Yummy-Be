@@ -29,6 +29,15 @@ class AdminController{
             })
         }).send(res)
     }
+
+    getDetailDriverForAdmin = async(req,res) =>{
+        new SuccessResponse({
+            message:"detail driver",
+            metadata: await AdminService.getDetailDriverForAdmin({
+                driver_id: req.params.driver_id,
+            })
+        }).send(res)
+    }
 }
 
 module.exports = new AdminController();

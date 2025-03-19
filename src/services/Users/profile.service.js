@@ -2,16 +2,13 @@ const db = require("../../models/index.model");
 const Profile = db.Profile;
 const Address = db.Address;
 class ProfileService {
-  static UpdateProfile = async ({ user_id, body,email }) => {
+  static UpdateProfile = async ({ user_id, body }) => {
     let profile = await Profile.findOne({ where: { user_id: user_id } });
     if (profile) {
         await Profile.update({
         name: body.name,
         image: body.image,
-        date: body.date,
-        cic:body.cic,
         phone_number: body.phone_number,
-        mail: email,
         user_id: user_id,
       },
       {where:{user_id:user_id}}
@@ -22,8 +19,6 @@ class ProfileService {
         image: body.image,
         date: body.date,
         phone_number: body.phone_number,
-        mail: email,
-        cic:body.cic,
         user_id: user_id,
       });
     }

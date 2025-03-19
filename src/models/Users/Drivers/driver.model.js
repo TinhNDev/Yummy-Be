@@ -1,16 +1,25 @@
 module.exports = (sequelize, Sequelize) => {
   const Driver = sequelize.define("Driver", {
+    cic:{
+      type: Sequelize.STRING,
+    },
     license_plate: {
       type: Sequelize.STRING,
     },
-    latitude:{
+    cccdBack: {
       type: Sequelize.STRING,
     },
-    longitude:{
+    cccdFront: {
       type: Sequelize.STRING,
+    },
+    dob: {
+      type: Sequelize.DATE,
     },
     car_name:{
       type: Sequelize.STRING,
+    },
+    cavet:{
+      type: Sequelize.TEXT,
     },
     status: {
       type: Sequelize.ENUM,

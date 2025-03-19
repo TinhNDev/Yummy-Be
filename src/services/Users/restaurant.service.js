@@ -46,7 +46,7 @@ class RestaurantService {
       phone_number: restaurant.phone_number,
       description: restaurant.description,
       address_x: restaurant.address_x,
-      address_y: restaurant.address_y
+      address_y: restaurant.address_y,
     };
 
     if (existingRestaurant) {
@@ -74,55 +74,57 @@ class RestaurantService {
   static getAllRestaurant = async (userLatitude, userLongitude, page = 1) => {
     const limit = 20;
     const offset = (page - 1) * limit;
-  
+
     const haversineQuery = (lat, lon, restaurantLat, restaurantLon) => {
       const toRadians = (degree) => degree * (Math.PI / 180);
       const R = 6371;
-  
+
       const dLat = toRadians(restaurantLat - lat);
       const dLon = toRadians(restaurantLon - lon);
-  
-      const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(toRadians(lat)) * Math.cos(toRadians(restaurantLat)) *
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-  
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRadians(lat)) *
+          Math.cos(toRadians(restaurantLat)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
     };
 
-    // Lấy danh sách tất cả nhà hàng
     const allRestaurants = await Restaurants.findAll();
 
-    // Lọc và tính khoảng cách cho từng nhà hàng
     const nearbyRestaurants = allRestaurants
-      .map(restaurant => {
+      .map((restaurant) => {
         const distance = haversineQuery(
-          userLatitude, 
-          userLongitude, 
-          restaurant.address_x, 
+          userLatitude,
+          userLongitude,
+          restaurant.address_x,
           restaurant.address_y
         );
 
         return {
           ...restaurant.get(),
-          distance
+          distance,
         };
       })
-      .filter(restaurant => restaurant.distance <= Number(process.env.RADIUS) / 1000) // Lọc nhà hàng trong phạm vi bán kính
-      .sort((a, b) => a.distance - b.distance); // Sắp xếp theo khoảng cách từ gần nhất đến xa nhất
+      .filter(
+        (restaurant) => restaurant.distance <= Number(process.env.RADIUS) / 1000
+      )
+      .sort((a, b) => a.distance - b.distance);
 
-    // Phân trang
-    const paginatedRestaurants = nearbyRestaurants.slice(offset, offset + limit);
+    const paginatedRestaurants = nearbyRestaurants.slice(
+      offset,
+      offset + limit
+    );
 
     if (!paginatedRestaurants || paginatedRestaurants.length === 0) {
       throw new Error("No restaurants found for the given parameters.");
     }
 
     return paginatedRestaurants;
-};
-
-  
+  };
 
   static searchRestaurantByKeyWord = async (keySearch) => {
     return await findRestauranByKeyWord(keySearch);
@@ -138,14 +140,17 @@ class RestaurantService {
   static getDetailProRes = async ({ restaurant_id }) => {
     return await Restaurants.findOne({ where: { user_id: restaurant_id } });
   };
-  static getRestaurantById = async(id) =>{
-    return await Restaurants.findByPk(id)
-  }
-  static lockProductByRes = async ({restaurant_id,product_id}) =>{
-    return await db.Product.update({
-      is_available: false,
-    }, {where:{restaurant_id:restaurant_id}})
-  }
+  static getRestaurantById = async (id) => {
+    return await Restaurants.findByPk(id);
+  };
+  static lockProductByRes = async ({ restaurant_id, product_id }) => {
+    return await db.Product.update(
+      {
+        is_available: false,
+      },
+      { where: { restaurant_id: restaurant_id } }
+    );
+  };
   static getDetailProResForUser = async ({ restaurant_id }) => {
     return await Restaurants.findOne({ where: { id: restaurant_id } });
   };

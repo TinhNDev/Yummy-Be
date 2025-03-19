@@ -20,7 +20,8 @@ const findRoleByEmail = async ({ email }) => {
       where: { email: email },
       include: [{
         model: db.Roles,
-        attributes: ['name']
+        attributes: ['name'],
+        as: "roles",
       }]
     });
   };

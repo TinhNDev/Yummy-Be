@@ -74,7 +74,7 @@ const createOrder = async ({ order, user_id }) => {
   let customer = await db.Customer.findOne({
     where: { profile_id: profile.id },
   });
-  console.log(customer);
+  
   if (!customer) {
     try {
       customer = await db.Customer.create({
@@ -171,14 +171,14 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
     }
     socket.emit("backendEvent", {
       driver: "null",
-      orderId: order_id,
+      orderId: newOrder.id,
       status: "PAID",
     });
     newOrder.coupon_id?.(
       await addCouponToOrder(newOrder.id, newOrder.coupon_id)
     );
     socket.emit("newOrderForRestaurant", {
-      orderId: newOrder.id,
+      order: newOrder,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
     });
     console.log("Thông báo đơn hàng mới đã được gửi tới server socket");
