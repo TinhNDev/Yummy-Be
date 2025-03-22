@@ -72,6 +72,14 @@ class DriverController{
             })
         }).send(res)
     }
+    getDetailToHis = async(req,res) =>{
+        new SuccessResponse({
+            message:"detail",
+            metadata: await DriverService.getDetailToHis({
+                driver_id: req.params.driver_id
+            })
+        }).send(res)
+    }
 }
 
 module.exports = new DriverController();

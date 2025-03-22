@@ -192,6 +192,13 @@ class DriverService {
 
     return await driver.save();
   };
+
+  static getDetailToHis = async ({ driver_id }) => {
+    const driver = await Driver.findOne({ where: { id: driver_id } });
+    const profile = await Profile.findOne({ where: { id: driver.profile_id } });
+
+    return { ...driver.dataValues, ...profile.dataValues };
+  }
 }
 
 module.exports = DriverService;
