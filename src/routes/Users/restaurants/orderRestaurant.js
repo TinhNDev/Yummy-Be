@@ -7,6 +7,7 @@ const router = express.Router();
 router.get(
   "/restaurant/order",
   authorization,
+  checkRole(['seller']),
   asyncHandle(restaurantController.getOrder)
 );
 router.post("/restaurant/order/status",
