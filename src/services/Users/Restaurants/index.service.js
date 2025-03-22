@@ -18,7 +18,8 @@ const admin = require("firebase-admin");
 const RedisHelper = require("../../../cache/redis");
 class OrderRestaurantService {
   static getOrder = async ({ restaurant_id, date }) => {
-    let whereClause = { restaurant_id: restaurant_id };
+    const restaurant = await Restaurant.findOne({where:{user_id: restaurant_id}})
+    let whereClause = { restaurant_id: restaurant.id };
     
     if (date) {
       const startDate = new Date(date);
