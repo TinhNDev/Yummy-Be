@@ -156,10 +156,26 @@ class DriverService {
     return findDriver({ order_id });
   };
 
-  static getAllOrderForDriver = async ({ driver_id }) => {
-    return Order.findAll({
-      where: { driver_id: driver_id },
-      order: [["createdAt", "DESC"]],
+  static getAllOrderForDriver = async ({ driver_id,date }) => {
+    const profile = await Profile.findOne({where:{user_id:driver_id}})
+    const driver = await Driver.findOne({where:{profile_id: profile.id}})
+    let whereClause = { driver_id: driver.id };
+    
+    if (date) {
+      const startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      
+      const endDate = new Date(date);
+      endDate.setHours(23, 59, 59, 999);
+      
+      whereClause.createdAt = {
+        [Op.between]: [startDate, endDate]
+      };
+    }
+    
+    return await Order.findAll({ 
+      where: whereClause,
+      order: [['createdAt', 'DESC']]
     });
   };
   static changeStatus = async ({ driver_id }) => {

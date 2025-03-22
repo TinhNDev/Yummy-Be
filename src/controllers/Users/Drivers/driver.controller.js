@@ -50,6 +50,7 @@ class DriverController{
         new SuccessResponse({
             message: "full order",
             metadata: await DriverService.getAllOrderForDriver({
+                date: req.body.date,
                 driver_id:req.body.user_id,
             })
         }).send(res);

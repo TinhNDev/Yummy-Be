@@ -18,7 +18,7 @@ const admin = require("firebase-admin");
 const RedisHelper = require("../../../cache/redis");
 class OrderRestaurantService {
   static getOrder = async ({ restaurant_id, date }) => {
-    const restaurant = await Restaurant.findOne({where:{user_id: restaurant_id}})
+    const restaurant = await Restaurant.findOne({ where: { user_id: restaurant_id } });
     let whereClause = { restaurant_id: restaurant.id };
     
     if (date) {
@@ -33,7 +33,10 @@ class OrderRestaurantService {
       };
     }
     
-    return await Order.findAll({ where: whereClause });
+    return await Order.findAll({ 
+      where: whereClause,
+      order: [['createdAt', 'DESC']]
+    });
   };
   static changeStatusOrder = async ({ orderId, status }) => {
     const order = await Order.findByPk(orderId);
