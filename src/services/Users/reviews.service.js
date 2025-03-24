@@ -19,14 +19,24 @@ class ReviewService {
     const reviews = await db.Review.findAll({
       where: { restaurant_id: restaurant_id },
     });
-    return reviews ? reviews : [];
+
+    const profile = await db.Profile.findOne({
+      where: {customer_id: reviews.customer_id}
+    })
+
+    return {...reviews.dataValues,...profile.dataValues} ? reviews : [];
   };
 
   static getReviewOfDriver = async ({ driver_id }) => {
     const reviews = await db.Review.findAll({
       where: { driver_id: driver_id },
     });
-    return reviews ? reviews : [];
+
+    const profile = await db.Profile.findOne({
+      where: {customer_id: reviews.customer_id}
+    })
+
+    return  {...reviews.dataValues,...profile.dataValues} ? reviews : [];
   };
 }
 
