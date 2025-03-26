@@ -5,7 +5,7 @@ const { authorization, checkRole } = require("../../../auth/authUtils");
 
 const router = express.Router();
 
-router.post("/coupon",authorization,checkRole([admin]),asyncHandle(couponController.createCoupon));
+router.post("/coupon",authorization,checkRole(['admin']),asyncHandle(couponController.createCoupon));
 router.post("/coupon/:coupon_name/customer",authorization, asyncHandle(couponController.searchCoupon));
 router.get("/coupon",authorization,asyncHandle(couponController.getCoupon));
 
