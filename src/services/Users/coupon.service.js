@@ -10,39 +10,73 @@
 const { Restaurant, Coupon } = require("../../models/index.model");
 
 class CouponService {
-  static getCoupon = async () => {
+  static getCoupon = async ({total, user_id}) => {
     return await Coupon.findAll();
   };
 
   static createCoupon = async ({ body }) => {
-    const { coupon_code, price, amount, coupon_name } = body;
-    return await Restaurant.create({
-      cupon_name: coupon_name,
-      cupon_code: coupon_code,
-      price: price,
-      amount: amount,
+    const {
+      coupon_name,
+      coupon_code,
+      amount,
+      discount_value,
+      discount_type,
+      max_discount_amount,
+      min_order_value,
+      max_uses_per_user,
+      start_date,
+      end_date,
+      is_active,
+      coupon_type,
+    } = body;
+
+    if (!coupon_name || !coupon_code || !amount || !discount_value || !start_date || !end_date || !coupon_type) {
+      throw new Error("Vui lòng cung cấp đầy đủ thông tin bắt buộc.");
+    }
+
+    if (amount < 0 || discount_value < 0 || (max_discount_amount && max_discount_amount < 0) || (min_order_value && min_order_value < 0)) {
+      throw new Error("Giá trị không hợp lệ. Các số phải lớn hơn hoặc bằng 0.");
+    }
+
+    if (max_uses_per_user && max_uses_per_user < 1) {
+      throw new Error("Số lần sử dụng tối đa phải lớn hơn hoặc bằng 1.");
+    }
+
+    if (new Date(start_date) >= new Date(end_date)) {
+      throw new Error("Ngày kết thúc phải lớn hơn ngày bắt đầu.");
+    }
+    const existingCoupon = await Coupon.findOne({ where: { coupon_code } });
+    if (existingCoupon) {
+      throw new Error("Mã coupon đã tồn tại.");
+    }
+
+    return await Coupon.create({
+      coupon_name,
+      coupon_code,
+      amount,
+      discount_value,
+      discount_type,
+      max_discount_amount,
+      min_order_value,
+      max_uses_per_user,
+      start_date,
+      end_date,
+      is_active: is_active !== undefined ? is_active : true,
+      coupon_type,
     });
   };
 
-  static findCouponWithCodeCoupon = async (coupon_code) => {
-    const coupon = Coupon.findOne({ where: { coupon_code: coupon_code } });
-    if (!coupon) {
-      throw "Do not have a coupon with code";
-    }
-    return coupon;
+  static searchCouponsByName = async ({ name }) => {
+    return await Coupon.findAll({
+      where: {
+        coupon_name: {
+          [Op.iLike]: `%${name}%`,
+        },
+      },
+    });
   };
 
-  static addCouponToOrder = async (coupon_id) => {
-    const coupon = await Coupon.findOne({ where: { id: coupon_id } });
-    return await Coupon.update(
-      {
-        where: coupon.id,
-      },
-      {
-        amount: coupon.amount - 1,
-      }
-    );
-  };
+
 }
 
 module.exports = CouponService;
