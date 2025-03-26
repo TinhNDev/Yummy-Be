@@ -20,10 +20,13 @@ class ReviewService {
       where: { restaurant_id: restaurant_id },
     });
 
-    const profile = await db.Profile.findOne({
-      where: {customer_id: reviews.customer_id}
+    const Customer = await db.Customer.findOne({
+      where: {id: reviews.customer_id}
     })
 
+    const profile = await db.Profile.findOne({
+      where: {id: Customer.profile_id}
+    })
     return {...reviews.dataValues,...profile.dataValues} ? reviews : [];
   };
 
@@ -32,8 +35,12 @@ class ReviewService {
       where: { driver_id: driver_id },
     });
 
+    const Customer = await db.Customer.findOne({
+      where: {id: reviews.customer_id}
+    })
+
     const profile = await db.Profile.findOne({
-      where: {customer_id: reviews.customer_id}
+      where: {id: Customer.profile_id}
     })
 
     return  {...reviews.dataValues,...profile.dataValues} ? reviews : [];
