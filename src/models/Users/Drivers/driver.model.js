@@ -23,7 +23,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     status: {
       type: Sequelize.ENUM,
-      values: ["ONLINE", "BUSY", "WARMING","LOCKED","PROCESSING"],
+      values: ["ONLINE", "BUSY","LOCKED","PROCESSING"],
       defaultValue:"PROCESSING",
     },
   });
