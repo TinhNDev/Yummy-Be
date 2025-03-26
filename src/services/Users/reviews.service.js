@@ -2,21 +2,8 @@ const db = require("../../models/index.model");
 class ReviewService {
   static createReview = async ({ user_id, order_id, reviews }) => {
     const order = await db.Order.findOne({ where: { id: order_id } });
-    const Customer = await db.User.findOne({
-      where: { id: user_id },
-      includes: [
-        {
-          model: db.Profile,
-          as: "Profile",
-          includes: [
-            {
-              model: db.Customer,
-              as: "Customer",
-            },
-          ],
-        },
-      ],
-    });
+    const profile = await db.Profile.findOne({where:{user_id:user_id}})
+    const Customer = await db.Customer.findOne({where:{profile_id: profile.id}})
     return await db.Review.create({
       res_rating: reviews.res_rating,
       dri_rating: reviews.dri_rating,
@@ -32,14 +19,31 @@ class ReviewService {
     const reviews = await db.Review.findAll({
       where: { restaurant_id: restaurant_id },
     });
-    return reviews ? reviews : [];
+
+    const Customer = await db.Customer.findOne({
+      where: {id: reviews.customer_id}
+    })
+
+    const profile = await db.Profile.findOne({
+      where: {id: Customer.profile_id}
+    })
+    return {...reviews.dataValues,...profile.dataValues} ? reviews : [];
   };
 
   static getReviewOfDriver = async ({ driver_id }) => {
     const reviews = await db.Review.findAll({
       where: { driver_id: driver_id },
     });
-    return reviews ? reviews : [];
+
+    const Customer = await db.Customer.findOne({
+      where: {id: reviews.customer_id}
+    })
+
+    const profile = await db.Profile.findOne({
+      where: {id: Customer.profile_id}
+    })
+
+    return  {...reviews.dataValues,...profile.dataValues} ? reviews : [];
   };
 }
 

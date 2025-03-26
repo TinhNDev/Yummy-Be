@@ -18,13 +18,13 @@ router.post(
 router.get(
   "/review/:driver_id/driver",
   authorization,
-  checkRole(["user"]),
+  checkRole(["user","driver"]),
   asyncHandle(getReviewsOfDriver)
 );
 router.get(
   "/review/:restaurant_id/restaurant",
   authorization,
-  checkRole(["user"]),
+  checkRole(["user","seller"]),
   asyncHandle(getReviewsOfRestaurant)
 );
 

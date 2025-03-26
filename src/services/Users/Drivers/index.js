@@ -4,6 +4,9 @@ const {
   BlackList,
   Profile,
   Restaurant,
+  CouponUsage,
+  Customer,
+  User,
 } = require("../../../models/index.model");
 const { UpdateProfile } = require("../profile.service");
 const { findDriver } = require("../Restaurants/index.service");
@@ -87,6 +90,15 @@ class DriverService {
       status: "ORDER_CONFIRMED",
       driver: order.driver_id,
     });
+    const customer = await Customer.findOne({where:{id:order.customer_id}});
+    const profile = await Profile.findOne({where:{id:customer.profile_id}});
+    const user = await User.findOne({where:{id: profile.user_id}});
+    await CouponUsage.create({
+      coupon_id: order.coupon_id,
+      user_id: user.id,
+      order_id: order.id,
+      used_at: order.createdAt,
+    })
     return await Order.update(
       {
         order_status: "ORDER_CONFIRMED",
@@ -156,10 +168,26 @@ class DriverService {
     return findDriver({ order_id });
   };
 
-  static getAllOrderForDriver = async ({ driver_id }) => {
-    return Order.findAll({
-      where: { driver_id: driver_id },
-      order: [["createdAt", "DESC"]],
+  static getAllOrderForDriver = async ({ driver_id,date }) => {
+    const profile = await Profile.findOne({where:{user_id:driver_id}})
+    const driver = await Driver.findOne({where:{profile_id: profile.id}})
+    let whereClause = { driver_id: driver.id };
+    
+    if (date) {
+      const startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      
+      const endDate = new Date(date);
+      endDate.setHours(23, 59, 59, 999);
+      
+      whereClause.createdAt = {
+        [Op.between]: [startDate, endDate]
+      };
+    }
+    
+    return await Order.findAll({ 
+      where: whereClause,
+      order: [['createdAt', 'DESC']]
     });
   };
   static changeStatus = async ({ driver_id }) => {
@@ -176,6 +204,13 @@ class DriverService {
 
     return await driver.save();
   };
+
+  static getDetailToHis = async ({ driver_id }) => {
+    const driver = await Driver.findOne({ where: { id: driver_id } });
+    const profile = await Profile.findOne({ where: { id: driver.profile_id } });
+
+    return { ...driver.dataValues, ...profile.dataValues };
+  }
 }
 
 module.exports = DriverService;

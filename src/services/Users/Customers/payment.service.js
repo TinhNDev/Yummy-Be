@@ -20,7 +20,8 @@ const getTotalPrice = async (
   userLatitude,
   userLongitude,
   restaurant_id,
-  listCartItem
+  listCartItem,
+  discountCost,
 ) => {
   let totalFoodPrice = 0;
 
@@ -38,12 +39,13 @@ const getTotalPrice = async (
   );
   const shippingCost = calculateShippingCost(distance);
 
-  const totalPrice = totalFoodPrice + shippingCost;
+  const totalPrice = totalFoodPrice + shippingCost - discountCost;
 
   return {
     totalFoodPrice,
     shippingCost,
     totalPrice,
+    discountCost
   };
 };
 
@@ -60,30 +62,36 @@ const calculateShippingCost = (distanceInKm) => {
   }
 };
 
+const calculateDiscount = (coupon, listCartItem) => {
+  let totalFoodPrice = 0;
+
+  for (const item of listCartItem) {
+    let itemTotalPrice = item.price * item.quantity;
+    totalFoodPrice += itemTotalPrice;
+  }
+
+  return coupon.discount_type === "PERCENTAGE"
+    ? coupon.discount_value * totalFoodPrice
+    : totalFoodPrice - coupon.discount_value;
+};
+
 const createOrder = async ({ order, user_id }) => {
   const transID = Math.floor(Math.random() * 1000000);
-  let coupon;
-  if (order.coupon_id) {
-    coupon = await db.Coupon.findOne({ where: { id: order.coupon_id } });
-    if (coupon?.amount <= 0) {
-      throw Error("Expired Coupon Code");
-    }
+
+  const profile = await db.Profile.findOne({ where: { user_id: user_id } });
+  if (!profile) {
+    throw new Error("User profile not found");
   }
-  const couponCost = coupon?.price || 0;
-  let profile = await db.Profile.findOne({ where: { user_id: user_id } });
-  let customer = await db.Customer.findOne({
-    where: { profile_id: profile.id },
-  });
-  
+
+  let customer = await db.Customer.findOne({ where: { profile_id: profile.id } });
   if (!customer) {
     try {
-      customer = await db.Customer.create({
-        profile_id: profile.id,
-      });
+      customer = await db.Customer.create({ profile_id: profile.id });
     } catch (error) {
-      throw error;
+      throw new Error("Failed to create customer: " + error.message);
     }
   }
+
   const configOrder = {
     app_id: config.app_id,
     app_trans_id: `${moment().format("YYMMDD")}_${transID}`,
@@ -91,7 +99,7 @@ const createOrder = async ({ order, user_id }) => {
     app_time: Date.now(),
     item: JSON.stringify(order.listCartItem),
     embed_data: JSON.stringify(order),
-    amount: order.price - couponCost,
+    amount: order.price,
     callback_url: `${process.env.URL}/callback`,
     description: `
 Thanh toán cho đơn hàng #${order.listCartItem
@@ -221,4 +229,5 @@ module.exports = {
   verifyCallback,
   checkStatusOrder,
   getTotalPrice,
+  calculateDiscount
 };

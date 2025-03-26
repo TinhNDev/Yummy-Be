@@ -50,7 +50,8 @@ class DriverController{
         new SuccessResponse({
             message: "full order",
             metadata: await DriverService.getAllOrderForDriver({
-                driver_id:req.params.driver_id,
+                date: req.body.date,
+                driver_id:req.user.user_id,
             })
         }).send(res);
     }
@@ -68,6 +69,14 @@ class DriverController{
             metadata: await DriverService.giveOrder({
                 driver_id:req.user.user_id,
                 order_id: req.params.orderId,
+            })
+        }).send(res)
+    }
+    getDetailToHis = async(req,res) =>{
+        new SuccessResponse({
+            message:"detail",
+            metadata: await DriverService.getDetailToHis({
+                driver_id: req.params.driver_id
             })
         }).send(res)
     }

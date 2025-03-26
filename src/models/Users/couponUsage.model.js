@@ -20,15 +20,11 @@ module.exports = (sequelize, Sequelize) => {
       used_at: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW, // Mặc định là thời gian hiện tại
-      },
-      discount_amount: {
-        type: Sequelize.INTEGER,
-        allowNull: false, // Số tiền giảm phải có
+        defaultValue: Sequelize.NOW,
       },
     }, {
-      timestamps: false, // Không cần tạo createdAt, updatedAt cho bảng này
-      tableName: 'coupon_usages', // Tên bảng trong cơ sở dữ liệu
+      timestamps: false,
+      tableName: 'coupon_usages',
     });
   
     CouponUsage.associate = (models) => {

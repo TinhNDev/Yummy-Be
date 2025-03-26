@@ -11,13 +11,6 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: false,
         unique: true,
       },
-      amount: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        validate: {
-          min: 0,
-        },
-      },
       discount_value: {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
@@ -81,6 +74,11 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
       },
+      coupon_type:{
+        type: Sequelize.ENUM("ONE_TIME", "ONE_TIME_EVERY_DAY"),
+        allowNull: false,
+        defaultValue: "ONE_TIME_EVERY_DAY",
+      }
     },
     {
       timestamps: true,
