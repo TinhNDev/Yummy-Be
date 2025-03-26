@@ -22,13 +22,6 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
-      discount_amount: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
-      status:{
-        type: Sequelize.BOOLEAN
-      }
     }, {
       timestamps: false,
       tableName: 'coupon_usages',

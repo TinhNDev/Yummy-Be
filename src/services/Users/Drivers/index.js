@@ -4,6 +4,9 @@ const {
   BlackList,
   Profile,
   Restaurant,
+  CouponUsage,
+  Customer,
+  User,
 } = require("../../../models/index.model");
 const { UpdateProfile } = require("../profile.service");
 const { findDriver } = require("../Restaurants/index.service");
@@ -87,6 +90,15 @@ class DriverService {
       status: "ORDER_CONFIRMED",
       driver: order.driver_id,
     });
+    const customer = await Customer.findOne({where:{id:order.customer_id}});
+    const profile = await Profile.findOne({where:{id:customer.profile_id}});
+    const user = await User.findOne({where:{id: profile.user_id}});
+    await CouponUsage.create({
+      coupon_id: order.coupon_id,
+      user_id: user.id,
+      order_id: order.id,
+      used_at: order.createdAt,
+    })
     return await Order.update(
       {
         order_status: "ORDER_CONFIRMED",

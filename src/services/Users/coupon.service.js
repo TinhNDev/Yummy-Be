@@ -1,24 +1,48 @@
 
-/**
- *  Tạo mới, chỉnh sửa, xóa và quản lý mã giảm giá
-    Kiểm tra tính hợp lệ của mã giảm giá khi khách hàng áp dụng(Mobile)
-    Hỗ trợ nhiều loại giảm giá: theo phần trăm, số tiền cố định, miễn phí giao hàng(Admin web)
-    Giới hạn sử dụng: theo thời gian, số lần sử dụng, người dùng cụ thể
-    Áp dụng cho: toàn bộ đơn hàng, món ăn cụ thể, danh mục món ăn, nhà hàng cụ thể
-    Thống kê việc sử dụng mã giảm giá
- */
-const { Restaurant, Coupon } = require("../../models/index.model");
+const { Restaurant, Coupon, CouponUsage } = require("../../models/index.model");
 
 class CouponService {
-  static getCoupon = async ({total, user_id}) => {
-    return await Coupon.findAll();
+  static getCoupon = async ({ totalCost, user_id }) => {
+    const coupons = await Coupon.findAll({ where: { is_active: true } });
+    const result = [];
+  
+    for (const coupon of coupons) {
+      let error = null;
+  
+      try {
+        if (coupon.end_date && new Date(coupon.end_date) < new Date()) {
+          error = "Coupon has expired";
+        } else if (coupon.min_order_value > totalCost) {
+          error = "Order value does not meet the minimum requirement for this coupon";
+        } else if (coupon.coupon_type === "ONE_TIME") {
+          const usage = await CouponUsage.findOne({
+            where: { user_id: user_id, coupon_id: coupon.id },
+          });
+          if (usage) {
+            error = "User has already used this coupon";
+          }
+        } else if (coupon.coupon_type === "ONE_TIME_EVERY_DAY") {
+          if (coupon.current_uses >= coupon.max_uses_per_user) {
+            error = "Coupon usage limit for today has been reached";
+          }
+        }
+      } catch (err) {
+        error = `Error validating coupon: ${err.message}`;
+      }
+  
+      result.push({
+        coupon,
+        error,
+      });
+    }
+  
+    return result;
   };
 
   static createCoupon = async ({ body }) => {
     const {
       coupon_name,
       coupon_code,
-      amount,
       discount_value,
       discount_type,
       max_discount_amount,
@@ -30,7 +54,7 @@ class CouponService {
       coupon_type,
     } = body;
 
-    if (!coupon_name || !coupon_code || !amount || !discount_value || !start_date || !end_date || !coupon_type) {
+    if (!coupon_name || !coupon_code || !discount_value || !start_date || !end_date || !coupon_type) {
       throw new Error("Vui lòng cung cấp đầy đủ thông tin bắt buộc.");
     }
 
@@ -53,7 +77,6 @@ class CouponService {
     return await Coupon.create({
       coupon_name,
       coupon_code,
-      amount,
       discount_value,
       discount_type,
       max_discount_amount,
@@ -75,7 +98,6 @@ class CouponService {
       },
     });
   };
-
 
 }
 
