@@ -7,6 +7,7 @@ const paymentController = require("../controllers/Users/Customers/payment.contro
 const { KeyToken, User } = require("../models/index.model");
 const userModel = require("../models/Users/user.model");
 const router = express.Router();
+router.post("/callback", asyncHandle(paymentController.callBack));
 router.get("/verify-email", async (req, res) => {
   const { id_token } = req.query;
   const userToVerifyEmail = await KeyToken.findOne({
@@ -42,7 +43,6 @@ router.get("/verify-password", async (req, res) => {
     refreshToken: userToVerifyEmail.refreshToken,
   });
 });
-router.post("/callback", asyncHandle(paymentController.callBack));
 //check apiKey
 router.use(apiKey);
 //check permisson
