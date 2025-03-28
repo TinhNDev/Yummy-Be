@@ -19,31 +19,44 @@ class ReviewService {
     const reviews = await db.Review.findAll({
       where: { restaurant_id: restaurant_id },
     });
-
-    const Customer = await db.Customer.findOne({
-      where: {id: reviews.customer_id}
-    })
-
-    const profile = await db.Profile.findOne({
-      where: {id: Customer.profile_id}
-    })
-    return {...reviews.dataValues,...profile.dataValues} ? reviews : [];
+  
+    const enrichedReviews = await Promise.all(
+      reviews.map(async (review) => {
+        const customer = await db.Customer.findOne({
+          where: { id: review.customer_id },
+        });
+  
+        const profile = await db.Profile.findOne({
+          where: { id: customer.profile_id },
+        });
+  
+        return { ...review.dataValues, ...profile.dataValues };
+      })
+    );
+  
+    return enrichedReviews;
   };
 
   static getReviewOfDriver = async ({ driver_id }) => {
     const reviews = await db.Review.findAll({
       where: { driver_id: driver_id },
     });
-
-    const Customer = await db.Customer.findOne({
-      where: {id: reviews.customer_id}
-    })
-
-    const profile = await db.Profile.findOne({
-      where: {id: Customer.profile_id}
-    })
-
-    return  {...reviews.dataValues,...profile.dataValues} ? reviews : [];
+  
+    const enrichedReviews = await Promise.all(
+      reviews.map(async (review) => {
+        const customer = await db.Customer.findOne({
+          where: { id: review.customer_id },
+        });
+  
+        const profile = await db.Profile.findOne({
+          where: { id: customer.profile_id },
+        });
+  
+        return { ...review.dataValues, ...profile.dataValues };
+      })
+    );
+  
+    return enrichedReviews;
   };
 }
 
