@@ -157,17 +157,17 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       where: { id: restaurant.user_id },
     });
 
-    if (KeyToken.fcmToken) {
-      const payload = {
-        notification: {
-          title: "New Order",
-          body: `Bạn có 1 đơn hàng mới`,
-        },
-        token: KeyToken.fcmToken,
-      };
-      const response = await admin.messaging().send(payload);
-      console.log("Successfully sent message:", response);
-    }
+    // if (KeyToken.fcmToken) {
+    //   const payload = {
+    //     notification: {
+    //       title: "New Order",
+    //       body: `Bạn có 1 đơn hàng mới`,
+    //     },
+    //     token: KeyToken.fcmToken,
+    //   };
+    //   const response = await admin.messaging().send(payload);
+    //   console.log("Successfully sent message:", response);
+    // }
     socket.emit("backendEvent", {
       driver: "null",
       orderId: newOrder.id,
@@ -181,11 +181,12 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       restaurant_id: orderData.listCartItem[0].restaurant_id,
     });
     console.log("Thông báo đơn hàng mới đã được gửi tới server socket");
-    const user = await db.Customer.findOne({where:{id: parseInt(dataJson["app_user"])}})
-    const redisKey = `cart:${user.user_id}-${orderData.listCartItem[0].restaurant_id}`;
+    const customer = await db.Customer.findOne({where:{id: newOrder.customer_id}})
+    const profile = await db.Profile.findOne({where:{id: customer.profile_id}})
+    const redisKey = `cart:${profile.user_id}-${orderData.listCartItem[0].restaurant_id}`;
     const redisHelper = new RedisHelper();
     await redisHelper.connect();
-    await redisHelper.del(redisKey)
+    await redisHelper.delete(redisKey)
     return {
       Order: newOrder,
     };
