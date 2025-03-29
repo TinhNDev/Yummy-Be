@@ -8,6 +8,7 @@ const { getRestaurantById } = require("../restaurant.service");
 const { io } = require("socket.io-client");
 const admin = require("firebase-admin");
 const { addCouponToOrder } = require("../coupon.service");
+const RedisHelper = require("../../../cache/redis");
 const socket = io(process.env.SOCKET_SERVER_URL);
 const config = {
   app_id: "2553",
@@ -180,7 +181,11 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       restaurant_id: orderData.listCartItem[0].restaurant_id,
     });
     console.log("Thông báo đơn hàng mới đã được gửi tới server socket");
-
+    const user = await db.Customer.findOne({where:{id: parseInt(dataJson["app_user"])}})
+    const redisKey = `cart:${user.user_id}`;
+    const redisHelper = new RedisHelper();
+    await redisHelper.connect();
+    await redisHelper.del(redisKey)
     return {
       Order: newOrder,
     };
