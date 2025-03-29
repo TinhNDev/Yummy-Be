@@ -14,6 +14,6 @@ router.put(
   authorization,
   asyncHandle(removeFromCart)
 );
-router.get("/cart", authorization, asyncHandle(getItemInCart));
+router.get("/cart/:restaurant_id", authorization, asyncHandle(getItemInCart));
 
 module.exports = router;
