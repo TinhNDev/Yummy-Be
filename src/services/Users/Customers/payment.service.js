@@ -182,7 +182,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
     });
     console.log("Thông báo đơn hàng mới đã được gửi tới server socket");
     const user = await db.Customer.findOne({where:{id: parseInt(dataJson["app_user"])}})
-    const redisKey = `cart:${user.user_id}`;
+    const redisKey = `cart:${user.user_id}-${orderData.listCartItem[0].restaurant_id}`;
     const redisHelper = new RedisHelper();
     await redisHelper.connect();
     await redisHelper.del(redisKey)

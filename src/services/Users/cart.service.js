@@ -1,4 +1,5 @@
 const RedisHelper = require("../../cache/redis");
+const db = require("../../models/index.model");
 
 class CartService {
   static addToCart = async ({ user_id, product_id, description }) => {
@@ -11,7 +12,8 @@ class CartService {
     if (!description) {
       throw new Error("Invalid description: must be a non-empty string.");
     }
-    const redisKey = `cart:${user_id}`;
+    const product = await db.Product.findOne({where:{id: product_id}})
+    const redisKey = `cart:${user_id}-${product.restaurant_id}`;
     const cart_item_id = `${product_id}-${JSON.stringify(description.toppings || [])}`;
     
     try {
@@ -48,12 +50,12 @@ class CartService {
     }
   };
 
-  static getItemInCart = async ({ user_id }) => {
+  static getItemInCart = async ({ user_id, restaurant_id }) => {
     if (!user_id) {
       throw new Error("Invalid user_id: must be a non-empty string.");
     }
-  
-    const redisKey = `cart:${user_id}`;
+    
+    const redisKey = `cart:${user_id}-${restaurant_id}`;
   
     try {
       const redis = new RedisHelper();
