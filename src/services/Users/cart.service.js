@@ -89,14 +89,17 @@ class CartService {
     if (!user_id) {
       throw new Error("Invalid user_id: must be a non-empty string.");
     }
-
+  
     const redisKey = `cart:${user_id}`;
-
+  
     try {
       const redis = new RedisHelper();
       await redis.connect();
-      const item = redis.get(redisKey);
-      const groupedItems = CartService.groupCartItems(item)
+  
+      const items = JSON.parse((await redis.get(redisKey)) || "[]");
+  
+      const groupedItems = CartService.groupCartItems(items);
+  
       await redis.disconnect();
       return groupedItems ? groupedItems : [];
     } catch (error) {
