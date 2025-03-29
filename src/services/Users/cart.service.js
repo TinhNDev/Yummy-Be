@@ -2,82 +2,68 @@ const RedisHelper = require("../../cache/redis");
 
 class CartService {
   static addToCart = async ({ user_id, product_id, description }) => {
-    if (!user_id || typeof user_id !== "string") {
-      throw new Error("Invalid user_id: must be a non-empty string.");
+    if (!user_id) {
+      throw new Error("Invalid user_id: must be a non-empty.");
     }
-    if (!product_id || typeof product_id !== "string") {
-      throw new Error("Invalid product_id: must be a non-empty string.");
+    if (!product_id) {
+      throw new Error("Invalid product_id: must be a non-empty.");
     }
-    if (!description || typeof description !== "string") {
+    if (!description) {
       throw new Error("Invalid description: must be a non-empty string.");
     }
-
     const redisKey = `cart:${user_id}`;
-    const item = {
-      product_id,
-      description,
-    };
-
+    const cart_item_id = `${product_id}-${JSON.stringify(description.toppings || [])}`;
+    
     try {
       const redisHelper = new RedisHelper();
       await redisHelper.connect();
-
-      const existingItems = (await redisHelper.get(redisKey)) || [];
-      existingItems.push(item);
-      await redisHelper.set(redisKey, existingItems);
-
-      const listItem = await redisHelper.get(redisKey);
+  
+      let existingItems = JSON.parse((await redisHelper.get(redisKey)) || "[]");
+      if (description.quantity === 0) {
+        existingItems = existingItems.filter(item => item.cart_item_id !== cart_item_id);
+      } else {
+        const existingItemIndex = existingItems.findIndex(item => item.cart_item_id === cart_item_id);
+        
+        const item = {
+          product_id,
+          description,
+          cart_item_id,
+        };
+        
+        if (existingItemIndex !== -1) {
+          existingItems[existingItemIndex] = item;
+        } else {
+          existingItems.push(item);
+        }
+      }
+      
+      await redisHelper.set(redisKey, JSON.stringify(existingItems));
+  
+      const items = JSON.parse((await redisHelper.get(redisKey)) || "[]");
+  
       await redisHelper.disconnect();
-      return listItem;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  static removeFromCart = async ({ user_id, product_id }) => {
-    // Validate input
-    if (!user_id || typeof user_id !== "string") {
-      throw new Error("Invalid user_id: must be a non-empty string.");
-    }
-    if (!product_id || typeof product_id !== "string") {
-      throw new Error("Invalid product_id: must be a non-empty string.");
-    }
-
-    const redisKey = `cart:${user_id}`;
-
-    try {
-      const redisHelper = new RedisHelper();
-      await redisHelper.connect();
-
-      // Fetch existing items
-      const existingItems = (await redisHelper.get(redisKey)) || [];
-
-      const updatedItems = existingItems.filter(
-        (item) => item.product_id !== product_id
-      );
-
-      await redisHelper.set(redisKey, updatedItems);
-
-      const listItem = await redisHelper.get(redisKey);
-      await redisHelper.disconnect();
-      return listItem;
+      return items;
     } catch (error) {
       throw error;
     }
   };
 
   static getItemInCart = async ({ user_id }) => {
-    if (!user_id || typeof user_id !== "string") {
+    if (!user_id) {
       throw new Error("Invalid user_id: must be a non-empty string.");
     }
-
+  
     const redisKey = `cart:${user_id}`;
-
+  
     try {
       const redis = new RedisHelper();
       await redis.connect();
-      const item = redis.get(redisKey);
-      return item ? item : [];
+  
+      const items = JSON.parse((await redis.get(redisKey)) || "[]");
+  
+  
+      await redis.disconnect();
+      return items;
     } catch (error) {
       throw error;
     }
