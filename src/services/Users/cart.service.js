@@ -10,8 +10,8 @@ class CartService {
   
       if (groupedItems.has(key)) {
         const existingItem = groupedItems.get(key);
-        existingItem.description.price += item.description.price;
         existingItem.description.quantity += item.description.quantity;
+        existingItem.description.price = item.description.price * existingItem.description.quantity;
       } else {
         groupedItems.set(key, { ...item });
       }
@@ -58,7 +58,6 @@ class CartService {
   };
 
   static removeFromCart = async ({ user_id, cart_item_id }) => {
-    // Validate input
     if (!user_id) {
       throw new Error("Invalid user_id: must be a non-empty string.");
     }
@@ -72,13 +71,10 @@ class CartService {
       const redisHelper = new RedisHelper();
       await redisHelper.connect();
 
-      // Lấy danh sách sản phẩm hiện có
       let existingItems = JSON.parse((await redisHelper.get(redisKey)) || "[]");
       
-      // Lọc ra các sản phẩm không có cart_item_id tương ứng
       const updatedItems = existingItems.filter(item => item.cart_item_id !== cart_item_id);
       
-      // Kiểm tra xem có sản phẩm nào bị xóa không
       if (updatedItems.length !== existingItems.length) {
         await redisHelper.set(redisKey, JSON.stringify(updatedItems));
       }
