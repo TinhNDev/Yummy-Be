@@ -101,17 +101,7 @@ const createOrder = async ({ order, user_id }) => {
     embed_data: JSON.stringify(order),
     amount: order.price,
     callback_url: `${process.env.URL}/callback`,
-    description: `
-Thanh toán cho đơn hàng #${order.listCartItem
-      .map(
-        (item) => `
-        Sản phẩm: ${item.name} 
-        Số lượng: ${item.quantity} 
-        Đơn giá: ${item.price.toLocaleString()} VND
-`
-      )
-      .join("")}
-`,
+    description: `Cảm ơn đã sử dụng`,
   };
 
   const data = `${config.app_id}|${configOrder.app_trans_id}|${configOrder.app_user}|${configOrder.amount}|${configOrder.app_time}|${configOrder.embed_data}|${configOrder.item}`;
