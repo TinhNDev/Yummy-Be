@@ -1,6 +1,25 @@
 const RedisHelper = require("../../cache/redis");
 
 class CartService {
+
+  static groupCartItems = (items) => {
+    const groupedItems = new Map();
+  
+    items.forEach((item) => {
+      const key = `${item.product_id}-${JSON.stringify(item.description.toppings || [])}`;
+  
+      if (groupedItems.has(key)) {
+        const existingItem = groupedItems.get(key);
+        existingItem.description.price += item.description.price;
+        existingItem.description.quantity += item.description.quantity;
+      } else {
+        groupedItems.set(key, { ...item });
+      }
+    });
+  
+    return Array.from(groupedItems.values());
+  };
+
   static addToCart = async ({ user_id, product_id, description }) => {
     if (!user_id) {
       throw new Error("Invalid user_id: must be a non-empty.");
@@ -77,7 +96,9 @@ class CartService {
       const redis = new RedisHelper();
       await redis.connect();
       const item = redis.get(redisKey);
-      return item ? item : [];
+      const groupedItems = CartService.groupCartItems(item)
+      await redis.disconnect();
+      return groupedItems ? groupedItems : [];
     } catch (error) {
       throw error;
     }
