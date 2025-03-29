@@ -2,13 +2,13 @@ const RedisHelper = require("../../cache/redis");
 
 class CartService {
   static addToCart = async ({ user_id, product_id, description }) => {
-    if (!user_id || typeof user_id !== "string") {
-      throw new Error("Invalid user_id: must be a non-empty string.");
+    if (!user_id) {
+      throw new Error("Invalid user_id: must be a non-empty.");
     }
-    if (!product_id || typeof product_id !== "string") {
-      throw new Error("Invalid product_id: must be a non-empty string.");
+    if (!product_id) {
+      throw new Error("Invalid product_id: must be a non-empty.");
     }
-    if (!description || typeof description !== "string") {
+    if (!description) {
       throw new Error("Invalid description: must be a non-empty string.");
     }
 
@@ -36,10 +36,10 @@ class CartService {
 
   static removeFromCart = async ({ user_id, product_id }) => {
     // Validate input
-    if (!user_id || typeof user_id !== "string") {
+    if (!user_id) {
       throw new Error("Invalid user_id: must be a non-empty string.");
     }
-    if (!product_id || typeof product_id !== "string") {
+    if (!product_id) {
       throw new Error("Invalid product_id: must be a non-empty string.");
     }
 
@@ -67,7 +67,7 @@ class CartService {
   };
 
   static getItemInCart = async ({ user_id }) => {
-    if (!user_id || typeof user_id !== "string") {
+    if (!user_id) {
       throw new Error("Invalid user_id: must be a non-empty string.");
     }
 
