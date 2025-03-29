@@ -32,34 +32,38 @@ class CartService {
     }
 
     const redisKey = `cart:${user_id}`;
+    const cart_item_id = `${product_id}-${JSON.stringify(description.toppings || [])}-${Date.now()}`;
     const item = {
       product_id,
       description,
+      cart_item_id
     };
 
     try {
       const redisHelper = new RedisHelper();
       await redisHelper.connect();
 
-      const existingItems = (await redisHelper.get(redisKey)) || [];
+      const existingItems = JSON.parse((await redisHelper.get(redisKey)) || "[]");
       existingItems.push(item);
-      await redisHelper.set(redisKey, existingItems);
+      await redisHelper.set(redisKey, JSON.stringify(existingItems));
 
-      const listItem = await redisHelper.get(redisKey);
+      const items = JSON.parse((await redisHelper.get(redisKey)) || "[]");
+      const groupedItems = CartService.groupCartItems(items);
+      
       await redisHelper.disconnect();
-      return listItem;
+      return groupedItems;
     } catch (error) {
       throw error;
     }
   };
 
-  static removeFromCart = async ({ user_id, product_id }) => {
+  static removeFromCart = async ({ user_id, cart_item_id }) => {
     // Validate input
     if (!user_id) {
       throw new Error("Invalid user_id: must be a non-empty string.");
     }
-    if (!product_id) {
-      throw new Error("Invalid product_id: must be a non-empty string.");
+    if (!cart_item_id) {
+      throw new Error("Invalid cart_item_id: must be a non-empty string.");
     }
 
     const redisKey = `cart:${user_id}`;
@@ -68,18 +72,22 @@ class CartService {
       const redisHelper = new RedisHelper();
       await redisHelper.connect();
 
-      // Fetch existing items
-      const existingItems = (await redisHelper.get(redisKey)) || [];
+      // Lấy danh sách sản phẩm hiện có
+      let existingItems = JSON.parse((await redisHelper.get(redisKey)) || "[]");
+      
+      // Lọc ra các sản phẩm không có cart_item_id tương ứng
+      const updatedItems = existingItems.filter(item => item.cart_item_id !== cart_item_id);
+      
+      // Kiểm tra xem có sản phẩm nào bị xóa không
+      if (updatedItems.length !== existingItems.length) {
+        await redisHelper.set(redisKey, JSON.stringify(updatedItems));
+      }
 
-      const updatedItems = existingItems.filter(
-        (item) => item.product_id !== product_id
-      );
-
-      await redisHelper.set(redisKey, updatedItems);
-
-      const listItem = await redisHelper.get(redisKey);
+      const items = JSON.parse((await redisHelper.get(redisKey)) || "[]");
+      const groupedItems = CartService.groupCartItems(items);
+      
       await redisHelper.disconnect();
-      return listItem;
+      return groupedItems;
     } catch (error) {
       throw error;
     }

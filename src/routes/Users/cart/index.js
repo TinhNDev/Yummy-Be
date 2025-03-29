@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post("/cart", authorization, asyncHandle(addToCart));
 router.put(
-  "/cart/:product_id",
+  "/cart",
   authorization,
   asyncHandle(removeFromCart)
 );

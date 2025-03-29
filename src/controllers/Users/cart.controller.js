@@ -18,11 +18,11 @@ class CartController {
 
   removeFromCart = async (req, res) => {
     const { user_id} = req.user;
-    const { product_id } = req.params;
+    const {cart_item_id} = req.body
 
     new SuccessResponse({
       message: "update item",
-      metadata: await CartService.removeFromCart({ user_id, product_id }),
+      metadata: await CartService.removeFromCart({ user_id, cart_item_id}),
     }).send(res);
   };
 
