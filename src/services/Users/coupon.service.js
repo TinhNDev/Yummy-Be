@@ -58,7 +58,7 @@ class CouponService {
       throw new Error("Vui lòng cung cấp đầy đủ thông tin bắt buộc.");
     }
 
-    if (amount < 0 || discount_value < 0 || (max_discount_amount && max_discount_amount < 0) || (min_order_value && min_order_value < 0)) {
+    if (discount_value < 0 || (max_discount_amount && max_discount_amount < 0) || (min_order_value && min_order_value < 0)) {
       throw new Error("Giá trị không hợp lệ. Các số phải lớn hơn hoặc bằng 0.");
     }
 
