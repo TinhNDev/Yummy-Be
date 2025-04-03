@@ -116,7 +116,7 @@ class ProductController {
     new SuccessResponse({
       message: "List Product of Restaurants",
       metadata: await ProductService.getListProductForRes({
-        restaurant_id: req.user.user_id,
+        restaurant_id: req.params.restaurant_id,
       }),
     }).send(res);
   };
