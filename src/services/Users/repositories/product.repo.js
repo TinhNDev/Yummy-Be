@@ -91,6 +91,7 @@ const findProduct = async ({ product_id, unSelect }) => {
 };
 // câu query hỗ trợ phân trang
 const queryProduct = async ({query, limit, skip}) => {
+
   return await Product.findAll({
     where: query,
     include: [
@@ -119,11 +120,46 @@ const getProductByRestaurantId = async ({restaurant_id}) =>{
 }
 
 const resgetProductByRestaurantId = async ({restaurant_id}) =>{
-  const restaurant = await Restaurant.findOne({where:{user_id:restaurant_id}})
-  const product = await Product.findAll({
-    where:{restaurant_id: restaurant.id,is_public:true,is_draft:false}
-  })
-  return product
+  const query = `
+      SELECT 
+          c.id AS category_id,
+          c.name AS category_name,
+          JSON_ARRAYAGG(
+              JSON_OBJECT(
+                  'product_id', p.id,
+                  'product_name', p.name,
+                  'product_description', p.descriptions,
+                  'product_price', p.price,
+                  'product_quantity', p.quantity,
+                  'image', p.image,
+                  'toppings', (
+                      SELECT JSON_ARRAYAGG(
+                          JSON_OBJECT(
+                              'topping_id', t.id,
+                              'topping_name', t.topping_name,
+                              'topping_price', t.price
+                          )
+                      ) 
+                      FROM \`Product Topping\` pt 
+                      JOIN Toppings t ON pt.toppingId = t.id
+                      WHERE pt.productId = p.id
+                  )
+              )
+          ) AS products
+      FROM Products p
+      JOIN \`Product Categories\` pc ON p.id = pc.productId
+      JOIN Categories c ON c.id = pc.categoryId
+      JOIN Restaurants r ON p.restaurant_id = r.id
+      WHERE p.restaurant_id = :restaurant_id
+      GROUP BY c.id, c.name;
+    `;
+
+    const results = await db.sequelize.query(query, {
+      replacements: { restaurant_id: restaurant_id },
+      type: db.sequelize.QueryTypes.SELECT,
+    });
+
+    return results
 }
 module.exports = {
   updateProductById,

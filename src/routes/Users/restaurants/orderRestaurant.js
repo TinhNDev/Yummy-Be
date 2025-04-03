@@ -18,4 +18,5 @@ router.get(
   "/restaurant/:order_id/driver",authorization, checkRole(['seller','admin']),asyncHandle(restaurantController.findDriver)
 )
 router.get("/restaurant/reject/:order_id/:reason",authorization, checkRole(['seller','admin']),asyncHandle(restaurantController.rejectOrder))
+router.get("/restaurant/:category_id/:restaurant_id/product",authorization,asyncHandle(restaurantController.getCateOfRes))
 module.exports = router;

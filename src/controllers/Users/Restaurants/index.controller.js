@@ -40,6 +40,15 @@ class OrderRestaunrantController{
             })
         }).send(res);
     }
+
+    getCateOfRes = async(req, res) => {
+        new SuccessResponse({
+            message: await OrderRestaunrantService.getCateOfRes({
+                restaurant_id: req.params.restaurant_id,
+                category_id: req.params.category_id,
+            })
+        }).send(res)
+    }
 }
 
 module.exports =new OrderRestaunrantController();
