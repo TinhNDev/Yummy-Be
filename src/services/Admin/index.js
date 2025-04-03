@@ -8,7 +8,7 @@ class AdminService {
     return Order.findAll();
   };
   static getAllDriver = async () => {
-    const driver = Driver.findAll({
+    const driver =await Driver.findAll({
       include: [
         {
           model: Profile,
@@ -20,7 +20,7 @@ class AdminService {
     return driver;
   };
   static getAllCustomer = async () => {
-    const Customer = Customer.findAll({
+    const Customer =await Customer.findAll({
       include: [
         {
           model: Profile,

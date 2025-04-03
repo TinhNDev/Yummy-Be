@@ -4,7 +4,7 @@ const CartService = require("../../services/Users/cart.service");
 class CartController {
   addToCart = async (req, res) => {
     const { user_id} = req.user;
-    const {product_id, description } = req.body;
+    const {product_id, description, restaurant_id } = req.body;
 
     new SuccessResponse({
       message: "list item in cart",
@@ -12,6 +12,7 @@ class CartController {
         user_id,
         product_id,
         description,
+        restaurant_id
       }),
     }).send(res);
   };
@@ -28,9 +29,10 @@ class CartController {
 
   getItemInCart = async (req, res) => {
     const { user_id } = req.user;
+    const {restaurant_id} = req.params
     new SuccessResponse({
       message: "list item in cart",
-      metadata: await CartService.getItemInCart({ user_id }),
+      metadata: await CartService.getItemInCart({ user_id,restaurant_id }),
     }).send(res);
   };
 }
