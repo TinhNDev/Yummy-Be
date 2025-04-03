@@ -16,6 +16,7 @@ const { io } = require("socket.io-client");
 const socket = io(process.env.SOCKET_SERVER_URL);
 const admin = require("firebase-admin");
 const RedisHelper = require("../../../cache/redis");
+const db = require("../../../models/index.model");
 class OrderRestaurantService {
   static getOrder = async ({ restaurant_id, date }) => {
     const restaurant = await Restaurant.findOne({ where: { user_id: restaurant_id } });
@@ -344,6 +345,31 @@ class OrderRestaurantService {
       return error
     }
   };
+
+  static getCateOfRes = async ({restaurant_id, category_id}) =>{
+    const query = `
+      SELECT 
+        c.id AS categoryId,
+        c.name AS categoryName,
+        p.name AS productName,
+        p.descriptions AS productDescription,
+        p.price AS productPrice,
+        p.quantity AS productQuantity,
+        p.image AS image
+      FROM Products p
+      JOIN \`Product Categories\` pc ON p.id = pc.productId
+      JOIN Categories c ON c.id = pc.categoryId
+      JOIN Restaurants r ON p.restaurant_id = r.id
+      WHERE c.id = :categories_id AND p.restaurant_id = :restaurant_id;
+    `;
+
+    const results = await sequelize.query(query, {
+      replacements: { categories_id: category_id, restaurant_id: restaurant_id },
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    return results;
+  }
 }
 
 module.exports = OrderRestaurantService;
