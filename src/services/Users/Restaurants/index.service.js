@@ -90,13 +90,6 @@ class OrderRestaurantService {
           continue;
         }
 
-        const driverStatus = await Driver.findOne({
-          where: { id: driverId },
-        }).then((driver) => driver?.status);
-        if (driverStatus === 'BUSY') {
-          continue;
-        }
-
         const driverLocation = await redisHelper.get(
           `driver:${driverId}:location`
         );
@@ -116,6 +109,12 @@ class OrderRestaurantService {
           };
 
           const distance = geolib.getDistance(driverCoords, restaurantCoords);
+          const driverStatus = await Driver.findOne({
+            where: { id: driverId },
+          }).then((driver) => driver?.status);
+          if (driverStatus === 'BUSY' && distance > 0.1) {
+            continue;
+          }
           if (distance < shortestDistance) {
             shortestDistance = distance;
             nearestDriver = driverId;
@@ -403,6 +402,8 @@ class OrderRestaurantService {
     }
     return updatedProducts
   }
+
+  static
 }
 
 module.exports = OrderRestaurantService;
