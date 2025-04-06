@@ -52,6 +52,7 @@ class CouponService {
       end_date,
       is_active,
       coupon_type,
+      restaurant_id,
     } = body;
 
     if (
@@ -97,6 +98,7 @@ class CouponService {
       end_date,
       is_active: is_active !== undefined ? is_active : true,
       coupon_type,
+      restaurant_id
     });
   };
 

@@ -18,9 +18,7 @@ db.sequelize
   .catch((err) => {
     console.error('❌ Failed to sync database:', err);
   });
-//routes
 app.use('', require('./routes'));
-// app.use("",require("./routes"));
 app.get('/', (req, res) => {
   res.send('Welcome to Foody App Server!');
 });

@@ -79,6 +79,15 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: false,
         defaultValue: 'ONE_TIME_EVERY_DAY',
       },
+      restaurant_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Restaurants',
+          key: 'id',
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      },
     },
     {
       timestamps: true,
