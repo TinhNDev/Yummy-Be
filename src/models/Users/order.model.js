@@ -1,8 +1,8 @@
 module.exports = (sequelize, Sequelize) => {
-  const Order = sequelize.define("Order", {
-    listCartItem:{
-      type: Sequelize.JSON
-    },    
+  const Order = sequelize.define('Order', {
+    listCartItem: {
+      type: Sequelize.JSON,
+    },
     receiver_name: {
       type: Sequelize.STRING,
     },
@@ -11,7 +11,15 @@ module.exports = (sequelize, Sequelize) => {
     },
     order_status: {
       type: Sequelize.ENUM,
-      values: ['PAID','UNPAID','PREPARING_ORDER','ORDER_CANCELED','ORDER_RECEIVED','DELIVERING','ORDER_CONFIRMED'],
+      values: [
+        'PAID',
+        'UNPAID',
+        'PREPARING_ORDER',
+        'ORDER_CANCELED',
+        'ORDER_RECEIVED',
+        'DELIVERING',
+        'ORDER_CONFIRMED',
+      ],
     },
     driver_id: {
       type: Sequelize.INTEGER,
@@ -31,19 +39,19 @@ module.exports = (sequelize, Sequelize) => {
     delivery_fee: {
       type: Sequelize.DECIMAL,
     },
-    order_pay:{
+    order_pay: {
       type: Sequelize.ENUM,
-      values:["OCD","ZALOPAY"]
+      values: ['OCD', 'ZALOPAY'],
     },
-    note:{
+    note: {
       type: Sequelize.TEXT,
     },
-    latitude:{
+    latitude: {
       type: Sequelize.STRING,
     },
-    longtitude:{
-      type: Sequelize.STRING
-    }
+    longtitude: {
+      type: Sequelize.STRING,
+    },
   });
   return Order;
 };

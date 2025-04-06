@@ -1,7 +1,7 @@
 module.exports = (sequelize, Sequelize) => {
-  const Address = sequelize.define("Address", {
-    address_name:{
-      type: Sequelize.STRING
+  const Address = sequelize.define('Address', {
+    address_name: {
+      type: Sequelize.STRING,
     },
     address_x: {
       type: Sequelize.STRING,

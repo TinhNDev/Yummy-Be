@@ -1,11 +1,11 @@
-const db = require("../../models/index.model.js");
+const db = require('../../models/index.model.js');
 const {
   findRestauranByKeyWord,
   getNearbyRestaurantDetails,
-} = require("./repositories/restaurant.repo.js");
+} = require('./repositories/restaurant.repo.js');
 const Restaurants = db.Restaurant;
-const RedisHelper = require("../../cache/redis");
-const { Op } = require("sequelize");
+const RedisHelper = require('../../cache/redis');
+const { Op } = require('sequelize');
 const haversineQuery = `
   6371 * 2 * ASIN(
     SQRT(
@@ -17,7 +17,7 @@ const haversineQuery = `
 `;
 class RestaurantService {
   static async initRedis() {
-    const redis = new RedisHelper({ keyPrefix: "restaurant:" });
+    const redis = new RedisHelper({ keyPrefix: 'restaurant:' });
     await redis.connect();
     return redis;
   }
@@ -30,7 +30,7 @@ class RestaurantService {
       !restaurant.phone_number ||
       !restaurant.description
     ) {
-      throw new Error("The restaurant object contains null or invalid fields");
+      throw new Error('The restaurant object contains null or invalid fields');
     }
 
     const existingRestaurant = await Restaurants.findOne({
@@ -60,14 +60,14 @@ class RestaurantService {
 
   static activeRestaurant = async ({ restaurant_id }) => {
     return await Restaurants.update({
-      status: "active",
+      status: 'active',
       where: { id: restaurant_id },
     });
   };
 
   static getRestaurantPending = async () => {
     return await Restaurants.findAll({
-      where: { status: "pending" },
+      where: { status: 'pending' },
     });
   };
 
@@ -120,7 +120,7 @@ class RestaurantService {
     );
 
     if (!paginatedRestaurants || paginatedRestaurants.length === 0) {
-      throw new Error("No restaurants found for the given parameters.");
+      throw new Error('No restaurants found for the given parameters.');
     }
 
     return paginatedRestaurants;
@@ -132,7 +132,7 @@ class RestaurantService {
 
   static deleteRestaurant = async ({ restaurant_id }) => {
     return await Restaurants.update({
-      status: "unactive",
+      status: 'unactive',
       where: { id: restaurant_id },
     });
   };

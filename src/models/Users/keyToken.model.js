@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const KeyToken = sequelize.define("Key Token", {
+  const KeyToken = sequelize.define('Key Token', {
     publicKey: {
       type: Sequelize.TEXT,
     },
@@ -12,7 +12,7 @@ module.exports = (sequelize, Sequelize) => {
     refreshToken: {
       type: Sequelize.TEXT,
     },
-    fcmToken:{
+    fcmToken: {
       type: Sequelize.TEXT,
     },
   });

@@ -1,9 +1,9 @@
-const { SuccessResponse } = require("../../core/success.response");
-const restaurantService = require("../../services/Users/restaurant.service");
+const { SuccessResponse } = require('../../core/success.response');
+const restaurantService = require('../../services/Users/restaurant.service');
 class RestaurantController {
   updateRestaurant = async (req, res, next) => {
     new SuccessResponse({
-      message: "create restaurant success",
+      message: 'create restaurant success',
       metadata: await restaurantService.updateRestaurant({
         restaurant_id: req.user.user_id,
         restaurant: req.body.restaurant,
@@ -13,7 +13,7 @@ class RestaurantController {
 
   activeRestaurant = async (req, res, next) => {
     new SuccessResponse({
-      message: "active restaurant success",
+      message: 'active restaurant success',
       metadata: await restaurantService.activeRestaurant({
         restaurant_id: req.body.restaurant_id,
       }),
@@ -22,7 +22,7 @@ class RestaurantController {
 
   getDetailProRes = async (req, res, next) => {
     new SuccessResponse({
-      message: "res detail",
+      message: 'res detail',
       metadata: await restaurantService.getDetailProRes({
         restaurant_id: req.user.user_id,
       }),
@@ -30,7 +30,7 @@ class RestaurantController {
   };
   getDetailProResForUser = async (req, res, next) => {
     new SuccessResponse({
-      message: "res detail",
+      message: 'res detail',
       metadata: await restaurantService.getDetailProResForUser({
         restaurant_id: req.params.restaurant_id,
       }),
@@ -38,31 +38,37 @@ class RestaurantController {
   };
   getRestaurantPending = async (req, res, next) => {
     new SuccessResponse({
-      message: " list pending res",
+      message: ' list pending res',
       metadata: await restaurantService.getRestaurantPending(),
     }).send(res);
   };
 
   getAllRestaurant = async (req, res, next) => {
     new SuccessResponse({
-      message: "list restaurant",
-      metadata: await restaurantService.getAllRestaurant(req.params.userLatitude, req.params.userLongitude, req.params.page),
+      message: 'list restaurant',
+      metadata: await restaurantService.getAllRestaurant(
+        req.params.userLatitude,
+        req.params.userLongitude,
+        req.params.page
+      ),
     }).send(res);
   };
 
   deleteRestaurant = async (req, res, next) => {
     new SuccessResponse({
-      message: "delete success",
+      message: 'delete success',
       metadata: await restaurantService.deleteRestaurant({
         restaurant_id: req.body.restaurant_id,
       }),
     });
   };
-  getRestaurantById =async(req,res)=>{
+  getRestaurantById = async (req, res) => {
     new SuccessResponse({
-        message:"detail",
-        metadata: await restaurantService.getRestaurantById(req.params.restaurant_id)
-    }).send(res)
-}
+      message: 'detail',
+      metadata: await restaurantService.getRestaurantById(
+        req.params.restaurant_id
+      ),
+    }).send(res);
+  };
 }
 module.exports = new RestaurantController();

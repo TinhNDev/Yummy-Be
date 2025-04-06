@@ -1,4 +1,4 @@
-const db = require("../../../models/index.model");
+const db = require('../../../models/index.model');
 const Product = db.Product;
 const Restaurant = db.Restaurant;
 
@@ -25,9 +25,7 @@ const findProductByUser = async (keySearch) => {
 };
 
 //chuyển trạng thái sản phẩm
-const publishedProductByRestaurant = async ({
-  product_id,
-}) => {
+const publishedProductByRestaurant = async ({ product_id }) => {
   const foundRestaurant = await Product.findOne({
     where: {
       id: product_id,
@@ -39,7 +37,7 @@ const publishedProductByRestaurant = async ({
   const result = foundRestaurant.save();
   return result ? 1 : 0;
 };
-const draftProductByRestaurant = async ({ product_id}) => {
+const draftProductByRestaurant = async ({ product_id }) => {
   const foundRestaurant = await Product.findOne({
     where: {
       id: product_id,
@@ -63,13 +61,13 @@ const updateProductById = async ({
   if (isNew) {
     return await model.findOne({ where: { id: productId } });
   }
-  return { message: "Product updated successfully" };
+  return { message: 'Product updated successfully' };
 };
 
 const findAllProduct = async ({ limit, sort, page, filter, select }) => {
   const offset = (page - 1) * limit;
   const orderBy =
-    sort === "ctime" ? [["createdAt", "DESC"]] : [["createdAt", "ASC"]];
+    sort === 'ctime' ? [['createdAt', 'DESC']] : [['createdAt', 'ASC']];
 
   const products = await Product.findAll({
     where: filter, //loc theo điều kiện nào
@@ -90,17 +88,16 @@ const findProduct = async ({ product_id, unSelect }) => {
   return products ? products.get({ plain: true }) : null;
 };
 // câu query hỗ trợ phân trang
-const queryProduct = async ({query, limit, skip}) => {
-
+const queryProduct = async ({ query, limit, skip }) => {
   return await Product.findAll({
     where: query,
     include: [
       {
         model: Restaurant,
-        attributes: ["name"],
+        attributes: ['name'],
       },
     ],
-    order: [["updatedAt", "DESC"]],
+    order: [['updatedAt', 'DESC']],
     limit: limit,
     offset: skip,
   });
@@ -113,13 +110,13 @@ const getProductById = async (productId) => {
   return products ? products.get({ plain: true }) : null;
 };
 
-const getProductByRestaurantId = async ({restaurant_id}) =>{
+const getProductByRestaurantId = async ({ restaurant_id }) => {
   return Product.findAll({
-    where:{restaurant_id: restaurant_id,is_public:true }
-  })
-}
+    where: { restaurant_id: restaurant_id, is_public: true },
+  });
+};
 
-const resgetProductByRestaurantId = async ({restaurant_id}) =>{
+const resgetProductByRestaurantId = async ({ restaurant_id }) => {
   const query = `
       SELECT 
           c.id AS category_id,
@@ -154,13 +151,13 @@ const resgetProductByRestaurantId = async ({restaurant_id}) =>{
       GROUP BY c.id, c.name;
     `;
 
-    const results = await db.sequelize.query(query, {
-      replacements: { restaurant_id: restaurant_id },
-      type: db.sequelize.QueryTypes.SELECT,
-    });
+  const results = await db.sequelize.query(query, {
+    replacements: { restaurant_id: restaurant_id },
+    type: db.sequelize.QueryTypes.SELECT,
+  });
 
-    return results
-}
+  return results;
+};
 module.exports = {
   updateProductById,
   getProductById,
@@ -172,5 +169,5 @@ module.exports = {
   findAllPublicForShop,
   findProductByUser,
   getProductByRestaurantId,
-  resgetProductByRestaurantId
+  resgetProductByRestaurantId,
 };

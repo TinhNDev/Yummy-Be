@@ -2,7 +2,7 @@ function forgotPasswordEmailTemplate(email, resetLink) {
   return {
     from: `${process.env.EMAIL}`,
     to: email,
-    subject: "Yêu Cầu Đặt Lại Mật Khẩu - Yummy",
+    subject: 'Yêu Cầu Đặt Lại Mật Khẩu - Yummy',
     html: `
     <!DOCTYPE html>
     <html>
@@ -74,7 +74,7 @@ function verificationEmailTemplate(email, verificationLink) {
   return {
     from: `${process.env.EMAIL}`,
     to: email,
-    subject: "Xác Minh Địa Chỉ Email - Yummy",
+    subject: 'Xác Minh Địa Chỉ Email - Yummy',
     html: `
     <!DOCTYPE html>
     <html>

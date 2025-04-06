@@ -1,9 +1,11 @@
-const db = require("../../models/index.model");
+const db = require('../../models/index.model');
 class ReviewService {
   static createReview = async ({ user_id, order_id, reviews }) => {
     const order = await db.Order.findOne({ where: { id: order_id } });
-    const profile = await db.Profile.findOne({where:{user_id:user_id}})
-    const Customer = await db.Customer.findOne({where:{profile_id: profile.id}})
+    const profile = await db.Profile.findOne({ where: { user_id: user_id } });
+    const Customer = await db.Customer.findOne({
+      where: { profile_id: profile.id },
+    });
     return await db.Review.create({
       res_rating: reviews.res_rating,
       dri_rating: reviews.dri_rating,
@@ -19,21 +21,21 @@ class ReviewService {
     const reviews = await db.Review.findAll({
       where: { restaurant_id: restaurant_id },
     });
-  
+
     const enrichedReviews = await Promise.all(
       reviews.map(async (review) => {
         const customer = await db.Customer.findOne({
           where: { id: review.customer_id },
         });
-  
+
         const profile = await db.Profile.findOne({
           where: { id: customer.profile_id },
         });
-  
+
         return { ...review.dataValues, ...profile.dataValues };
       })
     );
-  
+
     return enrichedReviews;
   };
 
@@ -41,21 +43,21 @@ class ReviewService {
     const reviews = await db.Review.findAll({
       where: { driver_id: driver_id },
     });
-  
+
     const enrichedReviews = await Promise.all(
       reviews.map(async (review) => {
         const customer = await db.Customer.findOne({
           where: { id: review.customer_id },
         });
-  
+
         const profile = await db.Profile.findOne({
           where: { id: customer.profile_id },
         });
-  
+
         return { ...review.dataValues, ...profile.dataValues };
       })
     );
-  
+
     return enrichedReviews;
   };
 }

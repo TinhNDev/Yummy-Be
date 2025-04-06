@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const apiKey = sequelize.define("Api Key", {
+  const apiKey = sequelize.define('Api Key', {
     key: {
       type: Sequelize.STRING,
     },
@@ -8,7 +8,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     permissions: {
       type: Sequelize.ENUM,
-      values: ["0000", "1111", "2222"],
+      values: ['0000', '1111', '2222'],
     },
   });
   return apiKey;

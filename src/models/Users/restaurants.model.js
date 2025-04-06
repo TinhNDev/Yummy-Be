@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const Restaurants = sequelize.define("Restaurants", {
+  const Restaurants = sequelize.define('Restaurants', {
     name: {
       type: Sequelize.STRING,
     },
@@ -11,8 +11,8 @@ module.exports = (sequelize, Sequelize) => {
     },
     status: {
       type: Sequelize.ENUM,
-      defaultValue: "pending",
-      values: ["pending", "active", "deactive"]
+      defaultValue: 'pending',
+      values: ['pending', 'active', 'deactive'],
     },
     opening_hours: {
       type: Sequelize.TEXT,

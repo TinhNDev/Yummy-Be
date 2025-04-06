@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const Topping = sequelize.define("Topping", {
+  const Topping = sequelize.define('Topping', {
     topping_name: {
       type: Sequelize.STRING,
     },
@@ -8,7 +8,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     is_available: {
       type: Sequelize.BOOLEAN,
-      defaultValue: true
+      defaultValue: true,
     },
   });
   return Topping;

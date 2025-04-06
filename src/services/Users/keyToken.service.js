@@ -1,5 +1,5 @@
-const { Types } = require("mysql2");
-const db = require("../../models/index.model");
+const { Types } = require('mysql2');
+const db = require('../../models/index.model');
 const keyTokenModel = db.KeyToken;
 
 class KeyTokenService {
@@ -34,7 +34,7 @@ class KeyTokenService {
           user_id: user_id,
           privateKey: privateKey,
           publicKey: publicKey,
-          refreshToken: refreshToken || "",
+          refreshToken: refreshToken || '',
           fcmToken: fcmToken,
         });
       }
@@ -57,8 +57,8 @@ class KeyTokenService {
       where: { id: uI.id },
     });
     return deleteTokens > 0
-      ? { success: true, meesage: "logout succsessfully" }
-      : { success: false, meesage: "logout failed" };
+      ? { success: true, meesage: 'logout succsessfully' }
+      : { success: false, meesage: 'logout failed' };
   };
 }
 module.exports = KeyTokenService;

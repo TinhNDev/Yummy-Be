@@ -1,7 +1,6 @@
-const db = require("../../models/index.model");
+const db = require('../../models/index.model');
 
 class OrderService {
-
   /**
    * @param {Object} body - dữ liệu đơn hàng từ request
    * @param {Number} user_id - ID của người dùng tạo đơn hàng
@@ -41,7 +40,7 @@ class OrderService {
     } catch (error) {
       return {
         success: false,
-        message: error.message || "Đã xảy ra lỗi khi tạo đơn hàng.",
+        message: error.message || 'Đã xảy ra lỗi khi tạo đơn hàng.',
       };
     }
   }

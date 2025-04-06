@@ -1,26 +1,26 @@
-"use strict";
+'use strict';
 
 const {
   BadRequestError,
   AuthFailError,
   ForbiddenError,
-} = require("../../core/error.response");
-const db = require("../../models/index.model");
+} = require('../../core/error.response');
+const db = require('../../models/index.model');
 const user = db.User;
-const bcryptjs = require("bcryptjs");
-const crypto = require("crypto");
-const KeyTokenService = require("./keyToken.service");
-const { createTokenPair } = require("../../auth/authUtils");
-const getInforData = require("../../utils/index");
-const nodemailer = require("nodemailer");
-const { findByEmail, findRoleByEmail } = require("./user.service");
+const bcryptjs = require('bcryptjs');
+const crypto = require('crypto');
+const KeyTokenService = require('./keyToken.service');
+const { createTokenPair } = require('../../auth/authUtils');
+const getInforData = require('../../utils/index');
+const nodemailer = require('nodemailer');
+const { findByEmail, findRoleByEmail } = require('./user.service');
 const {
   verificationEmailTemplate,
   forgotPasswordEmailTemplate,
-} = require("../../utils/emailTemplate");
+} = require('../../utils/emailTemplate');
 class AccessService {
   static singUp = async ({ password, email, fcmToken, role }) => {
-    const holderUser = await findRoleByEmail({email});
+    const holderUser = await findRoleByEmail({ email });
     if (holderUser) {
       const hasRole =
         holderUser.roles[0]?.dataValues.name === role ? true : false;
@@ -39,20 +39,20 @@ class AccessService {
     const roleRecord = await db.Roles.findOne({ where: { name: role } });
 
     if (!roleRecord) {
-      throw new BadRequestError("Vai trò không hợp lệ");
+      throw new BadRequestError('Vai trò không hợp lệ');
     }
 
     await newUser.addRoles(roleRecord);
     if (newUser) {
-      const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
+      const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
         modulusLength: 2048,
         publicKeyEncoding: {
-          type: "spki",
-          format: "pem",
+          type: 'spki',
+          format: 'pem',
         },
         privateKeyEncoding: {
-          type: "pkcs8",
-          format: "pem",
+          type: 'pkcs8',
+          format: 'pem',
         },
       });
       const tokens = await createTokenPair(
@@ -72,14 +72,14 @@ class AccessService {
         fcmToken,
       });
       if (!keyStore) {
-        throw new BadRequestError("Error: Key not in database");
+        throw new BadRequestError('Error: Key not in database');
       }
 
-      const verificationLink = `${process.env.DOMAIN}/verify-email?id_token=${keyStore.id}`;
+      const verificationLink = `${process.env.URL}/verify-email?id_token=${keyStore.id}&user_id=${newUser.id}`;
 
       try {
         const transporter = nodemailer.createTransport({
-          host: "smtp.gmail.com",
+          host: 'smtp.gmail.com',
           port: 465, // hoặc 465 cho SSL
           secure: true, // true cho 465, false cho các cổng khác
           auth: {
@@ -96,7 +96,7 @@ class AccessService {
         return {
           code: 201,
           user: getInforData({
-            fileds: ["id", "email"],
+            fileds: ['id', 'email'],
             object: newUser,
           }),
         };
@@ -113,23 +113,23 @@ class AccessService {
   };
   static login = async ({ email, password, refreshToken = null, fcmToken }) => {
     const foundUser = await findByEmail({ email });
-    if (!foundUser) throw new BadRequestError("User not registered");
+    if (!foundUser) throw new BadRequestError('User not registered');
     const data = await findRoleByEmail({ email });
     const role = data?.roles?.[0]?.name;
     //check match password
     const matchPassword = await bcryptjs.compare(password, foundUser.password);
 
-    if (!matchPassword) throw new AuthFailError("password incorrect");
+    if (!matchPassword) throw new AuthFailError('password incorrect');
     //create AT and RT and save
-    const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
       modulusLength: 2048, // Độ dài khóa trong bits
       publicKeyEncoding: {
-        type: "spki",
-        format: "pem",
+        type: 'spki',
+        format: 'pem',
       },
       privateKeyEncoding: {
-        type: "pkcs8",
-        format: "pem",
+        type: 'pkcs8',
+        format: 'pem',
       },
     });
 
@@ -148,7 +148,7 @@ class AccessService {
     });
     return {
       user: getInforData({
-        fileds: ["id", "email"],
+        fileds: ['id', 'email'],
         object: foundUser,
       }),
       tokens,
@@ -159,11 +159,11 @@ class AccessService {
 
     if (keyStore.refreshTokenUsed.hasOwnProperty(refreshToken)) {
       await KeyTokenService.removeKeyById(user_id);
-      throw new ForbiddenError("Something wrong happend!! please relogin");
+      throw new ForbiddenError('Something wrong happend!! please relogin');
     }
 
     if (keyStore.refreshToken !== refreshToken) {
-      throw new AuthFailError("user not registered");
+      throw new AuthFailError('user not registered');
     }
 
     const tokens = await createTokenPair(
@@ -189,7 +189,7 @@ class AccessService {
 
   static forgotPassword = async ({ email, password, role, fcmToken }) => {
     const foundUser = await findByEmail({ email });
-    if (!foundUser) throw new BadRequestError("User not registered");
+    if (!foundUser) throw new BadRequestError('User not registered');
 
     const { publicKey, privateKey } = await db.KeyToken.findOne({
       where: { user_id: foundUser.id },
@@ -212,7 +212,7 @@ class AccessService {
 
     try {
       const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
+        host: 'smtp.gmail.com',
         port: 465, // hoặc 465 cho SSL
         secure: true, // true cho 465, false cho các cổng khác
         auth: {
@@ -230,7 +230,7 @@ class AccessService {
       return {
         code: 201,
         user: getInforData({
-          fileds: ["id", "email"],
+          fileds: ['id', 'email'],
           object: foundUser,
         }),
       };

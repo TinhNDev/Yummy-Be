@@ -1,28 +1,33 @@
-"use strict";
-const express = require("express");
-const { apiKey, permissions } = require("../auth/checkAuth");
+'use strict';
+const express = require('express');
+const { apiKey, permissions } = require('../auth/checkAuth');
 //callbackzalo
-const { asyncHandle } = require("../helper/asyncHandler");
-const paymentController = require("../controllers/Users/Customers/payment.controller");
-const { KeyToken, User } = require("../models/index.model");
-const userModel = require("../models/Users/user.model");
+const { asyncHandle } = require('../helper/asyncHandler');
+const paymentController = require('../controllers/Users/Customers/payment.controller');
+const { KeyToken, User } = require('../models/index.model');
+const userModel = require('../models/Users/user.model');
+const db = require('../models/index.model');
 const router = express.Router();
-router.post("/callback", asyncHandle(paymentController.callBack));
-router.get("/verify-email", async (req, res) => {
-  const { id_token } = req.query;
+router.post('/callback', asyncHandle(paymentController.callBack));
+router.get('/verify-email', async (req, res) => {
+  const { id_token, user_id } = req.query;
   const userToVerifyEmail = await KeyToken.findOne({
     where: { id: id_token },
   });
 
   if (!userToVerifyEmail) {
-    return res.send("Invalid verification token");
+    return res.send('Invalid verification token');
   }
+  await db.User.update(
+    { is_active: true },
+    { where: { id: user_id } }
+  );
   res.send({
     accessToken: userToVerifyEmail.accessToken,
     refreshToken: userToVerifyEmail.refreshToken,
   });
 });
-router.get("/verify-password", async (req, res) => {
+router.get('/verify-password', async (req, res) => {
   const { id_token, password } = req.query;
 
   const userToVerifyEmail = await KeyToken.findOne({
@@ -35,7 +40,7 @@ router.get("/verify-password", async (req, res) => {
   );
 
   if (!userToVerifyEmail) {
-    return res.send("Invalid verification token");
+    return res.send('Invalid verification token');
   }
 
   res.send({
@@ -46,24 +51,24 @@ router.get("/verify-password", async (req, res) => {
 //check apiKey
 router.use(apiKey);
 //check permisson
-router.use(permissions("0000"));
+router.use(permissions('0000'));
 
 // folder access dùng để quản lý các file liên quan với truy cập(signUp,SignIn)
 
-router.use("/v1/api", require("./Users/product"));
-router.use("/v1/api", require("./Users/categories"));
-router.use("/v1/api", require("./Users/profile"));
-router.use("/v1/api", require("./Users/access"));
-router.use("/v1/api", require("./Users/address"));
-router.use("/v1/api", require("./Users/restaurants"));
-router.use("/v1/api", require("./Users/topping"));
-router.use("/v1/api", require("./Users/Customers/payment"));
-router.use("/v1/api", require("./Users/restaurants/orderRestaurant"));
-router.use("/v1/api", require("./Users/Drivers"));
-router.use("/v1/api", require("./Users/coupon"));
-router.use("/v1/api", require("./Users/review"));
-router.use("/v1/api", require("./Users/Customers/index"));
-router.use("/v1/api", require("./Admin/index"));
-router.use("/v1/api", require("./llm/index"));
-router.use("/v1/api", require("./Users/cart"));
+router.use('/v1/api', require('./Users/product'));
+router.use('/v1/api', require('./Users/categories'));
+router.use('/v1/api', require('./Users/profile'));
+router.use('/v1/api', require('./Users/access'));
+router.use('/v1/api', require('./Users/address'));
+router.use('/v1/api', require('./Users/restaurants'));
+router.use('/v1/api', require('./Users/topping'));
+router.use('/v1/api', require('./Users/Customers/payment'));
+router.use('/v1/api', require('./Users/restaurants/orderRestaurant'));
+router.use('/v1/api', require('./Users/Drivers'));
+router.use('/v1/api', require('./Users/coupon'));
+router.use('/v1/api', require('./Users/review'));
+router.use('/v1/api', require('./Users/Customers/index'));
+router.use('/v1/api', require('./Admin/index'));
+router.use('/v1/api', require('./llm/index'));
+router.use('/v1/api', require('./Users/cart'));
 module.exports = router;

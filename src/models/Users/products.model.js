@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const Products = sequelize.define("Products", {
+  const Products = sequelize.define('Products', {
     name: {
       type: Sequelize.STRING,
     },
@@ -19,13 +19,13 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.BOOLEAN,
       defaultValue: true,
     },
-    is_public:{
-      type: Sequelize.BOOLEAN
+    is_public: {
+      type: Sequelize.BOOLEAN,
     },
-    is_draft:{
+    is_draft: {
       type: Sequelize.BOOLEAN,
       default: true,
-    }
+    },
   });
 
   return Products;

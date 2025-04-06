@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
-  const Driver = sequelize.define("Driver", {
-    cic:{
+  const Driver = sequelize.define('Driver', {
+    cic: {
       type: Sequelize.STRING,
     },
     license_plate: {
@@ -15,16 +15,16 @@ module.exports = (sequelize, Sequelize) => {
     dob: {
       type: Sequelize.DATE,
     },
-    car_name:{
+    car_name: {
       type: Sequelize.STRING,
     },
-    cavet:{
+    cavet: {
       type: Sequelize.TEXT,
     },
     status: {
       type: Sequelize.ENUM,
-      values: ["ONLINE", "BUSY","LOCKED","PROCESSING"],
-      defaultValue:"PROCESSING",
+      values: ['ONLINE', 'BUSY', 'LOCKED', 'PROCESSING'],
+      defaultValue: 'PROCESSING',
     },
   });
   return Driver;
