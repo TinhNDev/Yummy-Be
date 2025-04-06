@@ -1,6 +1,11 @@
 const axios = require('axios');
 
-const calculateDistance = async (originsLat, originsLng, destinationLat, destinationLng) => {
+const calculateDistance = async (
+  originsLat,
+  originsLng,
+  destinationLat,
+  destinationLng
+) => {
   try {
     const response = await axios.get(process.env.DISTANCE_URL, {
       params: {

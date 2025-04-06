@@ -1,5 +1,5 @@
-const { SuccessResponse } = require("../../core/success.response");
-const ProductService = require("../../services/Users/product.service");
+const { SuccessResponse } = require('../../core/success.response');
+const ProductService = require('../../services/Users/product.service');
 
 class ProductController {
   // Tạo sản phẩm mới
@@ -17,7 +17,7 @@ class ProductController {
     );
 
     new SuccessResponse({
-      message: "Create product success",
+      message: 'Create product success',
       metadata: newProduct,
     }).send(res);
   };
@@ -38,7 +38,7 @@ class ProductController {
     );
 
     new SuccessResponse({
-      message: "Update product success",
+      message: 'Update product success',
       metadata: updatedProduct,
     }).send(res);
   };
@@ -46,7 +46,7 @@ class ProductController {
   // Tìm kiếm sản phẩm theo điều kiện
   GetListSearchProduct = async (req, res, next) => {
     new SuccessResponse({
-      message: "List of products",
+      message: 'List of products',
       metadata: await ProductService.getListSearchProduct(req.params),
     }).send(res);
   };
@@ -54,7 +54,7 @@ class ProductController {
   // Công khai sản phẩm
   PublicProductByShop = async (req, res, next) => {
     new SuccessResponse({
-      message: "Publish product by shop success",
+      message: 'Publish product by shop success',
       metadata: await ProductService.publishedProductByRestaurant({
         product_id: req.params.id,
         product_restaurant: req.user.user_id,
@@ -65,7 +65,7 @@ class ProductController {
   // Gỡ bỏ công khai sản phẩm
   DraftProductByRestaurant = async (req, res, next) => {
     new SuccessResponse({
-      message: "Unpublish product by shop success",
+      message: 'Unpublish product by shop success',
       metadata: await ProductService.draftProductByRestaurant({
         product_id: req.params.id,
         product_restaurant: req.user.user_id,
@@ -76,7 +76,7 @@ class ProductController {
   // Lấy danh sách sản phẩm nháp của cửa hàng
   GetAllDraftsForShop = async (req, res, next) => {
     new SuccessResponse({
-      message: "Get list drafts for shop",
+      message: 'Get list drafts for shop',
       metadata: await ProductService.findAllDraftsForRestaurant({
         product_restaurant: req.user.user_id,
       }),
@@ -86,7 +86,7 @@ class ProductController {
   // Lấy danh sách sản phẩm public
   GetAllPublicForShop = async (req, res, next) => {
     new SuccessResponse({
-      message: "Get list public products for shop",
+      message: 'Get list public products for shop',
       metadata: await ProductService.findAllPublicForRestaurant({
         product_restaurant: req.user.user_id,
       }),
@@ -96,7 +96,7 @@ class ProductController {
   // Lấy tất cả sản phẩm với điều kiện tìm kiếm
   FindAllProducts = async (req, res, next) => {
     new SuccessResponse({
-      message: "List of products",
+      message: 'List of products',
       metadata: await ProductService.findAllProduct(req.query),
     }).send(res);
   };
@@ -104,7 +104,7 @@ class ProductController {
   // Lấy chi tiết của một sản phẩm
   FindProduct = async (req, res, next) => {
     new SuccessResponse({
-      message: "Product detail",
+      message: 'Product detail',
       metadata: await ProductService.findProduct({
         product_id: req.params.product_id,
       }),
@@ -114,7 +114,7 @@ class ProductController {
   // Lấy danh sách sản phẩm theo nhà hàng
   getListProductForRes = async (req, res, next) => {
     new SuccessResponse({
-      message: "List Product of Restaurants",
+      message: 'List Product of Restaurants',
       metadata: await ProductService.getListProductForRes({
         restaurant_id: req.params.restaurant_id,
       }),
@@ -123,29 +123,28 @@ class ProductController {
   // Lấy danh sách sản phẩm theo nhà hàng
   getListProductForUser = async (req, res, next) => {
     new SuccessResponse({
-      message: "List Product of Restaurants",
+      message: 'List Product of Restaurants',
       metadata: await ProductService.getListProductForUser({
         restaurant_id: req.params.id,
       }),
     }).send(res);
   };
-  showProduct = async (req, res) =>{
+  showProduct = async (req, res) => {
     new SuccessResponse({
-      message: "show product",
+      message: 'show product',
       metadata: await ProductService.showProduct({
         product_id: req.params.product_id,
-      })
+      }),
     }).send(res);
-  }
-  hiddenProduct = async (req, res) =>{
+  };
+  hiddenProduct = async (req, res) => {
     new SuccessResponse({
-      message: "show product",
+      message: 'show product',
       metadata: await ProductService.hiddenProduct({
         product_id: req.params.product_id,
-      })
+      }),
     }).send(res);
-  }
-
+  };
 }
 
 module.exports = new ProductController();

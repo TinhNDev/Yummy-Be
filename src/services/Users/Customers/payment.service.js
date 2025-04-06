@@ -1,20 +1,20 @@
-const axios = require("axios");
-const CryptoJS = require("crypto-js");
-const moment = require("moment");
-const qs = require("qs");
-const db = require("../../../models/index.model");
-const calculateDistance = require("../../../helper/calculateDistance");
-const { getRestaurantById } = require("../restaurant.service");
-const { io } = require("socket.io-client");
-const admin = require("firebase-admin");
-const { addCouponToOrder } = require("../coupon.service");
-const RedisHelper = require("../../../cache/redis");
+const axios = require('axios');
+const CryptoJS = require('crypto-js');
+const moment = require('moment');
+const qs = require('qs');
+const db = require('../../../models/index.model');
+const calculateDistance = require('../../../helper/calculateDistance');
+const { getRestaurantById } = require('../restaurant.service');
+const { io } = require('socket.io-client');
+const admin = require('firebase-admin');
+const { addCouponToOrder } = require('../coupon.service');
+const RedisHelper = require('../../../cache/redis');
 const socket = io(process.env.SOCKET_SERVER_URL);
 const config = {
-  app_id: "2553",
-  key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
-  key2: "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz",
-  endpoint: "https://sb-openapi.zalopay.vn/v2/create",
+  app_id: '2553',
+  key1: 'PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL',
+  key2: 'kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz',
+  endpoint: 'https://sb-openapi.zalopay.vn/v2/create',
 };
 
 const getTotalPrice = async (
@@ -22,7 +22,7 @@ const getTotalPrice = async (
   userLongitude,
   restaurant_id,
   listCartItem,
-  discountCost,
+  discountCost
 ) => {
   let totalFoodPrice = 0;
 
@@ -46,7 +46,7 @@ const getTotalPrice = async (
     totalFoodPrice,
     shippingCost,
     totalPrice,
-    discountCost
+    discountCost,
   };
 };
 
@@ -71,7 +71,7 @@ const calculateDiscount = (coupon, listCartItem) => {
     totalFoodPrice += itemTotalPrice;
   }
 
-  return coupon.discount_type === "PERCENTAGE"
+  return coupon.discount_type === 'PERCENTAGE'
     ? coupon.discount_value * totalFoodPrice
     : totalFoodPrice - coupon.discount_value;
 };
@@ -81,21 +81,23 @@ const createOrder = async ({ order, user_id }) => {
 
   const profile = await db.Profile.findOne({ where: { user_id: user_id } });
   if (!profile) {
-    throw new Error("User profile not found");
+    throw new Error('User profile not found');
   }
 
-  let customer = await db.Customer.findOne({ where: { profile_id: profile.id } });
+  let customer = await db.Customer.findOne({
+    where: { profile_id: profile.id },
+  });
   if (!customer) {
     try {
       customer = await db.Customer.create({ profile_id: profile.id });
     } catch (error) {
-      throw new Error("Failed to create customer: " + error.message);
+      throw new Error('Failed to create customer: ' + error.message);
     }
   }
 
   const configOrder = {
     app_id: config.app_id,
-    app_trans_id: `${moment().format("YYMMDD")}_${transID}`,
+    app_trans_id: `${moment().format('YYMMDD')}_${transID}`,
     app_user: customer.id,
     app_time: Date.now(),
     item: JSON.stringify(order.listCartItem),
@@ -126,16 +128,16 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
   const mac = CryptoJS.HmacSHA256(dataStr, config.key2).toString();
 
   if (reqMac !== mac) {
-    return { return_code: -1, return_message: "mac not equal" };
+    return { return_code: -1, return_message: 'mac not equal' };
   } else {
     const dataJson = JSON.parse(dataStr);
-    const orderData = JSON.parse(dataJson["embed_data"]);
+    const orderData = JSON.parse(dataJson['embed_data']);
     // Tạo đơn hàng mới trong database
     const newOrder = await db.Order.create({
       listCartItem: orderData.listCartItem,
       receiver_name: orderData.receiver_name,
       address_receiver: orderData.address_receiver,
-      order_status: "PAID",
+      order_status: 'PAID',
       driver_id: orderData.driver_id,
       blacklist_id: orderData.blacklist_id,
       price: dataJson.amount,
@@ -143,7 +145,7 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
       order_date: new Date(orderData.order_date),
       delivery_fee: orderData.delivery_fee,
       order_pay: orderData.order_pay,
-      customer_id: parseInt(dataJson["app_user"]),
+      customer_id: parseInt(dataJson['app_user']),
       note: orderData.note,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
       longtitude: orderData.userLongitude,
@@ -168,25 +170,29 @@ const verifyCallback = async ({ dataStr, reqMac }) => {
     //   const response = await admin.messaging().send(payload);
     //   console.log("Successfully sent message:", response);
     // }
-    socket.emit("backendEvent", {
-      driver: "null",
+    socket.emit('backendEvent', {
+      driver: 'null',
       orderId: newOrder.id,
-      status: "PAID",
+      status: 'PAID',
     });
     newOrder.coupon_id?.(
       await addCouponToOrder(newOrder.id, newOrder.coupon_id)
     );
-    socket.emit("newOrderForRestaurant", {
+    socket.emit('newOrderForRestaurant', {
       order: newOrder,
       restaurant_id: orderData.listCartItem[0].restaurant_id,
     });
-    console.log("Thông báo đơn hàng mới đã được gửi tới server socket");
-    const customer = await db.Customer.findOne({where:{id: newOrder.customer_id}})
-    const profile = await db.Profile.findOne({where:{id: customer.profile_id}})
+    console.log('Thông báo đơn hàng mới đã được gửi tới server socket');
+    const customer = await db.Customer.findOne({
+      where: { id: newOrder.customer_id },
+    });
+    const profile = await db.Profile.findOne({
+      where: { id: customer.profile_id },
+    });
     const redisKey = `cart:${profile.user_id}-${orderData.listCartItem[0].restaurant_id}`;
     const redisHelper = new RedisHelper();
     await redisHelper.connect();
-    await redisHelper.delete(redisKey)
+    await redisHelper.delete(redisKey);
     return {
       Order: newOrder,
     };
@@ -199,14 +205,14 @@ const checkStatusOrder = async ({ app_trans_id }) => {
     app_trans_id,
   };
 
-  let data = postData.app_id + "|" + postData.app_trans_id + "|" + config.key1;
+  let data = postData.app_id + '|' + postData.app_trans_id + '|' + config.key1;
   postData.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
 
   let postConfig = {
-    method: "post",
-    url: "https://sb-openapi.zalopay.vn/v2/query",
+    method: 'post',
+    url: 'https://sb-openapi.zalopay.vn/v2/query',
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
     data: qs.stringify(postData),
   };
@@ -215,7 +221,7 @@ const checkStatusOrder = async ({ app_trans_id }) => {
     const result = await axios(postConfig);
     return result.data.return_message;
   } catch (error) {
-    console.log("lỗi");
+    console.log('lỗi');
     console.log(error);
   }
 };
@@ -225,5 +231,5 @@ module.exports = {
   verifyCallback,
   checkStatusOrder,
   getTotalPrice,
-  calculateDiscount
+  calculateDiscount,
 };

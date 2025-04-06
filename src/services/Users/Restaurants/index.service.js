@@ -8,35 +8,37 @@ const {
   KeyToken,
   Customer,
   BlackList,
-} = require("../../../models/index.model");
-const geolib = require("geolib");
-const redis = require("redis");
-const getAllDriverIdsFromRedis = require("../../../helper/redisFunction");
-const { io } = require("socket.io-client");
+} = require('../../../models/index.model');
+const geolib = require('geolib');
+const redis = require('redis');
+const getAllDriverIdsFromRedis = require('../../../helper/redisFunction');
+const { io } = require('socket.io-client');
 const socket = io(process.env.SOCKET_SERVER_URL);
-const admin = require("firebase-admin");
-const RedisHelper = require("../../../cache/redis");
-const db = require("../../../models/index.model");
+const admin = require('firebase-admin');
+const RedisHelper = require('../../../cache/redis');
+const db = require('../../../models/index.model');
 class OrderRestaurantService {
   static getOrder = async ({ restaurant_id, date }) => {
-    const restaurant = await Restaurant.findOne({ where: { user_id: restaurant_id } });
+    const restaurant = await Restaurant.findOne({
+      where: { user_id: restaurant_id },
+    });
     let whereClause = { restaurant_id: restaurant.id };
-    
+
     if (date) {
       const startDate = new Date(date);
       startDate.setHours(0, 0, 0, 0);
-      
+
       const endDate = new Date(date);
       endDate.setHours(23, 59, 59, 999);
-      
+
       whereClause.createdAt = {
-        [Op.between]: [startDate, endDate]
+        [Op.between]: [startDate, endDate],
       };
     }
-    
-    return await Order.findAll({ 
+
+    return await Order.findAll({
       where: whereClause,
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
     });
   };
   static changeStatusOrder = async ({ orderId, status }) => {
@@ -52,22 +54,22 @@ class OrderRestaurantService {
 
   static findDriver = async ({ order_id }) => {
     let nearestDriver = null;
-    socket.emit("backendEvent", {
-      driver: "null",
+    socket.emit('backendEvent', {
+      driver: 'null',
       orderId: order_id,
-      status: "FINDING DRIVER",
+      status: 'FINDING DRIVER',
     });
-    socket.emit("backendEvent", {
-      driver: "null",
+    socket.emit('backendEvent', {
+      driver: 'null',
       orderId: order_id,
-      status: "PREPARING_ORDER",
+      status: 'PREPARING_ORDER',
     });
     const redisHelper = new RedisHelper();
     try {
       await redisHelper.connect(); // Connect to Redis
 
       const order = await Order.findByPk(parseInt(order_id));
-      if (!order) throw new Error("Order not found");
+      if (!order) throw new Error('Order not found');
 
       const restaurant = await Restaurant.findOne({
         where: { id: order.restaurant_id },
@@ -76,7 +78,7 @@ class OrderRestaurantService {
 
       let shortestDistance = Infinity;
       const blacklist =
-        order.order_status === "ORDER_CANCELED"
+        order.order_status === 'ORDER_CANCELED'
           ? await BlackList.findAll({ where: { order_id: order_id } })
           : [];
 
@@ -85,13 +87,6 @@ class OrderRestaurantService {
           blacklist.some((entry) => entry.driver_id == driverId && entry.status)
         ) {
           console.log(`Driver ${driverId} is in the blacklist, skipping.`);
-          continue;
-        }
-
-        const driverStatus = await Driver.findOne({
-          where: { id: driverId },
-        }).then((driver) => driver?.status);
-        if (driverStatus === "BUSY") {
           continue;
         }
 
@@ -114,6 +109,12 @@ class OrderRestaurantService {
           };
 
           const distance = geolib.getDistance(driverCoords, restaurantCoords);
+          const driverStatus = await Driver.findOne({
+            where: { id: driverId },
+          }).then((driver) => driver?.status);
+          if (driverStatus === 'BUSY' && distance > 0.1) {
+            continue;
+          }
           if (distance < shortestDistance) {
             shortestDistance = distance;
             nearestDriver = driverId;
@@ -125,11 +126,11 @@ class OrderRestaurantService {
       if (nearestDriver) {
         try {
           await Order.update(
-            { driver_id: nearestDriver, order_status: "PREPARING_ORDER" },
+            { driver_id: nearestDriver, order_status: 'PREPARING_ORDER' },
             { where: { id: order.dataValues.id } }
           );
           await Driver.update(
-            { status: "BUSY" },
+            { status: 'BUSY' },
             { where: { id: nearestDriver } }
           );
 
@@ -138,25 +139,25 @@ class OrderRestaurantService {
             include: [
               {
                 model: Restaurant,
-                attributes: ["id", "name", "address", "image"],
+                attributes: ['id', 'name', 'address', 'image'],
               },
               {
                 model: Driver,
-                attributes: ["license_plate"],
+                attributes: ['license_plate'],
                 include: [
                   {
                     model: Profile,
-                    as: "Profile",
-                    attributes: ["id", "name", "image", "phone_number"],
+                    as: 'Profile',
+                    attributes: ['id', 'name', 'image', 'phone_number'],
                     include: [
                       {
                         model: User,
-                        as: "User",
+                        as: 'User',
                         include: [
                           {
                             model: KeyToken,
-                            as: "Key Tokens",
-                            attributes: ["fcmToken"],
+                            as: 'Key Tokens',
+                            attributes: ['fcmToken'],
                           },
                         ],
                       },
@@ -168,7 +169,7 @@ class OrderRestaurantService {
           });
 
           fcmToken =
-            updatedOrder?.Driver?.Profile?.User?.["Key Tokens"]?.[0]?.fcmToken;
+            updatedOrder?.Driver?.Profile?.User?.['Key Tokens']?.[0]?.fcmToken;
 
           try {
             if (fcmToken) {
@@ -181,15 +182,15 @@ class OrderRestaurantService {
               };
 
               const response = await admin.messaging().send(payload);
-              console.log("Successfully sent message:", response);
+              console.log('Successfully sent message:', response);
             } else {
-              console.log("FCM token not found");
+              console.log('FCM token not found');
             }
           } catch (error) {
-            console.error("Error sending notification:", error);
+            console.error('Error sending notification:', error);
           }
 
-          socket.emit("newOrderForDriver", { data: updatedOrder?.dataValues });
+          socket.emit('newOrderForDriver', { data: updatedOrder?.dataValues });
 
           return {
             order: updatedOrder,
@@ -212,17 +213,17 @@ class OrderRestaurantService {
             };
 
             const response = await admin.messaging().send(payload);
-            console.log("Successfully sent message:", response);
+            console.log('Successfully sent message:', response);
           } else {
-            console.log("FCM token not found");
+            console.log('FCM token not found');
           }
         } catch (error) {
-          console.error("Error sending notification:", error);
+          console.error('Error sending notification:', error);
         }
       }
     } catch (error) {
-      console.error("Error in findDriver:", error.message);
-      throw new Error("Could not find driver");
+      console.error('Error in findDriver:', error.message);
+      throw new Error('Could not find driver');
     } finally {
       await redisHelper.disconnect();
       return nearestDriver;
@@ -246,24 +247,24 @@ class OrderRestaurantService {
       include: [
         {
           model: Restaurant,
-          attributes: ["id", "name", "address"],
+          attributes: ['id', 'name', 'address'],
         },
         {
           model: Customer,
           include: [
             {
               model: Profile,
-              as: "Profile",
-              attributes: ["id", "name", "image", "phone_number"],
+              as: 'Profile',
+              attributes: ['id', 'name', 'image', 'phone_number'],
               include: [
                 {
                   model: User,
-                  as: "User",
+                  as: 'User',
                   include: [
                     {
                       model: KeyToken,
-                      as: "Key Tokens",
-                      attributes: ["fcmToken"],
+                      as: 'Key Tokens',
+                      attributes: ['fcmToken'],
                     },
                   ],
                 },
@@ -278,16 +279,16 @@ class OrderRestaurantService {
     }
     let response;
     const fcmToken =
-      OrderRejected?.Customer?.Profile?.User?.["Key Tokens"]?.[0]?.fcmToken;
+      OrderRejected?.Customer?.Profile?.User?.['Key Tokens']?.[0]?.fcmToken;
     try {
       await Order.update(
         {
-          order_status: "ORDER_CANCELED",
+          order_status: 'ORDER_CANCELED',
         },
         { where: { id: order_id } }
       );
       switch (reason) {
-        case "1":
+        case '1':
           try {
             if (fcmToken) {
               const payload = {
@@ -298,13 +299,13 @@ class OrderRestaurantService {
                 token: fcmToken,
               };
               response = await admin.messaging().send(payload);
-              console.log("Successfully sent message:", response);
+              console.log('Successfully sent message:', response);
             }
           } catch (error) {
             throw error;
           }
           break;
-        case "2":
+        case '2':
           try {
             if (fcmToken) {
               const payload = {
@@ -315,13 +316,13 @@ class OrderRestaurantService {
                 token: fcmToken,
               };
               response = await admin.messaging().send(payload);
-              console.log("Successfully sent message:", response);
+              console.log('Successfully sent message:', response);
             }
           } catch (error) {
             throw error;
           }
           break;
-        case "3":
+        case '3':
           try {
             if (fcmToken) {
               const payload = {
@@ -332,7 +333,7 @@ class OrderRestaurantService {
                 token: fcmToken,
               };
               response = await admin.messaging().send(payload);
-              console.log("Successfully sent message:", response);
+              console.log('Successfully sent message:', response);
             }
           } catch (error) {
             throw error;
@@ -340,13 +341,13 @@ class OrderRestaurantService {
         default:
           break;
       }
-      return  "Order cancel"
+      return 'Order cancel';
     } catch (error) {
-      return error
+      return error;
     }
   };
 
-  static getCateOfRes = async ({restaurant_id, category_id}) =>{
+  static getCateOfRes = async ({ restaurant_id, category_id }) => {
     const query = `
       SELECT 
         c.id AS categoryId,
@@ -364,12 +365,45 @@ class OrderRestaurantService {
     `;
 
     const results = await sequelize.query(query, {
-      replacements: { categories_id: category_id, restaurant_id: restaurant_id },
+      replacements: {
+        categories_id: category_id,
+        restaurant_id: restaurant_id,
+      },
       type: sequelize.QueryTypes.SELECT,
     });
 
     return results;
+  };
+
+  static updateListPrice = async ({ restaurant_id, products }) => {
+    if (!restaurant_id || !products || !Array.isArray(products)) {
+      throw new Error('Invalid input: restaurant_id and products are required.');
+    }
+    const restaurant = await Restaurant.findOne({ where: { id: restaurant_id } });
+    if (!restaurant) {
+      throw new Error(`Restaurant with ID ${restaurant_id} not found.`);
+    }
+    const updatedProducts = [];
+    for (const product of products) {
+      const { product_id, new_price } = product;
+
+      if (!product_id || new_price === undefined) {
+        throw new Error('Invalid product data: product_id and new_price are required.');
+      }
+
+      const [updatedCount] = await db.Product.update(
+        { price: new_price },
+        { where: { id: product_id, restaurant_id: restaurant_id } }
+      );
+
+      if (updatedCount > 0) {
+        updatedProducts.push({ product_id, new_price });
+      }
+    }
+    return updatedProducts
   }
+
+  static
 }
 
 module.exports = OrderRestaurantService;

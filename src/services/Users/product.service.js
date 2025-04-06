@@ -1,8 +1,8 @@
-const db = require("../../models/index.model");
+const db = require('../../models/index.model');
 const Products = db.Product;
 const Categories = db.Categories;
 const Topping = db.Topping;
-const RedisHelper = require("../../cache/redis");
+const RedisHelper = require('../../cache/redis');
 const {
   updateProductById,
   publishedProductByRestaurant,
@@ -13,8 +13,8 @@ const {
   findProductByUser,
   findAllPublicForShop,
   getProductByRestaurantId,
-  resgetProductByRestaurantId
-} = require("./repositories/product.repo");
+  resgetProductByRestaurantId,
+} = require('./repositories/product.repo');
 
 class Product {
   constructor({
@@ -26,7 +26,7 @@ class Product {
     is_available,
     restaurant_id,
     is_public,
-    is_draft
+    is_draft,
   }) {
     this.name = name;
     this.image = image;
@@ -36,7 +36,7 @@ class Product {
     this.is_available = is_available;
     this.restaurant_id = restaurant_id;
     this.is_public = is_public;
-    this.is_draft = is_draft
+    this.is_draft = is_draft;
   }
 
   async createProduct() {
@@ -54,15 +54,17 @@ class Product {
 
 class ProductService extends Product {
   static async initRedis() {
-    const redis = new RedisHelper({ keyPrefix: "product:" });
+    const redis = new RedisHelper({ keyPrefix: 'product:' });
     await redis.connect();
     return redis;
   }
   static createProduct = async (categoriesId, toppingData, productData) => {
     if (!productData) {
-      throw new Error("Payload is required to create a product");
+      throw new Error('Payload is required to create a product');
     }
-    const restaurant = await db.Restaurant.findOne({where:{user_id:productData.user_id}})
+    const restaurant = await db.Restaurant.findOne({
+      where: { user_id: productData.user_id },
+    });
     const { name, image, descriptions, price, quantity, is_available } =
       productData.productData;
     const newProductInstance = new Product({
@@ -72,8 +74,8 @@ class ProductService extends Product {
       price,
       quantity,
       is_available,
-      is_public:false,
-      is_draft:true,
+      is_public: false,
+      is_draft: true,
       restaurant_id: restaurant.id,
     });
 
@@ -129,7 +131,9 @@ class ProductService extends Product {
           id: categoriesId,
         },
       });
-      let product = await Products.findOne({where:{id:parseInt(product_id)}});
+      let product = await Products.findOne({
+        where: { id: parseInt(product_id) },
+      });
       await product.setCategories(categories);
     }
     if (toppingData && toppingData.length > 0) {
@@ -137,7 +141,7 @@ class ProductService extends Product {
         include: [
           {
             model: Topping,
-            attributes: ["id"],
+            attributes: ['id'],
           },
         ],
       });
@@ -157,13 +161,13 @@ class ProductService extends Product {
                 where: { id: currentTopping.dataValues.id },
               }
             );
-          } else{
+          } else {
             let topping = await Topping.create({
               topping_name: data.topping_name,
               is_available: data.is_available,
-              price: data.price
-            })
-            await product.addToppings(topping)
+              price: data.price,
+            });
+            await product.addToppings(topping);
           }
         })
       );
@@ -172,12 +176,10 @@ class ProductService extends Product {
     return await Products.findByPk(product_id);
   };
 
-  static async publishedProductByRestaurant({
-    product_id,
-  }) {
-    return publishedProductByRestaurant({ product_id});
+  static async publishedProductByRestaurant({ product_id }) {
+    return publishedProductByRestaurant({ product_id });
   }
-  static async draftProductByRestaurant({ product_id}) {
+  static async draftProductByRestaurant({ product_id }) {
     return draftProductByRestaurant({ product_id });
   }
 
@@ -209,7 +211,7 @@ class ProductService extends Product {
   }
   static async findAllProduct({
     limit = 30,
-    sort = "ctime",
+    sort = 'ctime',
     page = 1,
     filter,
   }) {
@@ -218,11 +220,19 @@ class ProductService extends Product {
       sort,
       page,
       filter,
-      select: ["id","name", "image", "price", "restaurant_id","is_public","is_draft"],
+      select: [
+        'id',
+        'name',
+        'image',
+        'price',
+        'restaurant_id',
+        'is_public',
+        'is_draft',
+      ],
     });
   }
   static async findProduct({ product_id }) {
-    return await findProduct({ product_id, unSelect: ["__v"] });
+    return await findProduct({ product_id, unSelect: ['__v'] });
   }
   static async getListProductForRes({ restaurant_id }) {
     return await resgetProductByRestaurantId({ restaurant_id });
@@ -243,16 +253,16 @@ class ProductService extends Product {
     }
   }
 
-  static hiddenProduct = async({product_id})=>{
-    const product =await Products.findOne({where:{id:product_id}});
+  static hiddenProduct = async ({ product_id }) => {
+    const product = await Products.findOne({ where: { id: product_id } });
     product.is_available = false;
-    return product.save()
-  }
-  static showProduct = async({product_id})=>{
-    const product =await Products.findOne({where:{id:product_id}});
+    return product.save();
+  };
+  static showProduct = async ({ product_id }) => {
+    const product = await Products.findOne({ where: { id: product_id } });
     product.is_available = product.quantity > 0 ? true : false;
     return product.save();
-  }  
+  };
 }
 
 module.exports = ProductService;

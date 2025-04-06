@@ -1,3 +1,1 @@
-class OrderController{
-    
-}
+class OrderController {}

@@ -1,17 +1,17 @@
-require("dotenv").config();
+require('dotenv').config();
 
-const { OpenAIEmbeddings, ChatOpenAI } = require("@langchain/openai");
-const { MemoryVectorStore } = require("langchain/vectorstores/memory");
-const { Document } = require("@langchain/core/documents");
-const { ChatPromptTemplate } = require("@langchain/core/prompts");
-const { Op } = require("sequelize");
+const { OpenAIEmbeddings, ChatOpenAI } = require('@langchain/openai');
+const { MemoryVectorStore } = require('langchain/vectorstores/memory');
+const { Document } = require('@langchain/core/documents');
+const { ChatPromptTemplate } = require('@langchain/core/prompts');
+const { Op } = require('sequelize');
 const {
   RunnableLambda,
   RunnableMap,
   RunnablePassthrough,
-} = require("@langchain/core/runnables");
-const { StringOutputParser } = require("@langchain/core/output_parsers");
-const db = require("../../models/index.model");
+} = require('@langchain/core/runnables');
+const { StringOutputParser } = require('@langchain/core/output_parsers');
+const db = require('../../models/index.model');
 
 async function setupLangChain() {
   const products = await db.Product.findAll();
@@ -26,7 +26,7 @@ async function setupLangChain() {
   const embeddings = new OpenAIEmbeddings({
     apiKey: process.env.OPENAI_API_KEY,
     batchSize: 512,
-    model: "text-embedding-ada-002",
+    model: 'text-embedding-ada-002',
   });
 
   const vectorstore = await MemoryVectorStore.fromDocuments(
@@ -38,11 +38,11 @@ async function setupLangChain() {
 
   const prompt = ChatPromptTemplate.fromMessages([
     {
-      role: "ai",
-      content: "Theo tôi nghĩ bạn có lẽ đang nói tới món ăn:{context}",
+      role: 'ai',
+      content: 'Theo tôi nghĩ bạn có lẽ đang nói tới món ăn:{context}',
     },
     {
-      role: "human",
+      role: 'human',
       content:
         '{question},tên các món ăn phải được bọc trong dấu "",các tên món ăn chỉ cần tượng trưng không cần chi tiết ví dụ như "cơm gà bình định" thì chỉ cần "cơm gà",và giải thích sơ qua,ngắn gọn khoảng 30 từ trở xuống các món ăn này',
     },
@@ -50,7 +50,7 @@ async function setupLangChain() {
 
   const model = new ChatOpenAI({
     openAIApiKey: process.env.OPENAI_API_KEY,
-    modelName: "gpt-3.5-turbo",
+    modelName: 'gpt-3.5-turbo',
     temperature: 0.1,
   });
 
@@ -60,17 +60,17 @@ async function setupLangChain() {
     context: new RunnableLambda({
       func: (input) =>
         retriever.invoke(input).then((responses) => {
-          if (responses.length === 0) return "No relevant products found.";
+          if (responses.length === 0) return 'No relevant products found.';
           return responses
             .map(
               (response) =>
-                `Product Name: "${response.metadata.name || "Unknown"}"
+                `Product Name: "${response.metadata.name || 'Unknown'}"
 Price: ${response.metadata.price}
 `
             )
-            .join("\n\n");
+            .join('\n\n');
         }),
-    }).withConfig({ runName: "contextRetriever" }),
+    }).withConfig({ runName: 'contextRetriever' }),
     question: new RunnablePassthrough(),
   });
 
@@ -86,11 +86,11 @@ async function handleSearch(query) {
 
     const productNames = response
       .match(/"\s*([^"]+)\s*"/g)
-      ?.map((match) => match.replace(/"/g, "").trim());
+      ?.map((match) => match.replace(/"/g, '').trim());
 
     if (productNames && productNames.length > 0) {
       const productNamesWithoutQuotes = productNames
-        .map((name) => name.replace(/"/g, "").trim())
+        .map((name) => name.replace(/"/g, '').trim())
         .filter((name) => name.length > 0);
 
       if (productNamesWithoutQuotes.length > 0) {
@@ -119,18 +119,18 @@ async function handleSearch(query) {
       } else {
         return {
           product: null,
-          description: "No valid product names found.",
+          description: 'No valid product names found.',
         };
       }
     } else {
       return {
         product: null,
-        description: "No product names in quotes found.",
+        description: 'No product names in quotes found.',
       };
     }
   } catch (error) {
-    console.error("Error during search:", error.message);
-    throw new Error("Chatbot search failed.");
+    console.error('Error during search:', error.message);
+    throw new Error('Chatbot search failed.');
   }
 }
 

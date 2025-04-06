@@ -1,14 +1,14 @@
 module.exports = (sequelize, Sequelize) => {
-  const Categories = sequelize.define("Categories", {
+  const Categories = sequelize.define('Categories', {
     name: {
       type: Sequelize.STRING,
     },
-    thumnail:{
+    thumnail: {
       type: Sequelize.STRING,
     },
-    description:{
+    description: {
       type: Sequelize.STRING,
-    }
+    },
   });
   return Categories;
 };

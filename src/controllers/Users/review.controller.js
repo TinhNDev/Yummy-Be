@@ -1,6 +1,6 @@
 // src/controllers/Users/review.controller.js
-const { SuccessResponse } = require("../../core/success.response");
-const ReviewService = require("../../services/Users/reviews.service");
+const { SuccessResponse } = require('../../core/success.response');
+const ReviewService = require('../../services/Users/reviews.service');
 
 class ReviewController {
   // Tạo đánh giá mới
@@ -12,7 +12,7 @@ class ReviewController {
     });
 
     new SuccessResponse({
-      message: "Create review success",
+      message: 'Create review success',
       metadata: newReview,
     }).send(res);
   };
@@ -20,7 +20,7 @@ class ReviewController {
   getReviewsOfRestaurant = async (req, res) => {
     const { restaurant_id } = req.params;
     new SuccessResponse({
-      message: "reviews of res",
+      message: 'reviews of res',
       metadata: await ReviewService.getReviewOfRestaurant({ restaurant_id }),
     }).send(res);
   };
@@ -28,7 +28,7 @@ class ReviewController {
   getReviewsOfDriver = async (req, res) => {
     const { driver_id } = req.params;
     new SuccessResponse({
-      message: "reviews of driver",
+      message: 'reviews of driver',
       metadata: await ReviewService.getReviewOfDriver({ driver_id }),
     }).send(res);
   };

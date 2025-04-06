@@ -1,4 +1,9 @@
-const { Restaurant, Profile, Driver, Order } = require("../../models/index.model");
+const {
+  Restaurant,
+  Profile,
+  Driver,
+  Order,
+} = require('../../models/index.model');
 
 class AdminService {
   static getAllRestaurant = async () => {
@@ -8,11 +13,11 @@ class AdminService {
     return Order.findAll();
   };
   static getAllDriver = async () => {
-    const driver =await Driver.findAll({
+    const driver = await Driver.findAll({
       include: [
         {
           model: Profile,
-          as:"Profile",
+          as: 'Profile',
           attribute: [],
         },
       ],
@@ -20,7 +25,7 @@ class AdminService {
     return driver;
   };
   static getAllCustomer = async () => {
-    const Customer =await Customer.findAll({
+    const Customer = await Customer.findAll({
       include: [
         {
           model: Profile,
@@ -31,26 +36,28 @@ class AdminService {
     return Customer;
   };
 
-  static changeStatusRestaurant = async(restaurant_id)=>{
-    const restaurant =await Restaurant.findOne({where:{id:restaurant_id}});
-    if(restaurant.status==='pending'){
-      restaurant.status ='active'
-    }else {
+  static changeStatusRestaurant = async (restaurant_id) => {
+    const restaurant = await Restaurant.findOne({
+      where: { id: restaurant_id },
+    });
+    if (restaurant.status === 'pending') {
+      restaurant.status = 'active';
+    } else {
       restaurant.status = 'pending';
     }
-    return  restaurant.save();
-  }
-  static changeStatusDriver = async({driver_id,status})=>{
+    return restaurant.save();
+  };
+  static changeStatusDriver = async ({ driver_id, status }) => {
     const driver = await Driver.findByPk(driver_id);
     driver.status = status;
     return await driver.save();
-  }
+  };
   static getDetailDriverForAdmin = async ({ driver_id }) => {
     return await Driver.findByPk(driver_id, {
       include: [
         {
           model: Profile,
-          as: "Profile",
+          as: 'Profile',
           attribute: [],
         },
       ],

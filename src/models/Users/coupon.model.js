@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
   const Coupon = sequelize.define(
-    "Coupon",
+    'Coupon',
     {
       coupon_name: {
         type: Sequelize.STRING,
@@ -19,9 +19,9 @@ module.exports = (sequelize, Sequelize) => {
         },
       },
       discount_type: {
-        type: Sequelize.ENUM("PERCENTAGE", "FIXED_AMOUNT"),
+        type: Sequelize.ENUM('PERCENTAGE', 'FIXED_AMOUNT'),
         allowNull: false,
-        defaultValue: "PERCENTAGE",
+        defaultValue: 'PERCENTAGE',
       },
       max_discount_amount: {
         type: Sequelize.DECIMAL(10, 2),
@@ -65,8 +65,8 @@ module.exports = (sequelize, Sequelize) => {
           isDate: true,
           isAfterStartDate(value) {
             if (this.start_date && value <= this.start_date) {
-              throw new Error("end_date phải lớn hơn start_date");
-            }  
+              throw new Error('end_date phải lớn hơn start_date');
+            }
           },
         },
       },
@@ -74,15 +74,24 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
       },
-      coupon_type:{
-        type: Sequelize.ENUM("ONE_TIME", "ONE_TIME_EVERY_DAY"),
+      coupon_type: {
+        type: Sequelize.ENUM('ONE_TIME', 'ONE_TIME_EVERY_DAY'),
         allowNull: false,
-        defaultValue: "ONE_TIME_EVERY_DAY",
-      }
+        defaultValue: 'ONE_TIME_EVERY_DAY',
+      },
+      restaurant_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Restaurants',
+          key: 'id',
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      },
     },
     {
       timestamps: true,
-      tableName: "coupons",
+      tableName: 'coupons',
     }
   );
 

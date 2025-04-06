@@ -1,5 +1,5 @@
-const db = require("../../models/index.model");
-const RedisHelper = require("../../cache/redis");
+const db = require('../../models/index.model');
+const RedisHelper = require('../../cache/redis');
 
 class CategoriesService {
   constructor() {
@@ -55,7 +55,7 @@ class CategoriesService {
 
   async getProduct(categories_id) {
     const redisKey = `category:${categories_id}:products`;
-    
+
     const cacheData = await this.redis.get(redisKey);
     if (cacheData) {
       return cacheData;
@@ -74,7 +74,7 @@ class CategoriesService {
       const product = await categorieService.getProduct(categories_id);
       return product;
     } catch (error) {
-      console.error("Error fetching products by category ID:", error);
+      console.error('Error fetching products by category ID:', error);
       throw error;
     } finally {
       await categorieService.redis.disconnect();

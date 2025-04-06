@@ -1,6 +1,6 @@
-const db = require("../../models/index.model");
+const db = require('../../models/index.model');
 const Topping = db.Topping;
-const { BadRequestError } = require("../../core/error.response");
+const { BadRequestError } = require('../../core/error.response');
 class ToppingService {
   static changeStatusTopping = async ({ user_id, product_id, topping_id }) => {
     const restaurant = await db.Restaurant.findOne({
@@ -25,7 +25,7 @@ class ToppingService {
       !restaurant.Products ||
       !restaurant.Products[0].Toppings
     ) {
-      throw new BadRequestError("Restaurant, Product, or Topping not found.");
+      throw new BadRequestError('Restaurant, Product, or Topping not found.');
     }
 
     return await Topping.update(
