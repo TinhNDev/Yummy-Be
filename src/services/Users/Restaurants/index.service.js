@@ -375,6 +375,34 @@ class OrderRestaurantService {
 
     return results;
   };
+
+  static updateListPrice = async ({ restaurant_id, products }) => {
+    if (!restaurant_id || !products || !Array.isArray(products)) {
+      throw new Error('Invalid input: restaurant_id and products are required.');
+    }
+    const restaurant = await Restaurant.findOne({ where: { id: restaurant_id } });
+    if (!restaurant) {
+      throw new Error(`Restaurant with ID ${restaurant_id} not found.`);
+    }
+    const updatedProducts = [];
+    for (const product of products) {
+      const { product_id, new_price } = product;
+
+      if (!product_id || new_price === undefined) {
+        throw new Error('Invalid product data: product_id and new_price are required.');
+      }
+
+      const [updatedCount] = await db.Product.update(
+        { price: new_price },
+        { where: { id: product_id, restaurant_id: restaurant_id } }
+      );
+
+      if (updatedCount > 0) {
+        updatedProducts.push({ product_id, new_price });
+      }
+    }
+    return updatedProducts
+  }
 }
 
 module.exports = OrderRestaurantService;

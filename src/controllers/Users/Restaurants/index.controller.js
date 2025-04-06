@@ -49,6 +49,16 @@ class OrderRestaunrantController {
       }),
     }).send(res);
   };
+
+  updateListPrice = async (req, res) => {
+    new SuccessResponse({
+      message: "update",
+      metadata: await OrderRestaunrantService.updateListPrice({
+        restaurant_id: req.body.restaurant_id,
+        products: req.body.products
+      })
+    })
+  }
 }
 
 module.exports = new OrderRestaunrantController();

@@ -32,4 +32,9 @@ router.get(
   authorization,
   asyncHandle(restaurantController.getCateOfRes)
 );
+router.post(
+  '/restaurant/price',
+  authorization,
+  asyncHandle(restaurantController.updateListPrice),
+)
 module.exports = router;
