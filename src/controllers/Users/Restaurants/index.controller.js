@@ -57,7 +57,7 @@ class OrderRestaunrantController {
         restaurant_id: req.body.restaurant_id,
         products: req.body.products
       })
-    })
+    }).send(res)
   }
 }
 
