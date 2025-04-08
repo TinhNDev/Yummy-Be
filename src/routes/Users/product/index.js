@@ -8,7 +8,7 @@ const router = express.Router();
 //search by user
 router.get(
   '/products/:id/restaurantId',
-  asyncHandle(productController.getListProductForUser)
+  asyncHandle(productController.resgetProductByRestaurantIdForUser)
 );
 router.get(
   '/products/:restaurant_id',

@@ -113,7 +113,8 @@ class AccessService {
   };
   static login = async ({ email, password, refreshToken = null, fcmToken }) => {
     const foundUser = await findByEmail({ email });
-    if (!foundUser) throw new BadRequestError('User not registered');
+    if (!foundUser) throw new BadRequestError('Email chưa được đăng kí! Vui lòng đăng kí tài khoản.')
+    else if (!foundUser.is_active) throw new BadRequestError('Email chưa được xác thực! Vui lòng xác thực');
     const data = await findRoleByEmail({ email });
     const role = data?.roles?.[0]?.name;
     //check match password

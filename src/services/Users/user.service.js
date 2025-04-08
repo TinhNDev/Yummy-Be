@@ -10,7 +10,6 @@ const findByEmail = async ({
   return await user.findOne({
     where: {
       email: email,
-      is_active: true
     },
     attribute: select,
   });

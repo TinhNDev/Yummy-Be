@@ -148,6 +148,8 @@ const resgetProductByRestaurantId = async ({ restaurant_id }) => {
       JOIN Categories c ON c.id = pc.categoryId
       JOIN Restaurants r ON p.restaurant_id = r.id
       WHERE p.restaurant_id = :restaurant_id
+      WHERE p.is_public = true,
+      WHERE p.is_draft = false,
       GROUP BY c.id, c.name;
     `;
 
@@ -158,6 +160,50 @@ const resgetProductByRestaurantId = async ({ restaurant_id }) => {
 
   return results;
 };
+
+const resgetProductByRestaurantIdForUser = async ({ restaurant_id }) => {
+  const query = `
+      SELECT 
+          c.id AS category_id,
+          c.name AS category_name,
+          JSON_ARRAYAGG(
+              JSON_OBJECT(
+                  'product_id', p.id,
+                  'product_name', p.name,
+                  'product_description', p.descriptions,
+                  'product_price', p.price,
+                  'product_quantity', p.quantity,
+                  'image', p.image,
+                  'toppings', (
+                      SELECT JSON_ARRAYAGG(
+                          JSON_OBJECT(
+                              'topping_id', t.id,
+                              'topping_name', t.topping_name,
+                              'topping_price', t.price
+                          )
+                      ) 
+                      FROM \`Product Topping\` pt 
+                      JOIN Toppings t ON pt.toppingId = t.id
+                      WHERE pt.productId = p.id
+                  )
+              )
+          ) AS products
+      FROM Products p
+      JOIN \`Product Categories\` pc ON p.id = pc.productId
+      JOIN Categories c ON c.id = pc.categoryId
+      JOIN Restaurants r ON p.restaurant_id = r.id
+      WHERE p.restaurant_id = :restaurant_id
+      GROUP BY c.id, c.name;
+    `;
+
+  const results = await db.sequelize.query(query, {
+    replacements: { restaurant_id: restaurant_id },
+    type: db.sequelize.QueryTypes.SELECT,
+  });
+
+  return results;
+};
+
 module.exports = {
   updateProductById,
   getProductById,
@@ -170,4 +216,5 @@ module.exports = {
   findProductByUser,
   getProductByRestaurantId,
   resgetProductByRestaurantId,
+  resgetProductByRestaurantIdForUser
 };

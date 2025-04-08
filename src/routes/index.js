@@ -11,22 +11,39 @@ const router = express.Router();
 router.post('/callback', asyncHandle(paymentController.callBack));
 router.get('/verify-email', async (req, res) => {
   const { id_token, user_id } = req.query;
+
   const userToVerifyEmail = await KeyToken.findOne({
     where: { id: id_token },
   });
 
   if (!userToVerifyEmail) {
-    return res.send('Invalid verification token');
+    return res.send(`
+      <html>
+        <head><title>Verification Failed</title></head>
+        <body style="font-family: Arial; text-align: center; padding-top: 50px;">
+          <h2 style="color: red;">❌ Verification failed</h2>
+          <p>The verification link is invalid or has expired.</p>
+        </body>
+      </html>
+    `);
   }
+
   await db.User.update(
     { is_active: true },
     { where: { id: user_id } }
   );
-  res.send({
-    accessToken: userToVerifyEmail.accessToken,
-    refreshToken: userToVerifyEmail.refreshToken,
-  });
+
+  res.send(`
+    <html>
+      <head><title>Email Verified</title></head>
+      <body style="font-family: Arial; text-align: center; padding-top: 50px;">
+        <h2 style="color: green;">✅ Email Verified Successfully!</h2>
+        <p>Your account has been activated. You can now log in.</p>
+      </body>
+    </html>
+  `);
 });
+
 router.get('/verify-password', async (req, res) => {
   const { id_token, password } = req.query;
 

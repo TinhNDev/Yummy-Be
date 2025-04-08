@@ -14,6 +14,7 @@ const {
   findAllPublicForShop,
   getProductByRestaurantId,
   resgetProductByRestaurantId,
+  resgetProductByRestaurantIdForUser,
 } = require('./repositories/product.repo');
 
 class Product {
@@ -237,26 +238,19 @@ class ProductService extends Product {
   static async getListProductForRes({ restaurant_id }) {
     return await resgetProductByRestaurantId({ restaurant_id });
   }
-  static async getListProductForUser({ restaurant_id }) {
-    const redisKey = `restaurant_id:${restaurant_id}:products`;
-    const redis = await ProductService.initRedis();
-
-    const cacheData = await redis.get(redisKey);
-    if (cacheData) {
-      return JSON.parse(cacheData);
-    } else {
-      const result = await getProductByRestaurantId({ restaurant_id });
-
-      await redis.set(redisKey, JSON.stringify(result), this.redisKeyTTL);
-
-      return result;
-    }
+  static async resgetProductByRestaurantIdForUser({ restaurant_id }) {
+    return await resgetProductByRestaurantIdForUser({ restaurant_id });
   }
 
   static hiddenProduct = async ({ product_id }) => {
     const product = await Products.findOne({ where: { id: product_id } });
-    product.is_available = false;
-    return product.save();
+    if (product.is_available) {
+      product.is_available = false;
+      return product.save();
+    } else {
+      product.is_available = true
+      return product.save();
+    };
   };
   static showProduct = async ({ product_id }) => {
     const product = await Products.findOne({ where: { id: product_id } });
