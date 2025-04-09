@@ -50,7 +50,7 @@ class CustomerController {
       message: "favorite",
       metadata: await CustomerService.checkFavorite({
         user_id: req.user.user_id,
-        restaurant_id: req.body.restaurant_id
+        restaurant_id: req.params.restaurant_id
       })
     }).send(res)
   }

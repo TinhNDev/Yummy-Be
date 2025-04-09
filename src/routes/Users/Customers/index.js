@@ -37,5 +37,5 @@ router.get(
   authorization,
   asyncHandle(getLisFavoriteRes)
 );
-router.get('/customer/restaurant/favorite', authorization, asyncHandle(checkFavorite))
+router.get('/customer/:restaurant_id/favorite', authorization, asyncHandle(checkFavorite))
 module.exports = router;
