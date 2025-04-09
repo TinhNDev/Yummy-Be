@@ -89,13 +89,33 @@ class CustomerService {
   };
 
   static getLisFavoriteRes = async ({ user_id }) => {
-    return await db.FavoriteRestaurants.findAll({
+    const favorite = await db.FavoriteRestaurants.findAll({
       where: {
         user_id: user_id,
         is_favorite: true,
       },
     });
+
+    const restaurantIds = favorite.map(fav => fav.restaurant_id);
+
+    const restaurantDetails = await db.Restaurant.findAll({
+      where: {
+        id: {
+          [db.Sequelize.Op.in]: restaurantIds,
+        },
+      },
+      attributes: ['id', 'name', 'image', 'description'],
+    });
+
+    return restaurantDetails;
   };
+
+
+  static checkFavorite = async ({ user_id, restaurant_id }) => {
+    const favorite = await db.FavoriteRestaurants.findOne({ where: { user_id: user_id, restaurant_id: restaurant_id } })
+    if (favorite && favorite.is_favorite) return true
+    return false
+  }
 }
 
 module.exports = CustomerService;

@@ -7,6 +7,7 @@ const {
   getDistanceByResId,
   addToFavoriteRestaurant,
   getLisFavoriteRes,
+  checkFavorite,
 } = require('../../../controllers/Users/Customers/index.controller');
 const router = express.Router();
 
@@ -36,4 +37,5 @@ router.get(
   authorization,
   asyncHandle(getLisFavoriteRes)
 );
+router.get('/customer/:restaurant_id/favorite', authorization, asyncHandle(checkFavorite))
 module.exports = router;

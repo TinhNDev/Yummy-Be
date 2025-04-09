@@ -40,11 +40,20 @@ class CustomerController {
   };
   getLisFavoriteRes = async (req, res) => {
     new SuccessResponse({
-      message: await CustomerService.getLisFavoriteRes({
+      metadata: await CustomerService.getLisFavoriteRes({
         user_id: req.user.user_id,
       }),
     }).send(res);
   };
+  checkFavorite = async (req, res) => {
+    new SuccessResponse({
+      message: "favorite",
+      metadata: await CustomerService.checkFavorite({
+        user_id: req.user.user_id,
+        restaurant_id: req.params.restaurant_id
+      })
+    }).send(res)
+  }
 }
 
 module.exports = new CustomerController();

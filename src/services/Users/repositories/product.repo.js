@@ -129,6 +129,7 @@ const resgetProductByRestaurantId = async ({ restaurant_id }) => {
                   'product_price', p.price,
                   'product_quantity', p.quantity,
                   'image', p.image,
+                  'is_available', p.is_available
                   'toppings', (
                       SELECT JSON_ARRAYAGG(
                           JSON_OBJECT(
@@ -148,8 +149,8 @@ const resgetProductByRestaurantId = async ({ restaurant_id }) => {
       JOIN Categories c ON c.id = pc.categoryId
       JOIN Restaurants r ON p.restaurant_id = r.id
       WHERE p.restaurant_id = :restaurant_id
-      WHERE p.is_public = true,
-      WHERE p.is_draft = false,
+        AND p.is_public = true
+        AND p.is_draft = false
       GROUP BY c.id, c.name;
     `;
 
