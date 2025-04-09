@@ -45,6 +45,15 @@ class CustomerController {
       }),
     }).send(res);
   };
+  checkFavorite = async (req, res) => {
+    new SuccessResponse({
+      message: "favorite",
+      metadata: await CustomerService.checkFavorite({
+        user_id: req.user.user_id,
+        restaurant_id: req.body.restaurant_id
+      })
+    }).send(res)
+  }
 }
 
 module.exports = new CustomerController();

@@ -96,6 +96,12 @@ class CustomerService {
       },
     });
   };
+
+  static checkFavorite = async ({ user_id, restaurant_id }) => {
+    const favorite = await db.FavoriteRestaurants.findOne({ where: { user_id: user_id, restaurant_id: restaurant_id } })
+    if (favorite && favorite.is_favorite) return true
+    return false
+  }
 }
 
 module.exports = CustomerService;
