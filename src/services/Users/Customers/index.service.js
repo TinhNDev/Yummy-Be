@@ -96,16 +96,20 @@ class CustomerService {
       },
     });
 
-    return await Promise.all(
-      favorite.map(async (fvs) => {
-        return await db.Restaurant.findOne({
-          where: {
-            id: fvs.restaurant_id
-          }
-        })
-      })
-    )
+    const restaurantIds = favorite.map(fav => fav.restaurant_id);
+
+    const restaurantDetails = await db.Restaurant.findAll({
+      where: {
+        id: {
+          [db.Sequelize.Op.in]: restaurantIds,
+        },
+      },
+      attributes: ['id', 'name', 'image', 'description'],
+    });
+
+    return restaurantDetails;
   };
+
 
   static checkFavorite = async ({ user_id, restaurant_id }) => {
     const favorite = await db.FavoriteRestaurants.findOne({ where: { user_id: user_id, restaurant_id: restaurant_id } })
