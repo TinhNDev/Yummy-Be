@@ -89,20 +89,22 @@ class CustomerService {
   };
 
   static getLisFavoriteRes = async ({ user_id }) => {
-    const favoriteRestaurants = await db.FavoriteRestaurants.findAll({
+    const favorite = await db.FavoriteRestaurants.findAll({
       where: {
         user_id: user_id,
         is_favorite: true,
       },
-      include: [
-        {
-          model: db.Restaurant,
-          as: 'Restaurant',
-          attributes: ['id', 'name', 'description', 'image'],
-        },
-      ],
     });
-    return favoriteRestaurants.map((favorite) => favorite.Restaurant);
+
+    return await Promise.all(
+      favorite.map(async (fvs) => {
+        return await db.Restaurant.findOne({
+          where: {
+            id: fvs.restaurant_id
+          }
+        })
+      })
+    )
   };
 
   static checkFavorite = async ({ user_id, restaurant_id }) => {
