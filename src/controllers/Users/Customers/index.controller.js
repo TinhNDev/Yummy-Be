@@ -40,7 +40,7 @@ class CustomerController {
   };
   getLisFavoriteRes = async (req, res) => {
     new SuccessResponse({
-      message: await CustomerService.getLisFavoriteRes({
+      metadata: await CustomerService.getLisFavoriteRes({
         user_id: req.user.user_id,
       }),
     }).send(res);
