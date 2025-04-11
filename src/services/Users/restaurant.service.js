@@ -92,7 +92,7 @@ class RestaurantService {
     LIMIT :limit OFFSET :offset
   `;
 
-    const [results] = await sequelize.query(query, {
+    const [results] = await db.sequelize.query(query, {
       replacements: {
         userLat: userLatitude,
         userLon: userLongitude,
