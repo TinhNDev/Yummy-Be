@@ -100,10 +100,10 @@ class RestaurantService {
         limit,
         offset
       },
-      type: sequelize.QueryTypes.SELECT,
+      type: db.sequelize.QueryTypes.SELECT,
     });
 
-    return results;
+    return results ? results : [];
   };
 
 
