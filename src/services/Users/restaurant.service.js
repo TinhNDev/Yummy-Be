@@ -73,6 +73,7 @@ class RestaurantService {
 
 
   static getAllRestaurant = async (userLatitude, userLongitude, page = 1) => {
+    if (!userLatitude || !userLongitude) return db.Restaurant.findAll();
     const limit = 20;
     const offset = (page - 1) * limit;
 
