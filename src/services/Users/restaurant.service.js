@@ -85,9 +85,9 @@ class RestaurantService {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadians(lat)) *
-          Math.cos(toRadians(restaurantLat)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
+        Math.cos(toRadians(restaurantLat)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
 
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
@@ -120,7 +120,7 @@ class RestaurantService {
     );
 
     if (!paginatedRestaurants || paginatedRestaurants.length === 0) {
-      throw new Error('No restaurants found for the given parameters.');
+      return [];
     }
 
     return paginatedRestaurants;
