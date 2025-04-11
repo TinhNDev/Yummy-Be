@@ -74,6 +74,7 @@ class RestaurantService {
   static getAllRestaurant = async (userLatitude, userLongitude, page = 1) => {
     const limit = 20;
     const offset = (page - 1) * limit;
+    const RADIUS_KM = Number(process.env.RADIUS) / 1000;
 
     const haversineQuery = (lat, lon, restaurantLat, restaurantLon) => {
       const toRadians = (degree) => degree * (Math.PI / 180);
@@ -109,18 +110,20 @@ class RestaurantService {
           distance,
         };
       })
-      .filter(
-        (restaurant) => restaurant.distance <= Number(process.env.RADIUS) / 1000
-      )
+      .filter((restaurant) => restaurant.distance <= RADIUS_KM)
       .sort((a, b) => a.distance - b.distance);
 
-    const paginatedRestaurants = nearbyRestaurants.slice(
-      offset,
-      offset + limit
-    );
+    if (nearbyRestaurants.length <= limit) {
+      return nearbyRestaurants;
+    }
 
-    return paginatedRestaurants;
+    if (offset >= nearbyRestaurants.length) {
+      return [];
+    }
+
+    return nearbyRestaurants.slice(offset, offset + limit);
   };
+
 
   static searchRestaurantByKeyWord = async (keySearch) => {
     return await findRestauranByKeyWord(keySearch);

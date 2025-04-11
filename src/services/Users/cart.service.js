@@ -82,7 +82,9 @@ class CartService {
     }
   };
 
-  static getAllCart = async({ user_id })
+  static getAllCart = async ({ user_id }) => {
+
+  }
 }
 
 module.exports = CartService;
