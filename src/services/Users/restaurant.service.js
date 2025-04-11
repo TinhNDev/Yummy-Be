@@ -119,10 +119,6 @@ class RestaurantService {
       offset + limit
     );
 
-    if (!paginatedRestaurants || paginatedRestaurants.length === 0) {
-      return [];
-    }
-
     return paginatedRestaurants;
   };
 

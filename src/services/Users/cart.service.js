@@ -48,8 +48,6 @@ class CartService {
       if (existingItemIndex !== -1) {
         existingItems[existingItemIndex].description.quantity +=
           description.quantity;
-        // existingItems[existingItemIndex].description.price =
-        //   description.price * existingItems[existingItemIndex].description.quantity;
       } else {
         existingItems.push(item);
       }
@@ -83,6 +81,8 @@ class CartService {
       throw error;
     }
   };
+
+  static getAllCart = async({ user_id })
 }
 
 module.exports = CartService;
