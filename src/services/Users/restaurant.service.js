@@ -73,40 +73,57 @@ class RestaurantService {
 
 
   static getAllRestaurant = async (userLatitude, userLongitude, page = 1) => {
-    if (!userLatitude || !userLongitude) return db.Restaurant.findAll();
     const limit = 20;
     const offset = (page - 1) * limit;
-
     const RADIUS_KM = Number(process.env.RADIUS) / 1000;
 
-    const query = `
-    SELECT r.*, (
-      6371 * acos(
-        cos(radians(:userLat)) * cos(radians(r.address_x)) *
-        cos(radians(r.address_y) - radians(:userLon)) +
-        sin(radians(:userLat)) * sin(radians(r.address_x))
-      )
-    ) AS distance
-    FROM Restaurants r
-    HAVING distance <= :radius
-    ORDER BY distance ASC
-    LIMIT :limit OFFSET :offset
-  `;
+    const haversineQuery = (lat, lon, restaurantLat, restaurantLon) => {
+      const toRadians = (degree) => degree * (Math.PI / 180);
+      const R = 6371;
 
-    const [results] = await db.sequelize.query(query, {
-      replacements: {
-        userLat: userLatitude,
-        userLon: userLongitude,
-        radius: RADIUS_KM,
-        limit,
-        offset
-      },
-      type: db.sequelize.QueryTypes.SELECT,
-    });
+      const dLat = toRadians(restaurantLat - lat);
+      const dLon = toRadians(restaurantLon - lon);
 
-    return results ? results : [];
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRadians(lat)) *
+        Math.cos(toRadians(restaurantLat)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    };
+
+    const allRestaurants = await Restaurants.findAll();
+
+    const nearbyRestaurants = allRestaurants
+      .map((restaurant) => {
+        const distance = haversineQuery(
+          userLatitude,
+          userLongitude,
+          restaurant.address_x,
+          restaurant.address_y
+        );
+
+        return {
+          ...restaurant.get(),
+          distance,
+        };
+      })
+      .filter((restaurant) => restaurant.distance <= RADIUS_KM)
+      .sort((a, b) => a.distance - b.distance);
+
+    if (nearbyRestaurants.length <= limit) {
+      return nearbyRestaurants;
+    }
+
+    if (offset >= nearbyRestaurants.length) {
+      return [];
+    }
+
+    return nearbyRestaurants.slice(offset, offset + limit);
   };
-
 
 
   static searchRestaurantByKeyWord = async (keySearch) => {
