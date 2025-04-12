@@ -116,6 +116,51 @@ class CouponService {
   static getCouponRes = async ({ restaurant_id }) => {
     return await db.Coupon.findAll({ where: { restaurant_id: restaurant_id }, order: [['createdAt', 'ASC']] })
   }
+
+  static editCoupon = async ({ restaurant_id, body }) => {
+    const { coupon_id, ...updateFields } = body;
+
+    if (!coupon_id) {
+      throw new Error('Vui lòng cung cấp coupon_id để chỉnh sửa.');
+    }
+
+    const coupon = await db.Coupon.findOne({
+      where: {
+        id: coupon_id,
+        restaurant_id: restaurant_id,
+      },
+    });
+
+    if (!coupon) {
+      throw new Error('Không tìm thấy coupon hoặc coupon không thuộc nhà hàng này.');
+    }
+
+    if (updateFields.start_date && updateFields.end_date) {
+      if (new Date(updateFields.start_date) >= new Date(updateFields.end_date)) {
+        throw new Error('Ngày kết thúc phải lớn hơn ngày bắt đầu.');
+      }
+    }
+
+    if (updateFields.discount_value && updateFields.discount_value < 0) {
+      throw new Error('Giá trị giảm giá phải lớn hơn hoặc bằng 0.');
+    }
+
+    if (updateFields.max_discount_amount && updateFields.max_discount_amount < 0) {
+      throw new Error('Giá trị giảm giá tối đa phải lớn hơn hoặc bằng 0.');
+    }
+
+    if (updateFields.min_order_value && updateFields.min_order_value < 0) {
+      throw new Error('Giá trị đơn hàng tối thiểu phải lớn hơn hoặc bằng 0.');
+    }
+
+    if (updateFields.max_uses_per_user && updateFields.max_uses_per_user < 1) {
+      throw new Error('Số lần sử dụng tối đa phải lớn hơn hoặc bằng 1.');
+    }
+
+    await coupon.update(updateFields);
+
+    return coupon;
+  };
 }
 
 module.exports = CouponService;

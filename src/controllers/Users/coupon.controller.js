@@ -29,6 +29,15 @@ class CouponController {
       }),
     }).send(res);
   };
+
+  getCouponRes = async (req, res) => {
+    new SuccessResponse({
+      message: 'list coupon',
+      metadata: await CouponService.getCouponRes({
+        restaurant_id: req.params.restaurant_id,
+      })
+    }).send(res)
+  }
 }
 
 module.exports = new CouponController();

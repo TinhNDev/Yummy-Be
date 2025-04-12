@@ -8,7 +8,6 @@ const router = express.Router();
 router.post(
   '/coupon',
   authorization,
-  checkRole(['admin']),
   asyncHandle(couponController.createCoupon)
 );
 router.post(
@@ -21,5 +20,6 @@ router.get(
   authorization,
   asyncHandle(couponController.getCoupon)
 );
+router.get('/coupon/:restaurant_id/restaurant', authorization, asyncHandle(couponController.getCouponRes))
 
 module.exports = router;
