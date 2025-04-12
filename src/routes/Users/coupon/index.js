@@ -21,5 +21,5 @@ router.get(
   asyncHandle(couponController.getCoupon)
 );
 router.get('/coupon/:restaurant_id/restaurant', authorization, asyncHandle(couponController.getCouponRes))
-
+router.put('/coupon/:restaurant_id/restautant', authorization, asyncHandle(couponController.editCoupon))
 module.exports = router;

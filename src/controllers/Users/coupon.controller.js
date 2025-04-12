@@ -38,6 +38,16 @@ class CouponController {
       })
     }).send(res)
   }
+
+  editCoupon = async (req, res) => {
+    new SuccessResponse({
+      message: 'update success',
+      metadata: await CouponService.editCoupon({
+        restaurant_id: req.body.restaurant_id,
+        body: req.body.body
+      })
+    }).send(res)
+  }
 }
 
 module.exports = new CouponController();
