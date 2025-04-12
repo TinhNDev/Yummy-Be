@@ -83,7 +83,21 @@ class CartService {
   };
 
   static getAllCart = async ({ user_id }) => {
+    try {
+      const redisHelper = new RedisHelper();
+      await redisHelper.connect();
+      const keys = await redisHelper.keys(`cart:${user_id}-*`);
 
+      const allCarts = [];
+      for (const key of keys) {
+        const item = JSON.parse((await redisHelper.get(key) || []));
+        allCarts.push({ item });
+      }
+      await redisHelper.disconnect();
+      return allCarts;
+    } catch (error) {
+      throw error;
+    }
   }
 }
 

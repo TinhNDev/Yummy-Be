@@ -35,6 +35,14 @@ class CartController {
       metadata: await CartService.getItemInCart({ user_id, restaurant_id }),
     }).send(res);
   };
+
+  getAllCart = async (req, res) => {
+    const { user_id } = req.user;
+    new SuccessResponse({
+      message: "all cart",
+      metadata: await CartService.getAllCart({ user_id }),
+    }).send(res)
+  }
 }
 
 module.exports = new CartController();

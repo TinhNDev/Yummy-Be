@@ -46,6 +46,20 @@ class RedisHelper {
       console.log('Redis disconnected successfully');
     }
   }
+  // Lấy danh sách các key theo pattern
+  async keys(pattern) {
+    try {
+      if (!this.client || !this.client.isOpen) {
+        throw new Error('Redis client is not connected');
+      }
+
+      const keys = await this.client.keys(pattern);
+      return keys;
+    } catch (error) {
+      console.error('Redis KEYS error:', error);
+      throw error;
+    }
+  }
 
   // Set một giá trị với thời gian hết hạn (TTL tính bằng giây)
   async set(key, value, ttl = null) {
