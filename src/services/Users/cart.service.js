@@ -86,19 +86,52 @@ class CartService {
     try {
       const redisHelper = new RedisHelper();
       await redisHelper.connect();
-      const keys = await redisHelper.keys(`cart:${user_id}-*`);
 
-      const allCarts = [];
+      const keys = await redisHelper.keys(`cart:${user_id}-*`);
+      const groupedCart = {};
+
       for (const key of keys) {
-        const item = JSON.parse((await redisHelper.get(key) || []));
-        allCarts.push({ item });
+        const items = JSON.parse((await redisHelper.get(key)) || '[]');
+
+        if (items.length > 0) {
+          const restaurant_id = items[0].description.restaurant_id;
+
+          if (!groupedCart[restaurant_id]) {
+            groupedCart[restaurant_id] = {
+              items: [],
+              total_quantity: 0,
+            };
+          }
+
+          const resDetail = await db.Restaurant.findOne({
+            where: { id: restaurant_id },
+          });
+
+          for (const item of items) {
+            groupedCart[restaurant_id].items.push({
+              ...item,
+              restaurant: resDetail,
+            });
+            groupedCart[restaurant_id].total_quantity += item.description.quantity || 1;
+          }
+        }
       }
+
       await redisHelper.disconnect();
-      return allCarts;
+
+      const result = Object.entries(groupedCart).map(([restaurant_id, data]) => ({
+        restaurant_id: Number(restaurant_id),
+        items: data.items,
+        total_quantity: data.total_quantity,
+      }));
+
+      return result;
     } catch (error) {
       throw error;
     }
-  }
+  };
+
+
 }
 
 module.exports = CartService;
