@@ -97,21 +97,19 @@ class CartService {
           const restaurant_id = items[0].description.restaurant_id;
 
           if (!groupedCart[restaurant_id]) {
+            const resDetail = await db.Restaurant.findOne({
+              where: { id: restaurant_id },
+              attributes: ['name', 'image', 'description'],
+            });
+
             groupedCart[restaurant_id] = {
-              items: [],
+              restaurant_id: Number(restaurant_id),
+              restaurant: resDetail,
               total_quantity: 0,
             };
           }
 
-          const resDetail = await db.Restaurant.findOne({
-            where: { id: restaurant_id },
-          });
-
           for (const item of items) {
-            groupedCart[restaurant_id].items.push({
-              ...item,
-              restaurant: resDetail,
-            });
             groupedCart[restaurant_id].total_quantity += item.description.quantity || 1;
           }
         }
@@ -119,17 +117,18 @@ class CartService {
 
       await redisHelper.disconnect();
 
-      const result = Object.entries(groupedCart).map(([restaurant_id, data]) => ({
-        restaurant_id: Number(restaurant_id),
-        items: data.items,
-        total_quantity: data.total_quantity,
-      }));
+      const result = Object.values(groupedCart);
 
-      return result;
+      return {
+        message: 'all cart',
+        status: 200,
+        metadata: result,
+      };
     } catch (error) {
       throw error;
     }
   };
+
 
 
 }
