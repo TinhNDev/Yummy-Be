@@ -1,3 +1,4 @@
+const db = require('../../models/index.model');
 const { Restaurant, Coupon, CouponUsage } = require('../../models/index.model');
 
 class CouponService {
@@ -111,6 +112,10 @@ class CouponService {
       },
     });
   };
+
+  static getCouponRes = async ({ restaurant_id }) => {
+    return await db.Coupon.findAll({ where: { restaurant_id: restaurant_id }, order: [['createdAt', 'ASC']] })
+  }
 }
 
 module.exports = CouponService;
