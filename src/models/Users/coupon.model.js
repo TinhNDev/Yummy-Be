@@ -9,7 +9,6 @@ module.exports = (sequelize, Sequelize) => {
       coupon_code: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
       },
       discount_value: {
         type: Sequelize.DECIMAL(10, 2),

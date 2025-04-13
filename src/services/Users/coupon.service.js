@@ -161,6 +161,92 @@ class CouponService {
 
     return coupon;
   };
+
+  static createFlashSale = async ({ body, product_id }) => {
+    const coupon = await this.createCoupon({ body });
+
+    const product = await db.Product.findOne({ where: { id: product_id } });
+    if (!product) {
+      throw new Error('Không tìm thấy sản phẩm.');
+    }
+
+    let totalDiscount;
+
+    if (body.discount_type === 'PERCENTAGE') {
+      totalDiscount = product.price - (product.price * coupon.discount_value / 100);
+    } else if (body.discount_type === 'FIXED_AMOUNT') {
+      totalDiscount = product.price - coupon.discount_value;
+    } else {
+      throw new Error('Loại giảm giá không hợp lệ.');
+    }
+
+    if (totalDiscount < 0) totalDiscount = 0;
+
+    return await db.FlashSale.create({
+      coupon_id: coupon.id,
+      product_id,
+      amount: totalDiscount,
+    });
+  }
+
+
+  static createListFlashSale = async ({ body }) => {
+    const { couponDetails, products } = body;
+
+    if (!couponDetails || !products || !Array.isArray(products) || products.length === 0) {
+      throw new Error('Vui lòng cung cấp thông tin coupon và danh sách sản phẩm.');
+    }
+
+    const coupon = await this.createCoupon({ body: couponDetails });
+
+    const flashSales = [];
+    for (const product of products) {
+      const { product_id } = product;
+      const products = await db.Product.findOne({ where: { id: product_id } });
+      let totalDiscount;
+
+      if (body.discount_type === 'PERCENTAGE') {
+        totalDiscount = products.price - (products.price * coupon.discount_value / 100);
+      } else if (body.discount_type === 'FIXED_AMOUNT') {
+        totalDiscount = products.price - coupon.discount_value;
+      } else {
+        throw new Error('Loại giảm giá không hợp lệ.');
+      }
+
+      const flashSale = await db.FlashSale.create({
+        coupon_id: coupon.id,
+        product_id: product_id,
+        amount: totalDiscount,
+      });
+
+      flashSales.push(flashSale);
+    }
+
+    return flashSales;
+  };
+  static getProductForFlashSale = async ({ restaurant_id }) => {
+    const query = `
+      SELECT
+        p.name,
+        p.image,
+        p.descriptions,
+        p.price,
+        p.quantity,
+        fl.amount,
+        c.coupon_name
+      FROM Products p
+      JOIN flash_sales fl ON p.id = fl.product_id
+      JOIN coupons c ON c.id = fl.coupon_id
+      WHERE p.restaurant_id = :restaurant_id;
+    `;
+
+    return await db.sequelize.query(query, {
+      replacements: { restaurant_id },
+      type: db.Sequelize.QueryTypes.SELECT,
+      raw: true,
+    });
+  }
+
 }
 
 module.exports = CouponService;

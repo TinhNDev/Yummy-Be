@@ -5,15 +5,27 @@ const user = db.User;
 
 const findByEmail = async ({
   email,
-  select = { email: 1, name: 1, password: 1 },
+  role,
 }) => {
-  return await user.findOne({
-    where: {
-      email: email,
-      is_active: true
-    },
-    attribute: select,
+  const query = `
+    SELECT
+      u.id,
+      u.email,
+      u.password,
+      u.is_active
+    FROM Users u
+    JOIN user_roles us ON us.UserId = u.id
+    JOIN roles r ON r.id = us.RoleId
+    WHERE u.email = :email
+      AND u.is_active = true
+      AND r.name = :role;
+  `;
+
+  const result = await db.sequelize.query(query, {
+    replacements: { email, role },
+    type: db.Sequelize.QueryTypes.SELECT,
   });
+  return result[0]
 };
 
 const findRoleByEmail = async ({ email }) => {

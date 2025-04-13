@@ -22,4 +22,7 @@ router.get(
 );
 router.get('/coupon/:restaurant_id/restaurant', authorization, asyncHandle(couponController.getCouponRes))
 router.put('/coupon/:restaurant_id/restautant', authorization, asyncHandle(couponController.editCoupon))
+router.post('/coupon/flashsale', authorization, asyncHandle(couponController.createFlashSale))
+router.post('/coupon/list/flashsale', authorization, asyncHandle(couponController.createListFlashSale))
+router.get('/coupon/:restaurant_id/flashsale', authorization, asyncHandle(couponController.getProductForFlashSale))
 module.exports = router;
