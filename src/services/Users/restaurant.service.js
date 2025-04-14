@@ -71,9 +71,9 @@ class RestaurantService {
     });
   };
 
-  static getAllRestaurant = async (userLatitude, userLongitude, page = 1) => {
-    const limit = 20;
-    const offset = (page - 1) * limit;
+
+  static getAllRestaurant = async (userLatitude, userLongitude) => {
+    const RADIUS_KM = Number(process.env.RADIUS) / 1000;
 
     const haversineQuery = (lat, lon, restaurantLat, restaurantLon) => {
       const toRadians = (degree) => degree * (Math.PI / 180);
@@ -85,9 +85,9 @@ class RestaurantService {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadians(lat)) *
-          Math.cos(toRadians(restaurantLat)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
+        Math.cos(toRadians(restaurantLat)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
 
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
@@ -109,22 +109,12 @@ class RestaurantService {
           distance,
         };
       })
-      .filter(
-        (restaurant) => restaurant.distance <= Number(process.env.RADIUS) / 1000
-      )
+      .filter((restaurant) => restaurant.distance <= RADIUS_KM)
       .sort((a, b) => a.distance - b.distance);
 
-    const paginatedRestaurants = nearbyRestaurants.slice(
-      offset,
-      offset + limit
-    );
-
-    if (!paginatedRestaurants || paginatedRestaurants.length === 0) {
-      throw new Error('No restaurants found for the given parameters.');
-    }
-
-    return paginatedRestaurants;
+    return nearbyRestaurants;
   };
+
 
   static searchRestaurantByKeyWord = async (keySearch) => {
     return await findRestauranByKeyWord(keySearch);

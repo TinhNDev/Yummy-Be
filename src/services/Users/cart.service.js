@@ -48,8 +48,6 @@ class CartService {
       if (existingItemIndex !== -1) {
         existingItems[existingItemIndex].description.quantity +=
           description.quantity;
-        // existingItems[existingItemIndex].description.price =
-        //   description.price * existingItems[existingItemIndex].description.quantity;
       } else {
         existingItems.push(item);
       }
@@ -83,6 +81,56 @@ class CartService {
       throw error;
     }
   };
+
+  static getAllCart = async ({ user_id }) => {
+    try {
+      const redisHelper = new RedisHelper();
+      await redisHelper.connect();
+
+      const keys = await redisHelper.keys(`cart:${user_id}-*`);
+      const groupedCart = {};
+
+      for (const key of keys) {
+        const items = JSON.parse((await redisHelper.get(key)) || '[]');
+
+        if (items.length > 0) {
+          const restaurant_id = items[0].description.restaurant_id;
+
+          if (!groupedCart[restaurant_id]) {
+            const resDetail = await db.Restaurant.findOne({
+              where: { id: restaurant_id },
+              attributes: ['name', 'image', 'description'],
+            });
+
+            groupedCart[restaurant_id] = {
+              restaurant_id: Number(restaurant_id),
+              restaurant: resDetail,
+              total_quantity: 0,
+            };
+          }
+
+          for (const item of items) {
+            groupedCart[restaurant_id].total_quantity += item.description.quantity || 1;
+          }
+        }
+      }
+
+      await redisHelper.disconnect();
+
+      const result = Object.values(groupedCart);
+
+      return {
+        message: 'all cart',
+        status: 200,
+        metadata: result,
+      };
+    } catch (error) {
+      throw error;
+    }
+  };
+
+
+
 }
 
 module.exports = CartService;

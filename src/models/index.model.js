@@ -46,6 +46,7 @@ db.FavoriteRestaurants = require('../models/Users/favoriteRestaurant.model')(
   Sequelize
 );
 db.CouponUsage = require('./Users/couponUsage.model')(sequelize, Sequelize);
+db.FlashSale = require('./Users/flashSale.model')(sequelize, Sequelize);
 //user profile
 db.User.hasOne(db.Profile, {
   foreignKey: 'user_id',
