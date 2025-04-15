@@ -3,6 +3,7 @@ const {
   Profile,
   Driver,
   Order,
+  Product
 } = require('../../models/index.model');
 
 class AdminService {
@@ -63,6 +64,18 @@ class AdminService {
       ],
     });
   };
+
+  static getDataDashboard = async () => {
+    const totalProduct = await Product.count();
+    const totalShipper = await Driver.count();
+    const totalSeller = await Restaurant.count();
+  
+    return {
+      totalProduct,
+      totalShipper,
+      totalSeller,
+    };
+  }
 }
 
 module.exports = AdminService;

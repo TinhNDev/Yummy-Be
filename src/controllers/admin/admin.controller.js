@@ -40,6 +40,14 @@ class AdminController {
       }),
     }).send(res);
   };
+
+  getDataDashboard = async (req, res) => {
+    new SuccessResponse({
+      message: 'data dashboard',
+      metadata: await AdminService.getDataDashboard({
+      }),
+    }).send(res);
+  };
 }
 
 module.exports = new AdminController();

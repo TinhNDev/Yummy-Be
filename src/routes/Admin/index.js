@@ -34,4 +34,10 @@ router.put(
   checkRole(['admin']),
   asyncHandle(adminController.changeStatusDriver)
 );
+router.get(
+  '/admin/get-dashboard-data',
+  authorization,
+  checkRole(['admin']),
+  asyncHandle(adminController.getDataDashboard)
+);
 module.exports = router;
