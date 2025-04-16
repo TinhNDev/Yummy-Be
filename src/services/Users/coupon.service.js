@@ -10,6 +10,10 @@ class CouponService {
       let error = null;
 
       try {
+        const isInFlashSale = await db.FlashSale.findOne({ where: { coupon_id: coupon.id } })
+        if (isInFlashSale) {
+          continue;
+        }
         if (coupon.end_date && new Date(coupon.end_date) < new Date()) {
           error = 'Coupon has expired';
         } else if (coupon.min_order_value > totalCost) {
@@ -189,7 +193,6 @@ class CouponService {
     });
   }
 
-
   static createListFlashSale = async ({ body }) => {
     const { couponDetails, products } = body;
 
@@ -247,6 +250,46 @@ class CouponService {
     });
   }
 
+  static editFlashSale = async ({ restaurant_id, body }) => {
+    const { coupon_id, flash_sale_id, product_id, amount, ...couponFields } = body;
+
+    if (!coupon_id || !flash_sale_id) {
+      throw new Error('Vui lòng cung cấp coupon_id và flash_sale_id để chỉnh sửa.');
+    }
+
+    await this.editCoupon({ restaurant_id, body: { coupon_id, ...couponFields } });
+
+    const flashSale = await db.FlashSale.findOne({
+      where: {
+        id: flash_sale_id,
+        coupon_id: coupon_id,
+      },
+    });
+
+    if (!flashSale) {
+      throw new Error('Không tìm thấy flash sale hoặc thông tin không hợp lệ.');
+    }
+
+    if (product_id && product_id !== flashSale.product_id) {
+      const newProduct = await db.Product.findOne({ where: { id: product_id } });
+      if (!newProduct) {
+        throw new Error('Không tìm thấy sản phẩm mới.');
+      }
+
+      flashSale.product_id = product_id;
+    }
+
+    if (amount !== undefined) {
+      if (amount < 0) {
+        throw new Error('Số lượng giảm giá phải lớn hơn hoặc bằng 0.');
+      }
+      flashSale.amount = amount;
+    }
+
+    await flashSale.save();
+
+    return flashSale;
+  };
 }
 
 module.exports = CouponService;
