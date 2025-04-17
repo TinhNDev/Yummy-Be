@@ -10,10 +10,6 @@ class CouponService {
       let error = null;
 
       try {
-        const isInFlashSale = await db.FlashSale.findOne({ where: { coupon_id: coupon.id } })
-        if (isInFlashSale) {
-          continue;
-        }
         if (coupon.end_date && new Date(coupon.end_date) < new Date()) {
           error = 'Coupon has expired';
         } else if (coupon.min_order_value > totalCost) {
@@ -118,8 +114,18 @@ class CouponService {
   };
 
   static getCouponRes = async ({ restaurant_id }) => {
-    return await db.Coupon.findAll({ where: { restaurant_id: restaurant_id }, order: [['createdAt', 'ASC']] })
-  }
+    return await db.Coupon.findAll({
+      where: {
+        restaurant_id: restaurant_id,
+        id: {
+          [db.Sequelize.Op.notIn]: db.Sequelize.literal(
+            `(SELECT coupon_id FROM flash_sales)`
+          ),
+        },
+      },
+      order: [['createdAt', 'ASC']],
+    });
+  };
 
   static editCoupon = async ({ restaurant_id, body }) => {
     const { coupon_id, ...updateFields } = body;
