@@ -23,4 +23,4 @@ app.get('/', (req, res) => {
   res.send('Welcome to Foody App Server!');
 });
 
-module.exports = app;
+module.exports = app
