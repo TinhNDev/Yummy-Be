@@ -334,7 +334,7 @@ class CouponService {
         },
       });
     }
-
+    let totalDiscount;
     for (const product_id of add_products) {
       const product = await db.Product.findOne({ where: { id: product_id } });
       if (!product) {
@@ -348,7 +348,6 @@ class CouponService {
         },
       });
 
-      let totalDiscount;
       if (body.discount_type === 'PERCENTAGE') {
         totalDiscount = product.price - (product.price * body.discount_value / 100);
       } else if (body.discount_type === 'FIXED_AMOUNT') {
