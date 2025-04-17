@@ -287,6 +287,7 @@ class CouponService {
           start_date: item.start_date,
           end_date: item.end_date,
           is_active: item.is_active,
+          flash_sale: item.flash_sale_id,
           food_items: [
             {
               product_id: item.product_id,
