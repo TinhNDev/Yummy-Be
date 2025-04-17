@@ -74,6 +74,15 @@ class CouponController {
       })
     }).send(res)
   }
+  editFlashSale = async (req, res) => {
+    new SuccessResponse({
+      message: "edit success",
+      metadata: await CouponService.editFlashSale({
+        body: req.body.body,
+        restaurant_id: req.params.restaurant_id
+      })
+    }).send(res)
+  }
 }
 
 module.exports = new CouponController();

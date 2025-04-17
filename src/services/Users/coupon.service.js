@@ -114,8 +114,18 @@ class CouponService {
   };
 
   static getCouponRes = async ({ restaurant_id }) => {
-    return await db.Coupon.findAll({ where: { restaurant_id: restaurant_id }, order: [['createdAt', 'ASC']] })
-  }
+    return await db.Coupon.findAll({
+      where: {
+        restaurant_id: restaurant_id,
+        id: {
+          [db.Sequelize.Op.notIn]: db.Sequelize.literal(
+            `(SELECT coupon_id FROM flash_sales)`
+          ),
+        },
+      },
+      order: [['createdAt', 'ASC']],
+    });
+  };
 
   static editCoupon = async ({ restaurant_id, body }) => {
     const { coupon_id, ...updateFields } = body;
@@ -189,7 +199,6 @@ class CouponService {
     });
   }
 
-
   static createListFlashSale = async ({ body }) => {
     const { couponDetails, products } = body;
 
@@ -227,25 +236,149 @@ class CouponService {
   static getProductForFlashSale = async ({ restaurant_id }) => {
     const query = `
       SELECT
-        p.name,
-        p.image,
-        p.descriptions,
-        p.price,
-        p.quantity,
-        fl.amount,
-        c.coupon_name
+        c.id AS coupon_id,
+        c.coupon_type,
+        c.coupon_name,
+        c.coupon_code,
+        c.discount_value,
+        c.discount_type,
+        c.max_discount_amount,
+        c.min_order_value,
+        c.max_uses_per_user,
+        c.start_date,
+        c.end_date,
+        c.is_active,
+        p.id AS product_id,
+        p.name AS product_name,
+        p.price AS product_price,
+        fl.id AS flash_sale_id
       FROM Products p
       JOIN flash_sales fl ON p.id = fl.product_id
       JOIN coupons c ON c.id = fl.coupon_id
       WHERE p.restaurant_id = :restaurant_id;
     `;
 
-    return await db.sequelize.query(query, {
+    const rawData = await db.sequelize.query(query, {
       replacements: { restaurant_id },
       type: db.Sequelize.QueryTypes.SELECT,
       raw: true,
     });
-  }
+
+    const formattedData = rawData.reduce((acc, item) => {
+      const existingCoupon = acc.find(coupon => coupon.id === item.coupon_id);
+
+      if (existingCoupon) {
+        existingCoupon.food_items.push({
+          product_id: item.product_id,
+          product_name: item.product_name,
+          product_price: item.product_price,
+        });
+      } else {
+        acc.push({
+          id: item.coupon_id,
+          coupon_type: item.coupon_type,
+          coupon_name: item.coupon_name,
+          coupon_code: item.coupon_code,
+          discount_value: item.discount_value,
+          discount_type: item.discount_type,
+          max_discount_amount: item.max_discount_amount,
+          min_order_value: item.min_order_value,
+          max_uses_per_user: item.max_uses_per_user,
+          start_date: item.start_date,
+          end_date: item.end_date,
+          is_active: item.is_active,
+          flash_sale_id: item.flash_sale_id,
+          food_items: [
+            {
+              product_id: item.product_id,
+              product_name: item.product_name,
+              product_price: item.product_price,
+            },
+          ],
+        });
+      }
+
+      return acc;
+    }, []);
+
+    return formattedData;
+  };
+
+  static editFlashSale = async ({ restaurant_id, body }) => {
+    const { coupon_id, flash_sale_id, add_products = [], remove_products = [], ...couponFields } = body;
+
+    if (!coupon_id || !flash_sale_id) {
+      throw new Error('Vui lòng cung cấp coupon_id và flash_sale_id để chỉnh sửa.');
+    }
+
+    await this.editCoupon({ restaurant_id, body: { coupon_id, ...couponFields } });
+
+    const flashSale = await db.FlashSale.findOne({
+      where: {
+        id: flash_sale_id,
+        coupon_id,
+      },
+    });
+
+    if (!flashSale) {
+      throw new Error('Không tìm thấy flash sale hoặc thông tin không hợp lệ.');
+    }
+
+    if (remove_products.length > 0) {
+      await db.FlashSale.destroy({
+        where: {
+          coupon_id,
+          product_id: {
+            [db.Sequelize.Op.in]: remove_products,
+          },
+        },
+      });
+    }
+    let totalDiscount;
+    for (const product_id of add_products) {
+      const product = await db.Product.findOne({ where: { id: product_id } });
+      if (!product) {
+        throw new Error(`Sản phẩm với ID ${product_id} không tồn tại.`);
+      }
+
+      const exists = await db.FlashSale.findOne({
+        where: {
+          coupon_id,
+          product_id,
+        },
+      });
+
+      if (body.discount_type === 'PERCENTAGE') {
+        totalDiscount = product.price - (product.price * body.discount_value / 100);
+      } else if (body.discount_type === 'FIXED_AMOUNT') {
+        totalDiscount = product.price - product.discount_value;
+      } else {
+        throw new Error('Loại giảm giá không hợp lệ.');
+      }
+
+      if (!exists) {
+        await db.FlashSale.create({
+          coupon_id,
+          product_id,
+          amount: totalDiscount ?? 0,
+        });
+      }
+    }
+
+    if (totalDiscount !== undefined) {
+      if (totalDiscount < 0) {
+        throw new Error('Số lượng giảm giá phải lớn hơn hoặc bằng 0.');
+      }
+      flashSale.amount = totalDiscount;
+      await flashSale.save();
+    }
+
+    const updatedFlashSales = await db.FlashSale.findAll({
+      where: { coupon_id },
+    });
+
+    return updatedFlashSales;
+  };
 
 }
 
