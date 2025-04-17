@@ -236,25 +236,85 @@ class CouponService {
   static getProductForFlashSale = async ({ restaurant_id }) => {
     const query = `
       SELECT
-        p.name,
-        p.image,
-        p.descriptions,
-        p.price,
-        p.quantity,
-        fl.amount,
-        c.coupon_name
+        c.id AS coupon_id,
+        c.coupon_type,
+        c.coupon_name,
+        c.coupon_code,
+        c.discount_value,
+        c.discount_type,
+        c.max_discount_amount,
+        c.min_order_value,
+        c.max_uses_per_user,
+        c.start_date,
+        c.end_date,
+        c.is_active,
+        p.id AS product_id,
+        p.name AS product_name,
+        p.price AS product_price
       FROM Products p
       JOIN flash_sales fl ON p.id = fl.product_id
       JOIN coupons c ON c.id = fl.coupon_id
       WHERE p.restaurant_id = :restaurant_id;
     `;
 
-    return await db.sequelize.query(query, {
+    const rawData = await db.sequelize.query(query, {
       replacements: { restaurant_id },
       type: db.Sequelize.QueryTypes.SELECT,
       raw: true,
     });
-  }
+
+    const formattedData = rawData.reduce((acc, item) => {
+      const existingCoupon = acc.find(coupon => coupon.id === item.coupon_id);
+
+      if (existingCoupon) {
+        existingCoupon.food_items.push({
+          product_id: item.product_id,
+          product_name: item.product_name,
+          product_price: item.product_price,
+        });
+      } else {
+        acc.push({
+          id: item.coupon_id,
+          coupon_type: item.coupon_type,
+          coupon_name: item.coupon_name,
+          coupon_code: item.coupon_code,
+          discount_value: item.discount_value,
+          discount_type: item.discount_type,
+          max_discount_amount: item.max_discount_amount,
+          min_order_value: item.min_order_value,
+          max_uses_per_user: item.max_uses_per_user,
+          start_date: new Date(item.start_date).toLocaleString('vi-VN', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          end_date: new Date(item.end_date).toLocaleString('vi-VN', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          is_active: item.is_active,
+          food_items: [
+            {
+              product_id: item.product_id,
+              product_name: item.product_name,
+              product_price: item.product_price,
+            },
+          ],
+        });
+      }
+
+      return acc;
+    }, []);
+
+    return formattedData;
+  };
 
   static editFlashSale = async ({ restaurant_id, body }) => {
     const { coupon_id, flash_sale_id, product_id, amount, ...couponFields } = body;
