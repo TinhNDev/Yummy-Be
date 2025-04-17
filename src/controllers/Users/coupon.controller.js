@@ -79,7 +79,7 @@ class CouponController {
       message: "edit success",
       metadata: await CouponService.editFlashSale({
         body: req.body.body,
-        product_id: req.body.product_id
+        restaurant_id: req.params.restaurant_id
       })
     }).send(res)
   }
