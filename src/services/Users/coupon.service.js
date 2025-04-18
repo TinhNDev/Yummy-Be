@@ -2,9 +2,15 @@ const db = require('../../models/index.model');
 const { Restaurant, Coupon, CouponUsage } = require('../../models/index.model');
 
 class CouponService {
-  static getCoupon = async ({ totalCost, user_id }) => {
-    const coupons = await Coupon.findAll({ where: { is_active: true } });
-    const result = [];
+  static getCoupon = async ({ totalCost, user_id, restaurant_id }) => {
+    const coupons = await Coupon.findAll({
+      where: {
+        is_active: true,
+      },
+    });
+
+    const adminCoupons = [];
+    const restaurantCoupons = [];
 
     for (const coupon of coupons) {
       let error = null;
@@ -13,8 +19,7 @@ class CouponService {
         if (coupon.end_date && new Date(coupon.end_date) < new Date()) {
           error = 'Coupon has expired';
         } else if (coupon.min_order_value > totalCost) {
-          error =
-            'Order value does not meet the minimum requirement for this coupon';
+          error = 'Order value does not meet the minimum requirement for this coupon';
         } else if (coupon.coupon_type === 'ONE_TIME') {
           const usage = await CouponUsage.findOne({
             where: { user_id: user_id, coupon_id: coupon.id },
@@ -31,13 +36,22 @@ class CouponService {
         error = `Error validating coupon: ${err.message}`;
       }
 
-      result.push({
+      const item = {
         coupon,
         error,
-      });
+      };
+
+      if (coupon.restaurant_id === null) {
+        adminCoupons.push(item);
+      } else {
+        restaurantCoupons.push(item);
+      }
     }
 
-    return result;
+    return {
+      adminCoupons,
+      restaurantCoupons,
+    };
   };
 
   static createCoupon = async ({ body }) => {
