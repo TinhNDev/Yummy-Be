@@ -22,7 +22,7 @@ const getTotalPrice = async (
   userLongitude,
   restaurant_id,
   listCartItem,
-  discountCost
+  discountCost = 0,
 ) => {
   let totalFoodPrice = 0;
 
