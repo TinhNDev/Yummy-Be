@@ -148,6 +148,7 @@ const resgetProductByRestaurantId = async ({ restaurant_id }) => {
       JOIN \`Product Categories\` pc ON p.id = pc.productId
       JOIN Categories c ON c.id = pc.categoryId
       JOIN Restaurants r ON p.restaurant_id = r.id
+      JOIN flash_sales fl ON fl.product_id != p.id
       WHERE p.restaurant_id = :restaurant_id
         AND p.is_public = true
         AND p.is_draft = false
@@ -172,9 +173,18 @@ const resgetProductByRestaurantIdForUser = async ({ restaurant_id }) => {
                   'product_id', p.id,
                   'product_name', p.name,
                   'product_description', p.descriptions,
-                  'product_price', p.price,
+                  'product_price', 
+                  CASE 
+                      WHEN fl.product_id IS NOT NULL THEN fl.amount
+                      ELSE p.price
+                  END AS product_price,
                   'product_quantity', p.quantity,
                   'image', p.image,
+                  'is_flash_sale', 
+                  CASE 
+                      WHEN fl.product_id IS NOT NULL THEN true
+                      ELSE false
+                  END AS is_flash_sale,
                   'toppings', (
                       SELECT JSON_ARRAYAGG(
                           JSON_OBJECT(
@@ -193,6 +203,7 @@ const resgetProductByRestaurantIdForUser = async ({ restaurant_id }) => {
       JOIN \`Product Categories\` pc ON p.id = pc.productId
       JOIN Categories c ON c.id = pc.categoryId
       JOIN Restaurants r ON p.restaurant_id = r.id
+      LEFT JOIN flash_sales fl ON fl.product_id = p.id
       WHERE p.restaurant_id = :restaurant_id
       GROUP BY c.id, c.name;
     `;
