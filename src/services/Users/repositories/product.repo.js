@@ -126,19 +126,19 @@ const resgetProductByRestaurantId = async ({ restaurant_id }) => {
                   'product_id', p.id,
                   'product_name', p.name,
                   'product_description', p.descriptions,
-                  'original_price', p.price, -- Giá gốc của sản phẩm
+                  'original_price', p.price,
                   'product_price', 
-                  CASE 
-                      WHEN fl.product_id IS NOT NULL THEN fl.amount
-                      ELSE p.price
-                  END AS product_price, -- Giá flash sale nếu có, ngược lại là giá gốc
+                      CASE 
+                          WHEN fl.product_id IS NOT NULL THEN fl.amount
+                          ELSE p.price
+                      END,
                   'product_quantity', p.quantity,
                   'image', p.image,
                   'is_flash_sale', 
-                  CASE 
-                      WHEN fl.product_id IS NOT NULL THEN true
-                      ELSE false
-                  END AS is_flash_sale,
+                      CASE 
+                          WHEN fl.product_id IS NOT NULL THEN true
+                          ELSE false
+                      END,
                   'toppings', (
                       SELECT JSON_ARRAYAGG(
                           JSON_OBJECT(
@@ -169,6 +169,7 @@ const resgetProductByRestaurantId = async ({ restaurant_id }) => {
 
   return results;
 };
+
 
 const resgetProductByRestaurantIdForUser = async ({ restaurant_id }) => {
   const query = `
