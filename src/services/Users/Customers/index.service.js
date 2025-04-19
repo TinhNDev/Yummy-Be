@@ -155,6 +155,28 @@ class CustomerService {
     if (favorite && favorite.is_favorite) return true
     return false
   }
+
+  static getListProductFlashSale = async () => {
+    const query = `
+      SELECT 
+        p.id AS product_id,
+        p.image AS product_image,
+        p.descriptions AS product_description,
+        p.price AS original_price,
+        fl.amount AS flash_sale_price,
+        c.current_users AS current_uses,
+        c.max_users_per_user AS max_uses_per_user
+      FROM Products p
+      JOIN flash_sale fl ON fl.product_id = p.id
+      JOIN coupons c ON c.id = fl.coupon_id
+    `;
+
+    const results = await db.sequelize.query(query, {
+      type: db.Sequelize.QueryTypes.SELECT,
+    });
+
+    return results;
+  };
 }
 
 module.exports = CustomerService;

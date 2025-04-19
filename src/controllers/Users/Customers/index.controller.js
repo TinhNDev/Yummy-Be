@@ -54,6 +54,12 @@ class CustomerController {
       })
     }).send(res)
   }
+  getListProductFlashSale = async (req, res) => {
+    new SuccessResponse({
+      message: "list product",
+      metadata: await CustomerService.getListProductFlashSale()
+    }).send(res)
+  }
 }
 
 module.exports = new CustomerController();

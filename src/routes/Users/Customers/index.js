@@ -8,6 +8,7 @@ const {
   addToFavoriteRestaurant,
   getLisFavoriteRes,
   checkFavorite,
+  getListProductFlashSale,
 } = require('../../../controllers/Users/Customers/index.controller');
 const router = express.Router();
 
@@ -38,4 +39,5 @@ router.get(
   asyncHandle(getLisFavoriteRes)
 );
 router.get('/customer/:restaurant_id/favorite', authorization, asyncHandle(checkFavorite))
+router.get('/customer/flashsale', asyncHandle(getListProductFlashSale))
 module.exports = router;
