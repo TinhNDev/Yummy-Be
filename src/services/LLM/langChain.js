@@ -1,136 +1,175 @@
 require('dotenv').config();
 
-const { OpenAIEmbeddings, ChatOpenAI } = require('@langchain/openai');
-const { MemoryVectorStore } = require('langchain/vectorstores/memory');
-const { Document } = require('@langchain/core/documents');
+const { ChatOpenAI } = require('@langchain/openai');
 const { ChatPromptTemplate } = require('@langchain/core/prompts');
 const { Op } = require('sequelize');
-const {
-  RunnableLambda,
-  RunnableMap,
-  RunnablePassthrough,
-} = require('@langchain/core/runnables');
 const { StringOutputParser } = require('@langchain/core/output_parsers');
 const db = require('../../models/index.model');
 
-async function setupLangChain() {
-  const products = await db.Product.findAll();
-
-  const documents = products.map(
-    (product) =>
-      new Document({
-        pageContent: `${product.name}`,
-      })
-  );
-
-  const embeddings = new OpenAIEmbeddings({
-    apiKey: process.env.OPENAI_API_KEY,
-    batchSize: 512,
-    model: 'text-embedding-ada-002',
-  });
-
-  const vectorstore = await MemoryVectorStore.fromDocuments(
-    documents,
-    embeddings
-  );
-
-  const retriever = vectorstore.asRetriever(1);
-
+async function analyzeVietnameseQuery() {
   const prompt = ChatPromptTemplate.fromMessages([
     {
-      role: 'ai',
-      content: 'Theo tôi nghĩ bạn có lẽ đang nói tới món ăn:{context}',
+      role: 'system',
+      content: `Bạn là một hệ thống phân tích câu hỏi về món ăn Việt Nam.
+Hãy trích xuất các từ khóa tìm kiếm về món ăn từ câu hỏi của người dùng.
+Trả về một đối tượng JSON với các thuộc tính sau:
+- tenMonAn: mảng các tên món ăn hoặc từ khóa cụ thể để tìm kiếm
+- moTa: mảng các từ khóa mô tả món ăn để tìm trong trường descriptions
+- nhaHang: mảng các tên nhà hàng nếu được đề cập (dùng để lọc theo restaurant_id)
+- mucGia: đối tượng với giá min và max nếu khoảng giá được đề cập (null nếu không đề cập)
+- sapXepTheo: chuỗi chỉ định lựa chọn sắp xếp ("gia_tang", "gia_giam", "moi_nhat", "pho_bien") hoặc null nếu không đề cập`
     },
     {
       role: 'human',
-      content:
-        '{question},tên các món ăn phải được bọc trong dấu "",các tên món ăn chỉ cần tượng trưng không cần chi tiết ví dụ như "cơm gà bình định" thì chỉ cần "cơm gà",và giải thích sơ qua,ngắn gọn khoảng 30 từ trở xuống các món ăn này',
-    },
+      content: '{question}'
+    }
   ]);
 
   const model = new ChatOpenAI({
     openAIApiKey: process.env.OPENAI_API_KEY,
     modelName: 'gpt-3.5-turbo',
-    temperature: 0.1,
+    temperature: 0,
+    responseFormat: { type: "json_object" }
   });
 
   const outputParser = new StringOutputParser();
 
-  const setupAndRetrieval = RunnableMap.from({
-    context: new RunnableLambda({
-      func: (input) =>
-        retriever.invoke(input).then((responses) => {
-          if (responses.length === 0) return 'No relevant products found.';
-          return responses
-            .map(
-              (response) =>
-                `Product Name: "${response.metadata.name || 'Unknown'}"
-Price: ${response.metadata.price}
-`
-            )
-            .join('\n\n');
-        }),
-    }).withConfig({ runName: 'contextRetriever' }),
-    question: new RunnablePassthrough(),
-  });
-
-  const chain = setupAndRetrieval.pipe(prompt).pipe(model).pipe(outputParser);
+  const chain = prompt.pipe(model).pipe(outputParser);
 
   return chain;
 }
 
 async function handleSearch(query) {
   try {
-    const chain = await setupLangChain();
-    const response = await chain.invoke(query);
+    const analyzer = await analyzeVietnameseQuery();
+    const analysisResult = await analyzer.invoke({ question: query });
 
-    const productNames = response
-      .match(/"\s*([^"]+)\s*"/g)
-      ?.map((match) => match.replace(/"/g, '').trim());
+    console.log('Kết quả phân tích:', analysisResult);
 
-    if (productNames && productNames.length > 0) {
-      const productNamesWithoutQuotes = productNames
-        .map((name) => name.replace(/"/g, '').trim())
-        .filter((name) => name.length > 0);
+    const searchParams = JSON.parse(analysisResult);
 
-      if (productNamesWithoutQuotes.length > 0) {
-        const products = await db.Product.findAll({
-          where: {
-            name: {
-              [Op.or]: productNamesWithoutQuotes.map((name) => ({
-                [Op.like]: `%${name}%`,
-              })),
-            },
-            is_public: true,
-          },
+    const whereConditions = {
+      is_public: true,
+      is_available: true,
+      is_draft: false
+    };
+
+    const orConditions = [];
+
+    if (searchParams.tenMonAn && searchParams.tenMonAn.length > 0) {
+      searchParams.tenMonAn.forEach(term => {
+        orConditions.push({
+          name: { [Op.like]: `%${term}%` }
         });
+      });
+    }
 
-        if (products.length > 0) {
-          return {
-            product: products,
-            description: response,
-          };
-        } else {
-          return {
-            product: null,
-            description: response,
-          };
-        }
-      } else {
-        return {
-          product: null,
-          description: 'No valid product names found.',
+    if (searchParams.moTa && searchParams.moTa.length > 0) {
+      searchParams.moTa.forEach(term => {
+        orConditions.push({
+          descriptions: { [Op.like]: `%${term}%` }
+        });
+      });
+    }
+
+    if (orConditions.length > 0) {
+      whereConditions[Op.or] = orConditions;
+    }
+
+    if (searchParams.nhaHang && searchParams.nhaHang.length > 0) {
+      const restaurantNames = searchParams.nhaHang;
+      const restaurants = await db.Restaurant.findAll({
+        where: {
+          name: {
+            [Op.or]: restaurantNames.map(name => ({ [Op.like]: `%${name}%` }))
+          }
+        },
+        attributes: ['id']
+      });
+
+      if (restaurants.length > 0) {
+        whereConditions.restaurant_id = {
+          [Op.in]: restaurants.map(r => r.id)
         };
       }
+    }
+
+    if (searchParams.mucGia) {
+      whereConditions.price = {};
+      if (searchParams.mucGia.min !== null) {
+        whereConditions.price[Op.gte] = searchParams.mucGia.min;
+      }
+      if (searchParams.mucGia.max !== null) {
+        whereConditions.price[Op.lte] = searchParams.mucGia.max;
+      }
+    }
+
+    let orderOptions = [];
+    if (searchParams.sapXepTheo) {
+      switch (searchParams.sapXepTheo) {
+        case 'gia_tang':
+          orderOptions.push(['price', 'ASC']);
+          break;
+        case 'gia_giam':
+          orderOptions.push(['price', 'DESC']);
+          break;
+        case 'moi_nhat':
+          orderOptions.push(['createdAt', 'DESC']);
+          break;
+        case 'pho_bien':
+          orderOptions.push(['quantity', 'DESC']);
+          break;
+      }
+    } else {
+      orderOptions.push(['createdAt', 'DESC']);
+    }
+
+    const findOptions = {
+      where: whereConditions,
+      limit: 10,
+      order: orderOptions
+    };
+
+    console.log('SQL Query options:', JSON.stringify(findOptions, null, 2));
+
+    const products = await db.Product.findAll(findOptions);
+
+    console.log(`Tìm thấy ${products.length} món ăn`);
+
+    const responsePrompt = ChatPromptTemplate.fromMessages([
+      {
+        role: 'system',
+        content: `Bạn là một chuyên gia ẩm thực Việt Nam. Dựa trên kết quả tìm kiếm, hãy cung cấp một mô tả ngắn gọn về các món ăn này. 
+        Bọc mỗi tên món ăn trong dấu ngoặc kép. Giữ phản hồi của bạn dưới 30 từ bằng tiếng Việt.`
+      },
+      {
+        role: 'human',
+        content: `Các món ăn tìm thấy: ${products.map(p => p.name).join(', ')}. Câu hỏi là: ${query}`
+      }
+    ]);
+
+    const model = new ChatOpenAI({
+      openAIApiKey: process.env.OPENAI_API_KEY,
+      modelName: 'gpt-3.5-turbo',
+      temperature: 0
+    });
+
+    const description = await responsePrompt.pipe(model).pipe(new StringOutputParser()).invoke({});
+
+    if (products.length > 0) {
+      return {
+        product: products,
+        description: description
+      };
     } else {
       return {
         product: null,
-        description: 'No product names in quotes found.',
+        description: 'Không tìm thấy món ăn phù hợp với yêu cầu của bạn. Bạn có thể thử tìm kiếm với từ khóa khác.'
       };
     }
   } catch (error) {
-    console.error('Error during search:', error.message);
-    throw new Error('Chatbot search failed.');
+    console.error('Lỗi trong quá trình tìm kiếm:', error.message);
+    throw new Error('Tìm kiếm thất bại.');
   }
 }
 
