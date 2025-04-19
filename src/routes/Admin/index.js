@@ -34,4 +34,5 @@ router.put(
   checkRole(['admin']),
   asyncHandle(adminController.changeStatusDriver)
 );
+router.get('/admin/order', authorization, asyncHandle(adminController.getAllOrder))
 module.exports = router;

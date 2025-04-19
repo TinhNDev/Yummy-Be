@@ -40,6 +40,13 @@ class AdminController {
       }),
     }).send(res);
   };
+
+  getAllOrder = async (req, res) => {
+    new SuccessResponse({
+      message: "all order",
+      metadata: await AdminService.getAllOrder()
+    }).send(res)
+  }
 }
 
 module.exports = new AdminController();
