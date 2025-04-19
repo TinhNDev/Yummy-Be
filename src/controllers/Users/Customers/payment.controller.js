@@ -9,7 +9,7 @@ const {
 
 class PaymentController {
   checkCost = async (req, res) => {
-    const { userLatitude, userLongitude, restaurant_id, listCartItem } =
+    const { userLatitude, userLongitude, restaurant_id, listCartItem, discountCost } =
       req.body;
     new SuccessResponse({
       message: 'full cost',
@@ -17,7 +17,8 @@ class PaymentController {
         userLatitude,
         userLongitude,
         restaurant_id,
-        listCartItem
+        listCartItem,
+        discountCost
       ),
     }).send(res);
   };
