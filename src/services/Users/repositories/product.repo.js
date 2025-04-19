@@ -184,6 +184,7 @@ const resgetProductByRestaurantIdForUser = async ({ restaurant_id }) => {
                   'product_price', p.price,
                   'product_quantity', p.quantity,
                   'image', p.image,
+                  'is_available', p.is_available
                   'toppings', (
                       SELECT JSON_ARRAYAGG(
                           JSON_OBJECT(

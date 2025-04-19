@@ -160,15 +160,17 @@ class CustomerService {
     const query = `
       SELECT 
         p.id AS product_id,
+        p.name AS product_name
         p.image AS product_image,
         p.descriptions AS product_description,
         p.price AS original_price,
         fl.amount AS flash_sale_price,
-        c.current_users AS current_uses,
-        c.max_users_per_user AS max_uses_per_user
+        c.current_uses AS current_uses,
+        c.max_uses_per_user AS max_uses_per_user
       FROM Products p
-      JOIN flash_sale fl ON fl.product_id = p.id
+      JOIN flash_sales fl ON fl.product_id = p.id
       JOIN coupons c ON c.id = fl.coupon_id
+      JOIN Restaurant r ON r.id = p.restaurant_id
     `;
 
     const results = await db.sequelize.query(query, {
