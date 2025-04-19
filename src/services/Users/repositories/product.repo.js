@@ -12,7 +12,7 @@ const findAllPublicForShop = async ({ query, limit, skip }) => {
 const findProductByUser = async (keySearch) => {
   const query = `
     SELECT * 
-    FROM products 
+    FROM Products 
     WHERE is_public = 1 
     AND name LIKE ?
     ORDER BY createdAt DESC;

@@ -45,11 +45,50 @@ class CustomerService {
     });
   };
 
-  static getOrderForCustomer = async ({ user_id, order_id }) => {
-    const Customer = await Customer.findOne({ where: { user_id: user_id } });
-    return await Order.findOne({
-      where: { customer_id: Customer.id, id: order_id },
+  static getOrderForCustomer = async ({ order_id }) => {
+    const query = `
+      SELECT 
+        o.id,
+        o.price,
+        o.order_status,
+        o.listCartItem,
+        o.reciver_name,
+        o.createdAt,
+        o.updatedAt,
+        o.phone_number,
+        o.order_date,
+        o.delivery_fee,
+        o.order_pay,
+        o.note,
+        r.id,
+        r.name,
+        r.address,
+        r.image,
+        d.id AS driver_id,
+        d.cic,
+        d.license_plate,
+        d.cccdBack,
+        d.dob,
+        d.car_name,
+        d.cavet,
+        p.name AS driver_name,
+        p.image AS driver_image,
+        p.phone_number AS driver_phone
+      FROM Orders o
+      JOIN Restaurants r ON r.id = o.restaurant_id
+      JOIN Customers c ON c.id = o.customer_id
+      LEFT JOIN Drivers d ON d.id = o.driver_id
+      JOIN Users u ON u.id = c.user_id
+      JOIN Profile p ON p.id = d.driver_id
+      WHERE o.id = :order_id
+    `;
+
+    const results = await db.sequelize.query(query, {
+      replacements: { order_id },
+      type: db.Sequelize.QueryTypes.SELECT,
     });
+
+    return results[0];
   };
 
   static getDistance = async ({
